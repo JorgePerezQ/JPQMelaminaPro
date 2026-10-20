@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  melastudio-builder:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: melastudio_suite_builder
+    volumes:
+      - .:/app
+    environment:
+      - NODE_ENV=development
+    command: python3 package_extension.py

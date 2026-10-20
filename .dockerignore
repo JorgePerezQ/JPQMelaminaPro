@@ -1,0 +1,9 @@
+.git
+.gitignore
+*.rbz
+node_modules/
+.env
+.env.*
+.DS_Store
+Thumbs.db
+documentos/

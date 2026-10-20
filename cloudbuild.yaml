@@ -1,0 +1,14 @@
+steps:
+  # 1. Validar sintaxis y empaquetar la extensión en Google Cloud Build
+  - name: 'python:3.10-slim'
+    entrypoint: 'python3'
+    args: ['package_extension.py']
+
+  # 2. Almacenar artefactos generados
+artifacts:
+  objects:
+    location: 'gs://${_BUCKET_NAME}/melastudio-releases/$BUILD_ID'
+    paths: ['mela_studio_pro_clone.rbz']
+
+options:
+  logging: CLOUD_LOGGING_ONLY
