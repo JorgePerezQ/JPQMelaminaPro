@@ -19,6 +19,7 @@ module JPQMelaminaPro
       def registrar_callbacks(dialog)
         # 1. Crear nuevo módulo paramétrico
         dialog.add_action_callback('crearModulo') do |_ctx, params_json|
+          load File.join(__dir__, 'core', 'cabinet_builder.rb')
           params = JSON.parse(params_json)
           resultado = CabinetBuilder.build(params)
           responder_js(dialog, 'onModuloCreado', resultado)

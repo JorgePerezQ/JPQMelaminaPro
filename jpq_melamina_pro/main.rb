@@ -212,9 +212,25 @@ module JPQMelaminaPro
       menu.add_item('Extraer Despiece a Excel / CSV') { abrir_dialogo_principal('despiece') }
       menu.add_item('Optimizar Cortes 2D (Guillotina)') { abrir_dialogo_principal('optimizador') }
       menu.add_separator
+      menu.add_item('Recargar Código (Hot Reload)') do
+        recargar_modulos_en_caliente
+        UI.messagebox("Todos los módulos de JPQMelaminaPro fueron recargados en memoria exitosamente.")
+      end
+      menu.add_separator
       menu.add_item('Acerca de JPQMelaminaPro') do
         UI.messagebox("JPQMelaminaPro v#{PLUGIN_VERSION}\nSuite paramétrica de carpintería y despiece milimétrico.")
       end
+    end
+
+    # ==========================================================================
+    # Método: recargar_modulos_en_caliente
+    # Descripción: Recarga todos los scripts Ruby en memoria activa sin reiniciar SketchUp.
+    # ==========================================================================
+    def recargar_modulos_en_caliente
+      Dir[File.join(__dir__, '{core,optimizer,exporters}', '*.rb')].each do |archivo|
+        load archivo
+      end
+      load File.join(__dir__, 'controller.rb')
     end
   end
 
