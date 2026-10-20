@@ -33,7 +33,8 @@ module JPQMelaminaPro
         alto_mod   = dict_mod['alto_mm'].to_f.mm
         ancho_mod  = dict_mod['ancho_mm'].to_f.mm
         prof_mod   = dict_mod['prof_mm'].to_f.mm
-        t          = dict_mod['espesor_mm'].to_f.mm
+        t_val      = (dict_mod['espesor_mm'] && dict_mod['espesor_mm'].to_f > 0) ? dict_mod['espesor_mm'].to_f : 18.0
+        t          = t_val.mm
         modulo_id  = dict_mod['modulo_id']
         material   = dict_mod['material'] || 'Melamina 18mm'
 
@@ -47,29 +48,29 @@ module JPQMelaminaPro
         begin
           if tipo_division == 'horizontal'
             ancho_int = ancho_mod - (2 * t)
-            ancho_int_num = dict_mod['ancho_mm'].to_f - (2 * dict_mod['espesor_mm'].to_f)
+            ancho_int_num = dict_mod['ancho_mm'].to_f - (2 * t_val)
             prof_efectiva_num = dict_mod['prof_mm'].to_f - (params['retroceso_frente'] || 10.0).to_f
 
             if params['altura_fija'] && params['altura_fija'].to_f > 0
               z_repisa = params['altura_fija'].to_f.mm
-              crear_repisa(modulo, modulo_id, 1, t, retroceso, z_repisa, ancho_int, prof_efectiva, t, ancho_int_num, prof_efectiva_num, dict_mod['espesor_mm'].to_f, material)
+              crear_repisa(modulo, modulo_id, 1, t, retroceso, z_repisa, ancho_int, prof_efectiva, t, ancho_int_num, prof_efectiva_num, t_val, material)
             else
               paso_z = (alto_mod - (2 * t)) / (cantidad + 1)
               cantidad.times do |i|
                 z_repisa = t + (paso_z * (i + 1)) - (t / 2.0)
-                crear_repisa(modulo, modulo_id, i + 1, t, retroceso, z_repisa, ancho_int, prof_efectiva, t, ancho_int_num, prof_efectiva_num, dict_mod['espesor_mm'].to_f, material)
+                crear_repisa(modulo, modulo_id, i + 1, t, retroceso, z_repisa, ancho_int, prof_efectiva, t, ancho_int_num, prof_efectiva_num, t_val, material)
               end
             end
           else
             # División vertical (Montante / Parante)
             alto_int = alto_mod - (2 * t)
-            alto_int_num = dict_mod['alto_mm'].to_f - (2 * dict_mod['espesor_mm'].to_f)
+            alto_int_num = dict_mod['alto_mm'].to_f - (2 * t_val)
             prof_efectiva_num = dict_mod['prof_mm'].to_f - (params['retroceso_frente'] || 10.0).to_f
 
             paso_x = (ancho_mod - (2 * t)) / (cantidad + 1)
             cantidad.times do |i|
               x_parante = t + (paso_x * (i + 1)) - (t / 2.0)
-              crear_parante(modulo, modulo_id, i + 1, x_parante, retroceso, t, t, prof_efectiva, alto_int, dict_mod['espesor_mm'].to_f, prof_efectiva_num, alto_int_num, material)
+              crear_parante(modulo, modulo_id, i + 1, x_parante, retroceso, t, t, prof_efectiva, alto_int, t_val, prof_efectiva_num, alto_int_num, material)
             end
           end
 

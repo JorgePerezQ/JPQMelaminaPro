@@ -31,15 +31,15 @@ module JPQMelaminaPro
         dict_mod = modulo.attribute_dictionary('DespieceMelaModulo')
         alto_mod   = dict_mod['alto_mm'].to_f.mm
         ancho_mod  = dict_mod['ancho_mm'].to_f.mm
-        prof_mod   = dict_mod['prof_mm'].to_f.mm
-        t_mod      = dict_mod['espesor_mm'].to_f.mm
-        modulo_id  = dict_mod['modulo_id']
-        material   = dict_mod['material'] || 'Melamina 18mm'
+        t_val       = (dict_mod && dict_mod['espesor_mm'].to_f > 0) ? dict_mod['espesor_mm'].to_f : 18.0
+        t_mod       = t_val.mm
+        modulo_id   = dict_mod['modulo_id']
+        material    = dict_mod['material'] || 'Melamina 18mm'
 
         tipo_puerta = params['tipo'] || 'exterior' # 'exterior' o 'interior'
         hojas       = (params['cantidad_hojas'] || (params['apertura'] == 'doble' ? 2 : 1)).to_i
         luz_mm      = (params['luz_perimetral'] || (tipo_puerta == 'exterior' ? 2.0 : 3.0)).to_f
-        t_p_num     = (params['espesor'] || dict_mod['espesor_mm'].to_f).to_f
+        t_p_num     = (params['espesor'] && params['espesor'].to_f > 0) ? params['espesor'].to_f : t_val
         t_puerta    = t_p_num.mm
 
         model.start_operation('JPQMelaminaPro: Generar Puertas Batientes', true)

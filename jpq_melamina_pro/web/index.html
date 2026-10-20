@@ -255,6 +255,11 @@
           <input type="number" id="repisaAlturaFija" value="0" placeholder="0 = Distribución equidistante">
         </div>
 
+        <div class="form-group">
+          <label>Grosor / Espesor de la Repisa</label>
+          <input type="text" id="repisaEspesor" value="18 mm (Estándar)" readonly style="background: var(--bg-hover); font-weight: 700; color: var(--primary);">
+        </div>
+
         <button class="btn btn-primary btn-block" onclick="enviarRepisas()">
           ➕ Insertar Divisiones
         </button>
@@ -294,8 +299,8 @@
           <div class="form-group">
             <label>Espesor Caja (mm)</label>
             <select id="cajonesEspesorCaja">
-              <option value="15" selected>15 mm</option>
-              <option value="18">18 mm</option>
+              <option value="18" selected>18 mm (Estándar)</option>
+              <option value="15">15 mm</option>
             </select>
           </div>
         </div>
@@ -557,6 +562,7 @@
               <tr>
                 <th>#</th>
                 <th>Pieza</th>
+                <th>Espesor</th>
                 <th>Cant</th>
                 <th>L. Bruto</th>
                 <th>A. Bruto</th>

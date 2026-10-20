@@ -32,22 +32,23 @@ module JPQMelaminaPro
         alto_mod   = dict_mod['alto_mm'].to_f.mm
         ancho_mod  = dict_mod['ancho_mm'].to_f.mm
         prof_mod   = dict_mod['prof_mm'].to_f.mm
-        t          = dict_mod['espesor_mm'].to_f.mm
+        t_val      = (dict_mod['espesor_mm'] && dict_mod['espesor_mm'].to_f > 0) ? dict_mod['espesor_mm'].to_f : 18.0
+        t          = t_val.mm
         modulo_id  = dict_mod['modulo_id']
         material   = dict_mod['material'] || 'Melamina 18mm'
 
         cant_cajones   = (params['cantidad_cajones'] || 3).to_i
         largo_slide_mm = (params['largo_corredera'] || 450.0).to_f
         luz_mm         = (params['luz_entre_tapas'] || 3.0).to_f
-        t_caja_mm      = (params['espesor_caja'] || 15.0).to_f
+        t_caja_mm      = (params['espesor_caja'] && params['espesor_caja'].to_f > 0) ? params['espesor_caja'].to_f : 18.0
         tipo_frente    = params['tipo_frente'] || 'exterior'
 
         model.start_operation('JPQMelaminaPro: Insertar Cajonera', true)
 
         begin
           ancho_int_vano = ancho_mod - (2 * t)
-          ancho_int_vano_num = dict_mod['ancho_mm'].to_f - (2 * dict_mod['espesor_mm'].to_f)
-          alto_int_vano_num  = dict_mod['alto_mm'].to_f - (2 * dict_mod['espesor_mm'].to_f)
+          ancho_int_vano_num = dict_mod['ancho_mm'].to_f - (2 * t_val)
+          alto_int_vano_num  = dict_mod['alto_mm'].to_f - (2 * t_val)
 
           # REGLA DE CARPINTERÍA: 13 mm por lado para corredera telescópica = 26 mm de descuento total
           ancho_ext_caja_num = ancho_int_vano_num - 26.0

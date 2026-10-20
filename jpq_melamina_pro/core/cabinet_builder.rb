@@ -57,7 +57,8 @@ module JPQMelaminaPro
         alto_total  = params['alto'].to_f.mm
         ancho_total = params['ancho'].to_f.mm
         prof_total  = params['profundidad'].to_f.mm
-        t           = params['espesor'].to_f.mm
+        t_num       = (params['espesor'] && params['espesor'].to_f > 0) ? params['espesor'].to_f : 18.0
+        t           = t_num.mm
         material    = params['material'] || 'Melamina Roble Natural 18mm'
         nombre_mod  = params['nombre'] || 'Escritorio Profesional'
         modulo_id   = params['modulo_id'] || "ESC-#{Time.now.to_i % 10000}"
@@ -65,7 +66,6 @@ module JPQMelaminaPro
         alto_num  = params['alto'].to_f
         ancho_num = params['ancho'].to_f
         prof_num  = params['profundidad'].to_f
-        t_num     = params['espesor'].to_f
 
         grupo_modulo = inicializar_grupo(model, params, nombre_mod, modulo_id, 'escritorio')
 
@@ -154,7 +154,8 @@ module JPQMelaminaPro
         alto_total  = params['alto'].to_f.mm
         ancho_total = params['ancho'].to_f.mm
         prof_total  = params['profundidad'].to_f.mm
-        t           = params['espesor'].to_f.mm
+        t_num       = (params['espesor'] && params['espesor'].to_f > 0) ? params['espesor'].to_f : 18.0
+        t           = t_num.mm
         material    = params['material'] || 'Melamina Blanca 18mm'
         nombre_mod  = params['nombre'] || 'Cómoda 4 Cajones'
         modulo_id   = params['modulo_id'] || "COM-#{Time.now.to_i % 10000}"
@@ -162,7 +163,6 @@ module JPQMelaminaPro
         alto_num  = params['alto'].to_f
         ancho_num = params['ancho'].to_f
         prof_num  = params['profundidad'].to_f
-        t_num     = params['espesor'].to_f
 
         grupo_modulo = inicializar_grupo(model, params, nombre_mod, modulo_id, 'comoda')
 
@@ -274,7 +274,7 @@ module JPQMelaminaPro
           'cantidad_cajones' => 4,
           'largo_corredera' => [prof_num - 50.0, 450.0].min,
           'luz_entre_tapas' => 3.0,
-          'espesor_caja' => 15.0,
+          'espesor_caja' => t_num,
           'tipo_frente' => 'exterior'
         })
 
@@ -288,7 +288,8 @@ module JPQMelaminaPro
         alto_total  = params['alto'].to_f.mm
         ancho_total = params['ancho'].to_f.mm
         prof_total  = params['profundidad'].to_f.mm
-        t           = params['espesor'].to_f.mm
+        t_num       = (params['espesor'] && params['espesor'].to_f > 0) ? params['espesor'].to_f : 18.0
+        t           = t_num.mm
         material    = params['material'] || 'Melamina Roble Natural 18mm'
         nombre_mod  = params['nombre'] || 'Ropero Clóset 2 Cuerpos'
         modulo_id   = params['modulo_id'] || "ROP-#{Time.now.to_i % 10000}"
@@ -296,7 +297,6 @@ module JPQMelaminaPro
         alto_num  = params['alto'].to_f
         ancho_num = params['ancho'].to_f
         prof_num  = params['profundidad'].to_f
-        t_num     = params['espesor'].to_f
 
         grupo_modulo = inicializar_grupo(model, params, nombre_mod, modulo_id, 'ropero')
 
@@ -461,7 +461,8 @@ module JPQMelaminaPro
         alto_total  = params['alto'].to_f.mm
         ancho_total = params['ancho'].to_f.mm
         prof_total  = params['profundidad'].to_f.mm
-        t           = params['espesor'].to_f.mm
+        t_num       = (params['espesor'] && params['espesor'].to_f > 0) ? params['espesor'].to_f : 18.0
+        t           = t_num.mm
         material    = params['material'] || 'Melamina Blanca 18mm'
         nombre_mod  = params['nombre'] || 'Módulo Bajo Cocina'
         modulo_id   = params['modulo_id'] || "BAJ-#{Time.now.to_i % 10000}"
@@ -469,7 +470,6 @@ module JPQMelaminaPro
         alto_num  = params['alto'].to_f
         ancho_num = params['ancho'].to_f
         prof_num  = params['profundidad'].to_f
-        t_num     = params['espesor'].to_f
 
         grupo_modulo = inicializar_grupo(model, params, nombre_mod, modulo_id, 'bajo')
 
@@ -604,7 +604,8 @@ module JPQMelaminaPro
         alto_total  = params['alto'].to_f.mm
         ancho_total = params['ancho'].to_f.mm
         prof_total  = params['profundidad'].to_f.mm
-        t           = params['espesor'].to_f.mm
+        t_num       = (params['espesor'] && params['espesor'].to_f > 0) ? params['espesor'].to_f : 18.0
+        t           = t_num.mm
         material    = params['material'] || 'Melamina Blanca 18mm'
         nombre_mod  = params['nombre'] || 'Alacena Aérea Cocina'
         modulo_id   = params['modulo_id'] || "AER-#{Time.now.to_i % 10000}"
@@ -612,7 +613,6 @@ module JPQMelaminaPro
         alto_num  = params['alto'].to_f
         ancho_num = params['ancho'].to_f
         prof_num  = params['profundidad'].to_f
-        t_num     = params['espesor'].to_f
 
         grupo_modulo = inicializar_grupo(model, params, nombre_mod, modulo_id, 'aereo')
 
@@ -707,7 +707,8 @@ module JPQMelaminaPro
         alto_total  = params['alto'].to_f.mm
         ancho_total = params['ancho'].to_f.mm
         prof_total  = params['profundidad'].to_f.mm
-        t           = params['espesor'].to_f.mm
+        t_num       = (params['espesor'] && params['espesor'].to_f > 0) ? params['espesor'].to_f : 18.0
+        t           = t_num.mm
         material    = params['material'] || 'Melamina Blanca 18mm'
         nombre_mod  = params['nombre'] || 'Librero con Zócalo'
         modulo_id   = params['modulo_id'] || "LIB-#{Time.now.to_i % 10000}"
@@ -715,7 +716,6 @@ module JPQMelaminaPro
         alto_num  = params['alto'].to_f
         ancho_num = params['ancho'].to_f
         prof_num  = params['profundidad'].to_f
-        t_num     = params['espesor'].to_f
 
         grupo_modulo = inicializar_grupo(model, params, nombre_mod, modulo_id, 'librero')
 
@@ -852,8 +852,8 @@ module JPQMelaminaPro
         dict_mod['tipo']        = tipo_mod
         dict_mod['alto_mm']     = params['alto'].to_f
         dict_mod['ancho_mm']    = params['ancho'].to_f
-        dict_mod['prof_mm']     = params['profundidad'].to_f
-        dict_mod['espesor_mm']  = params['espesor'].to_f
+        esp_val = (params['espesor'] && params['espesor'].to_f > 0) ? params['espesor'].to_f : 18.0
+        dict_mod['espesor_mm']  = esp_val
         dict_mod['material']    = params['material'] || 'Melamina Blanca 18mm'
 
         grupo

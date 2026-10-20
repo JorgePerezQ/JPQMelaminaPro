@@ -577,6 +577,7 @@ function renderizarTablaDespiece(data) {
     tr.innerHTML = `
       <td style="text-align:center; font-weight: 700;">${p.item_numero}</td>
       <td><strong>${p.nombre}</strong><br><small style="color:var(--text-muted);">${p.detalle_piezas || ''}</small></td>
+      <td style="text-align:center; font-weight: 700; color: ${p.espesor === 3 ? 'var(--warning)' : 'var(--primary)'};">${p.espesor} mm</td>
       <td style="text-align:center;"><span class="badge badge-blue">${p.cantidad}</span></td>
       <td style="text-align:right;">${p.largo_bruto}</td>
       <td style="text-align:right;">${p.ancho_bruto}</td>

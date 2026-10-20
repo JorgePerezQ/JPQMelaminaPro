@@ -603,8 +603,8 @@ const Preview3D = (function() {
     ctx.strokeStyle = isDark ? '#334155' : '#E2E8F0';
     ctx.lineWidth = 1;
 
-    const boxW = 240;
-    const boxH = 46;
+    const boxW = 270;
+    const boxH = 50;
     const boxX = 10;
     const boxY = 10;
 
@@ -615,11 +615,15 @@ const Preview3D = (function() {
 
     ctx.fillStyle = isDark ? '#F8FAFC' : '#0F172A';
     ctx.font = 'bold 11px sans-serif';
-    ctx.fillText(titulo, boxX + 10, boxY + 18);
+    ctx.fillText(titulo, boxX + 10, boxY + 16);
 
     ctx.fillStyle = '#10B981';
     ctx.font = '10px sans-serif';
-    ctx.fillText('✓ Nivel: Sobre el piso (Z ≥ 0)', boxX + 10, boxY + 34);
+    ctx.fillText('✓ Nivel: Sobre el piso (Z ≥ 0)', boxX + 10, boxY + 31);
+
+    ctx.fillStyle = isDark ? '#94A3B8' : '#64748B';
+    ctx.font = '10px sans-serif';
+    ctx.fillText(`📏 Grosor repisas/piezas: ${p.espesor || 18}mm | MDF: 3mm`, boxX + 10, boxY + 44);
     ctx.restore();
   }
 
