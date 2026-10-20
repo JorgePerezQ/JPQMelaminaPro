@@ -1,0 +1,25 @@
+# Dependencias y entornos
+node_modules/
+.env
+.env.*
+!.env.example
+
+# Archivos de sistema operativo
+.DS_Store
+Thumbs.db
+*.Zone.Identifier
+
+# Empaquetados de extensiones SketchUp
+*.rbz
+*.zip
+*.tar.gz
+
+# Logs y temporales
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.idea/
+.vscode/
+dist/
+build/

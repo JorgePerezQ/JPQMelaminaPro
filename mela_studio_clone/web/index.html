@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MelaStudio PRO - Suite de Carpintería</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="theme-claro">
+
+  <!-- Header Superior -->
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-badge">PRO</span>
+      <span class="brand-title">MelaStudio</span>
+    </div>
+    <div class="header-controls">
+      <label for="themeSelector" style="display:none;">Tema</label>
+      <select id="themeSelector" style="width: auto; padding: 4px 8px; font-size: 11px;">
+        <option value="claro">Tema Claro</option>
+        <option value="oscuro">Tema Oscuro</option>
+        <option value="taller">Tema Taller Madera</option>
+      </select>
+    </div>
+  </header>
+
+  <!-- Navegación por Pestañas -->
+  <nav class="nav-tabs">
+    <button class="nav-tab active" data-tab="creador">🔨 Módulos</button>
+    <button class="nav-tab" data-tab="editor">✏️ Editar</button>
+    <button class="nav-tab" data-tab="repisas">📐 Repisas</button>
+    <button class="nav-tab" data-tab="cajones">🗄️ Cajoneras</button>
+    <button class="nav-tab" data-tab="ranura">🔲 Fondos</button>
+    <button class="nav-tab" data-tab="cantos">📏 Cantos</button>
+    <button class="nav-tab" data-tab="mecanizados">🔩 Mecanizado</button>
+    <button class="nav-tab" data-tab="materiales">🎨 Vetas</button>
+    <button class="nav-tab" data-tab="puertas">🚪 Puertas</button>
+    <button class="nav-tab" data-tab="despiece">📋 Despiece</button>
+    <button class="nav-tab" data-tab="optimizador">🧩 Optimizar 2D</button>
+    <button class="nav-tab" data-tab="exportar">💾 Exportar</button>
+  </nav>
+
+  <!-- Contenedor Principal de Vistas -->
+  <main class="app-content">
+    <div id="notificationArea"></div>
+
+    <!-- 1. PESTAÑA: CREADOR DE MÓDULOS BASE -->
+    <section id="tab-creador" class="tab-pane active">
+      <div class="card">
+        <h3 class="card-title">Generador de Módulo Paramétrico Base</h3>
+        
+        <div class="form-group">
+          <label>Nombre del Mueble</label>
+          <input type="text" id="modNombre" value="Gabinete Bajo Cocina">
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Tipo de Módulo</label>
+            <select id="modTipo">
+              <option value="bajo">Bajo de Cocina</option>
+              <option value="aereo">Aéreo / Alacena</option>
+              <option value="columna">Torre / Columna</option>
+              <option value="librero" selected>Librero / Cubo</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Espesor Melamina (mm)</label>
+            <select id="modEspesor">
+              <option value="18" selected>18 mm</option>
+              <option value="15">15 mm</option>
+              <option value="36">36 mm (Engrosado)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Alto Total (mm)</label>
+            <input type="number" id="modAlto" value="750" step="1">
+          </div>
+          <div class="form-group">
+            <label>Ancho Total (mm)</label>
+            <input type="number" id="modAncho" value="600" step="1">
+          </div>
+          <div class="form-group">
+            <label>Profundidad (mm)</label>
+            <input type="number" id="modProfundidad" value="500" step="1">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Material Predeterminado</label>
+          <select id="modMaterial">
+            <option value="Melamina Blanca 18mm" selected>Melamina Blanca 18mm</option>
+            <option value="Melamina Roble Natural 18mm">Roble Natural 18mm (Con Veta)</option>
+            <option value="Melamina Nogal Terracota 18mm">Nogal Terracota 18mm (Con Veta)</option>
+            <option value="Melamina Gris Antracita 18mm">Gris Antracita 18mm</option>
+          </select>
+        </div>
+
+        <div class="card" style="background-color: var(--bg-hover); margin-top: 10px;">
+          <h4 style="font-size: 11px; margin-bottom: 8px; color: var(--text-secondary);">ESTRUCTURA Y ACCESORIOS</h4>
+          
+          <label class="checkbox-row">
+            <input type="checkbox" id="modFondo" checked>
+            <span>Incluir Fondo MDF 3mm Enranurado</span>
+          </label>
+
+          <div class="form-grid" style="margin-bottom: 8px;">
+            <div class="form-group">
+              <label>Prof. Ranura (mm)</label>
+              <input type="number" id="modProfRanura" value="8" step="1">
+            </div>
+            <div class="form-group">
+              <label>Distancia desde atrás (mm)</label>
+              <input type="number" id="modDistRanura" value="18" step="1">
+            </div>
+          </div>
+
+          <label class="checkbox-row">
+            <input type="checkbox" id="modRepisasCheck" checked>
+            <span>Incluir Repisas Intermedias</span>
+          </label>
+          <div class="form-group">
+            <label>Cantidad de Repisas</label>
+            <input type="number" id="modCantRepisas" value="1" min="1" max="10">
+          </div>
+
+          <label class="checkbox-row">
+            <input type="checkbox" id="modAmarresCheck">
+            <span>Usar Amarres Superiores (Para Muebles Bajos)</span>
+          </label>
+        </div>
+
+        <button class="btn btn-primary btn-block" onclick="enviarCrearModulo()">
+          ✨ Crear Módulo en 3D
+        </button>
+      </div>
+    </section>
+
+    <!-- 2. PESTAÑA: EDITAR MÓDULO PARAMÉTRICO -->
+    <section id="tab-editor" class="tab-pane">
+      <div class="card">
+        <h3 class="card-title">Edición Paramétrica No Destructiva</h3>
+        <p style="color: var(--text-muted); font-size: 11px; margin-bottom: 10px;">
+          Selecciona un mueble en SketchUp y haz clic en "Cargar Selección" para modificar sus cotas sin redibujar.
+        </p>
+
+        <button class="btn btn-secondary btn-block" onclick="cargarModuloSeleccionado()" style="margin-bottom: 12px;">
+          🔄 Cargar Módulo Seleccionado
+        </button>
+
+        <div id="lblModuloActivo" style="font-weight: 700; color: var(--primary); margin-bottom: 10px;">
+          Ningún módulo seleccionado
+        </div>
+
+        <div class="form-group">
+          <label>Nombre del Mueble</label>
+          <input type="text" id="editNombre">
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Alto (mm)</label>
+            <input type="number" id="editAlto">
+          </div>
+          <div class="form-group">
+            <label>Ancho (mm)</label>
+            <input type="number" id="editAncho">
+          </div>
+          <div class="form-group">
+            <label>Profundidad (mm)</label>
+            <input type="number" id="editProfundidad">
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Espesor (mm)</label>
+            <input type="number" id="editEspesor">
+          </div>
+          <div class="form-group">
+            <label>Material</label>
+            <input type="text" id="editMaterial">
+          </div>
+        </div>
+
+        <button class="btn btn-accent btn-block" onclick="enviarActualizarModulo()" style="margin-top: 10px;">
+          💾 Actualizar Módulo en 3D
+        </button>
+      </div>
+    </section>
+
+    <!-- 3. PESTAÑA: REPISAS Y PARANTES -->
+    <section id="tab-repisas" class="tab-pane">
+      <div class="card">
+        <h3 class="card-title">División Interior / Repisas y Parantes</h3>
+        <div class="form-group">
+          <label>Tipo de División</label>
+          <select id="repisaTipo">
+            <option value="horizontal">Repisas Horizontales</option>
+            <option value="vertical">Parante / Montante Vertical</option>
+          </select>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Cantidad</label>
+            <input type="number" id="repisaCantidad" value="2" min="1" max="10">
+          </div>
+          <div class="form-group">
+            <label>Retroceso Frontal (mm)</label>
+            <input type="number" id="repisaRetroceso" value="10" step="1">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Cota Fija desde la Base (mm, opcional)</label>
+          <input type="number" id="repisaAlturaFija" value="0" placeholder="0 = Distribución equidistante">
+        </div>
+
+        <button class="btn btn-primary btn-block" onclick="enviarRepisas()">
+          ➕ Insertar Divisiones
+        </button>
+      </div>
+    </section>
+
+    <!-- 4. PESTAÑA: CAJONERAS -->
+    <section id="tab-cajones" class="tab-pane">
+      <div class="card">
+        <h3 class="card-title">Generador de Cajonera con Correderas</h3>
+        
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Cantidad de Cajones</label>
+            <select id="cajonesCantidad">
+              <option value="2">2 Cajones</option>
+              <option value="3" selected>3 Cajones</option>
+              <option value="4">4 Cajones</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Largo Corredera (mm)</label>
+            <select id="cajonesCorredera">
+              <option value="350">350 mm</option>
+              <option value="400">400 mm</option>
+              <option value="450" selected>450 mm</option>
+              <option value="500">500 mm</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Luz entre Tapas (mm)</label>
+            <input type="number" id="cajonesLuz" value="3" step="0.5">
+          </div>
+          <div class="form-group">
+            <label>Espesor Caja (mm)</label>
+            <select id="cajonesEspesorCaja">
+              <option value="15" selected>15 mm</option>
+              <option value="18">18 mm</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Tipo de Frente</label>
+          <select id="cajonesTipoFrente">
+            <option value="exterior" selected>Frente Exterior (Sobrepuesto)</option>
+            <option value="interior">Frente Interior (Embutido)</option>
+          </select>
+        </div>
+
+        <div class="stat-card" style="margin-bottom: 12px;">
+          <div class="stat-value" style="font-size: 14px;">26 mm</div>
+          <div class="stat-label">Descuento de Correderas Telescópicas (13mm x lado)</div>
+        </div>
+
+        <button class="btn btn-primary btn-block" onclick="enviarCajonera()">
+          🗄️ Insertar Cajonera Completa
+        </button>
+      </div>
+    </section>
+
+    <!-- 5. PESTAÑA: FONDOS Y RANURAS -->
+    <section id="tab-ranura" class="tab-pane">
+      <div class="card">
+        <h3 class="card-title">Configuración de Fondos y Ranurado</h3>
+        <div class="form-group">
+          <label>Tipo de Fondo</label>
+          <select id="fondoTipo">
+            <option value="ranurado" selected>Enranurado (Oculto en laterales/piso/techo)</option>
+            <option value="clavado">Sobrepuesto (Clavado/Atornillado por detrás)</option>
+          </select>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Profundidad Ranura (mm)</label>
+            <input type="number" id="fondoProfRanura" value="8" step="1">
+          </div>
+          <div class="form-group">
+            <label>Distancia desde Atrás (mm)</label>
+            <input type="number" id="fondoDistRanura" value="18" step="1">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Espesor del Fondo MDF (mm)</label>
+          <input type="number" id="fondoEspesor" value="3" step="0.5">
+        </div>
+
+        <button class="btn btn-primary btn-block" onclick="enviarFondo()">
+          📐 Aplicar Fondo y Ranuras
+        </button>
+      </div>
+    </section>
+
+    <!-- 6. PESTAÑA: TAPACANTOS -->
+    <section id="tab-cantos" class="tab-pane">
+      <div class="card">
+        <h3 class="card-title">Asignador de Tapacantos y Descuentos</h3>
+        <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px;">
+          Aplica el grosor del tapacanto por lado. El sistema descontará automáticamente el grosor para obtener la <strong>medida neta de corte</strong>.
+        </p>
+
+        <!-- Previsualizador Gráfico de 4 Bordes -->
+        <div class="edge-visualizer">
+          <div class="edge-control l1">
+            <label style="font-size:9px;">L1 (Frontal)</label>
+            <select id="cantoL1">
+              <option value="0">0 mm</option>
+              <option value="0.45">0.45 mm</option>
+              <option value="1" selected>1.0 mm</option>
+              <option value="2">2.0 mm</option>
+              <option value="3">3.0 mm</option>
+            </select>
+          </div>
+          <div class="edge-control a1">
+            <select id="cantoA1">
+              <option value="0" selected>0 mm</option>
+              <option value="0.45">0.45 mm</option>
+              <option value="1">1.0 mm</option>
+              <option value="2">2.0 mm</option>
+            </select>
+          </div>
+          <div class="edge-box-label">
+            PANEL DE MELAMINA<br>
+            <span id="lblDescuentoCantos" style="color: var(--primary); font-size:10px;">Descuento L: -1mm | A: 0mm</span>
+          </div>
+          <div class="edge-control a2">
+            <select id="cantoA2">
+              <option value="0" selected>0 mm</option>
+              <option value="0.45">0.45 mm</option>
+              <option value="1">1.0 mm</option>
+              <option value="2">2.0 mm</option>
+            </select>
+          </div>
+          <div class="edge-control l2">
+            <label style="font-size:9px;">L2 (Trasero)</label>
+            <select id="cantoL2">
+              <option value="0" selected>0 mm</option>
+              <option value="0.45">0.45 mm</option>
+              <option value="1">1.0 mm</option>
+              <option value="2">2.0 mm</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 20px;">
+          <label>Aplicar a</label>
+          <select id="cantoAplicarA">
+            <option value="seleccion" selected>Pieza(s) Seleccionada(s)</option>
+            <option value="modulo_completo">Todo el Módulo Seleccionado</option>
+          </select>
+        </div>
+
+        <button class="btn btn-primary btn-block" onclick="enviarTapacantos()">
+          📏 Aplicar Cantos y Recalcular
+        </button>
+      </div>
+    </section>
+
+    <!-- 7. PESTAÑA: MECANIZADOS -->
+    <section id="tab-mecanizados" class="tab-pane">
+      <div class="card">
+        <h3 class="card-title">Mecanizados y Perforaciones de Ensamble</h3>
+        <div class="form-group">
+          <label>Sistema de Unión</label>
+          <select id="mecanizadoSistema">
+            <option value="minifix_tarugo" selected>Minifix (Caja 15mm + Perno 8mm) + Tarugo 8mm</option>
+            <option value="tornillo_soberbio">Tornillos Soberbios / Confirmats (Broca 5mm)</option>
+            <option value="solo_tarugo">Solo Tarugos / Espigas de Madera (8mm)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Distancia al Borde Exterior (mm)</label>
+          <input type="number" id="mecanizadoDistBorde" value="50" step="1">
+        </div>
+
+        <button class="btn btn-primary btn-block" onclick="enviarMecanizados()">
+          🔩 Aplicar Mecanizados
+        </button>
+      </div>
+    </section>
+
+    <!-- 8. PESTAÑA: MATERIALES Y VETAS -->
+    <section id="tab-materiales" class="tab-pane">
+      <div class="card">
+        <h3 class="card-title">Gestor de Melaminas y Orientación de Veta</h3>
+        <div class="form-group">
+          <label>Seleccionar Material</label>
+          <select id="matNombre">
+            <option value="Melamina Blanca 18mm" selected>Melamina Blanca 18mm</option>
+            <option value="Melamina Roble Natural 18mm">Melamina Roble Natural 18mm</option>
+            <option value="Melamina Nogal Terracota 18mm">Melamina Nogal Terracota 18mm</option>
+            <option value="Melamina Gris Antracita 18mm">Melamina Gris Antracita 18mm</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Sentido de la Veta</label>
+          <select id="matVeta">
+            <option value="longitudinal" selected>Longitudinal (A lo largo - No Girar)</option>
+            <option value="transversal">Transversal (A lo ancho - No Girar)</option>
+            <option value="libre">Libre (Sin veta / Puede girar en optimizador)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Color de Previsualización</label>
+          <input type="text" id="matColor" value="#C49A6C">
+        </div>
+
+        <button class="btn btn-primary btn-block" onclick="enviarMaterial()">
+          🎨 Asignar Material y Veta
+        </button>
+      </div>
+    </section>
+
+    <!-- 9. PESTAÑA: PUERTAS -->
+    <section id="tab-puertas" class="tab-pane">
+      <div class="card">
+        <h3 class="card-title">Generador de Puertas Batientes</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Tipo de Puerta</label>
+            <select id="puertaTipo">
+              <option value="exterior" selected>Sobrepuesta (Exterior)</option>
+              <option value="interior">Embutida (Interior)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Cantidad de Hojas</label>
+            <select id="puertaHojas">
+              <option value="1">1 Hoja</option>
+              <option value="2" selected>2 Hojas (Doble)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Luz Perimetral (mm)</label>
+            <input type="number" id="puertaLuz" value="2.5" step="0.5">
+          </div>
+          <div class="form-group">
+            <label>Espesor Puerta (mm)</label>
+            <input type="number" id="puertaEspesor" value="18" step="1">
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-block" onclick="enviarPuertas()">
+          🚪 Crear Puertas con Bisagras
+        </button>
+      </div>
+    </section>
+
+    <!-- 10. PESTAÑA: DESPIECE COMPLETO -->
+    <section id="tab-despiece" class="tab-pane">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+          <h3 class="card-title" style="margin:0;">Lista Oficial de Despiece</h3>
+          <button class="btn btn-secondary" onclick="solicitarDespiece()" style="padding: 4px 10px; font-size:11px;">
+            🔄 Refrescar
+          </button>
+        </div>
+
+        <!-- Métricas Rápidas -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="metricTotalPiezas">0</div>
+            <div class="stat-label">Piezas</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="metricTotalM2">0 m²</div>
+            <div class="stat-label">Superficie Neta</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="metricCantoDelgado">0 m</div>
+            <div class="stat-label">Canto Delgado</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="metricCantoGrueso">0 m</div>
+            <div class="stat-label">Canto Grueso</div>
+          </div>
+        </div>
+
+        <!-- Tabla de Datos PrimeNG -->
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Pieza</th>
+                <th>Cant</th>
+                <th>L. Bruto</th>
+                <th>A. Bruto</th>
+                <th>L. Neto</th>
+                <th>A. Neto</th>
+                <th>Material</th>
+                <th>Cantos</th>
+                <th>Ranura</th>
+              </tr>
+            </thead>
+            <tbody id="despieceTableBody">
+              <tr>
+                <td colspan="10" style="text-align:center; padding: 20px; color: var(--text-muted);">
+                  Cargando despiece...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11. PESTAÑA: OPTIMIZADOR DE CORTE 2D -->
+    <section id="tab-optimizador" class="tab-pane">
+      <div class="card">
+        <h3 class="card-title">Motor de Optimización 2D (Guillotina)</h3>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Largo Plancha (mm)</label>
+            <input type="number" id="optTabLargo" value="2440">
+          </div>
+          <div class="form-group">
+            <label>Ancho Plancha (mm)</label>
+            <input type="number" id="optTabAncho" value="2140">
+          </div>
+          <div class="form-group">
+            <label>Espesor Sierra Kerf (mm)</label>
+            <input type="number" id="optKerf" value="4.0" step="0.5">
+          </div>
+          <div class="form-group">
+            <label>Refilado Borde (mm)</label>
+            <input type="number" id="optRefilado" value="10.0" step="1">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Estrategia de Corte Principal</label>
+          <select id="optEstrategia">
+            <option value="longitudinal" selected>Longitudinal (Rasgar primero a lo largo)</option>
+            <option value="transversal">Transversal (Cortar primero a lo ancho)</option>
+          </select>
+        </div>
+
+        <button class="btn btn-accent btn-block" onclick="ejecutarOptimizacion2D()" style="margin-bottom: 12px;">
+          🧩 Calcular Optimización 2D
+        </button>
+
+        <!-- Estadísticas de la optimización -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="statTablerosUsados">0</div>
+            <div class="stat-label">Planchas</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statAprovechamiento">0%</div>
+            <div class="stat-label">Aprovechamiento</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statMerma">0%</div>
+            <div class="stat-label">Merma / Desperdicio</div>
+          </div>
+        </div>
+
+        <!-- Barra de Paginación de Planchas -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+          <button class="btn btn-secondary" onclick="window.optimizerRenderer && window.optimizerRenderer.cambiarPlancha(-1)" style="padding: 4px 10px; font-size:11px;">
+            ◀ Anterior
+          </button>
+          <div id="lblPlanchaActual" style="font-weight: 700; font-size: 11px;">Plancha 0 de 0</div>
+          <button class="btn btn-secondary" onclick="window.optimizerRenderer && window.optimizerRenderer.cambiarPlancha(1)" style="padding: 4px 10px; font-size:11px;">
+            Siguiente ▶
+          </button>
+        </div>
+        <div id="lblAprovechamientoPlancha" style="text-align:center; font-size:10px; color:var(--text-muted); margin-bottom:6px;"></div>
+
+        <!-- Canvas Gráfico Interactivo de Cortes -->
+        <div class="canvas-wrapper">
+          <canvas id="optimizerCanvas" width="460" height="380"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- 12. PESTAÑA: EXPORTAR -->
+    <section id="tab-exportar" class="tab-pane">
+      <div class="card">
+        <h3 class="card-title">Exportación Oficial a Centros de Corte</h3>
+        <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 14px;">
+          Descarga la lista de corte formateada lista para importar en las máquinas seccionadoras y softwares de tiendas.
+        </p>
+
+        <div class="form-group">
+          <label>Separador CSV</label>
+          <select id="exportSeparador">
+            <option value=";" selected>Punto y Coma (;) - Excel / América Latina</option>
+            <option value=",">Coma (,) - Estándar Internacional</option>
+          </select>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <button class="btn btn-primary" onclick="exportarDespiece('pelikano')">
+            📦 Exportar Formato Pelíkano / Masisa (CSV)
+          </button>
+          <button class="btn btn-secondary" onclick="exportarDespiece('sodimac')">
+            🏪 Exportar Formato Sodimac / Promart (CSV)
+          </button>
+          <button class="btn btn-accent" onclick="exportarDespiece('excel')">
+            📊 Exportar Reporte de Taller Oficial (Excel .XLS)
+          </button>
+          <button class="btn btn-secondary" onclick="exportarDespiece('estandar')">
+            📄 Exportar Formato Estándar Completo (CSV)
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="js/optimizer_canvas.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
