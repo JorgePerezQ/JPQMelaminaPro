@@ -24,7 +24,7 @@ require_relative 'optimizer/guillotine_packer'
 require_relative 'exporters/csv_exporter'
 require_relative 'exporters/excel_exporter'
 
-module MelaStudioClone
+module JPQMelaminaPro
   # Referencia global a la ventana principal UI::HtmlDialog
   @main_dialog = nil
 
@@ -48,8 +48,8 @@ module MelaStudioClone
 
       # Configuración de propiedades de la ventana HtmlDialog
       dialog_options = {
-        dialog_title: 'MelaStudio PRO - Suite de Carpintería',
-        preferences_key: 'com.melastudio.pro.maindialog',
+        dialog_title: 'JPQMelaminaPro - Suite de Carpintería',
+        preferences_key: 'com.jpq.melaminapro.maindialog',
         scrollable: true,
         resizable: true,
         width: 520,
@@ -91,7 +91,7 @@ module MelaStudioClone
     #              del flujo de trabajo de carpintería y despiece.
     # ==========================================================================
     def crear_barra_herramientas
-      toolbar = UI::Toolbar.new('MelaStudio PRO')
+      toolbar = UI::Toolbar.new('JPQMelaminaPro')
       icons_dir = File.join(__dir__, 'icons')
 
       # 1. Generador de Módulos Base
@@ -207,13 +207,13 @@ module MelaStudioClone
     # Descripción: Añade las opciones al menú superior 'Plugins' de SketchUp.
     # ==========================================================================
     def inicializar_menus
-      menu = UI.menu('Plugins').add_submenu('MelaStudio PRO')
+      menu = UI.menu('Plugins').add_submenu('JPQMelaminaPro')
       menu.add_item('Abrir Panel de Control') { abrir_dialogo_principal('creador') }
       menu.add_item('Extraer Despiece a Excel / CSV') { abrir_dialogo_principal('despiece') }
       menu.add_item('Optimizar Cortes 2D (Guillotina)') { abrir_dialogo_principal('optimizador') }
       menu.add_separator
-      menu.add_item('Acerca de MelaStudio PRO') do
-        UI.messagebox("MelaStudio PRO v#{PLUGIN_VERSION}\nSuite paramétrica de carpintería y despiece milimétrico.")
+      menu.add_item('Acerca de JPQMelaminaPro') do
+        UI.messagebox("JPQMelaminaPro v#{PLUGIN_VERSION}\nSuite paramétrica de carpintería y despiece milimétrico.")
       end
     end
   end

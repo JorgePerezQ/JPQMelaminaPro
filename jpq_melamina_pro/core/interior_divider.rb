@@ -6,7 +6,7 @@
 
 require 'sketchup.rb'
 
-module MelaStudioClone
+module JPQMelaminaPro
   class InteriorDivider
     class << self
       # ========================================================================
@@ -42,7 +42,7 @@ module MelaStudioClone
         retroceso     = (params['retroceso_frente'] || 10.0).to_f.mm
         prof_efectiva = prof_mod - retroceso
 
-        model.start_operation('MelaStudio: Insertar Repisas/Divisiones', true)
+        model.start_operation('JPQMelaminaPro: Insertar Repisas/Divisiones', true)
 
         begin
           if tipo_division == 'horizontal'

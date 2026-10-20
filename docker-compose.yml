@@ -1,11 +1,11 @@
 version: '3.8'
 
 services:
-  melastudio-builder:
+  jpq-melamina-pro-builder:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: melastudio_suite_builder
+    container_name: jpq_melamina_pro_builder
     volumes:
       - .:/app
     environment:

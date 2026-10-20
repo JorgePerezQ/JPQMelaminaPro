@@ -7,7 +7,7 @@
 
 require 'sketchup.rb'
 
-module MelaStudioClone
+module JPQMelaminaPro
   class MachiningEngine
     class << self
       # ========================================================================
@@ -29,7 +29,7 @@ module MelaStudioClone
         sistema = params['sistema'] || 'minifix_tarugo'
         dist_borde_mm = (params['distancia_borde'] || 50.0).to_f
 
-        model.start_operation('MelaStudio: Mecanizado y Perforaciones', true)
+        model.start_operation('JPQMelaminaPro: Mecanizado y Perforaciones', true)
 
         begin
           conteo = 0

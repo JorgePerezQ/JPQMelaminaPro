@@ -7,8 +7,8 @@ steps:
   # 2. Almacenar artefactos generados
 artifacts:
   objects:
-    location: 'gs://${_BUCKET_NAME}/melastudio-releases/$BUILD_ID'
-    paths: ['mela_studio_pro_clone.rbz']
+    location: 'gs://${_BUCKET_NAME}/jpq-melamina-pro-releases/$BUILD_ID'
+    paths: ['jpq_melamina_pro.rbz']
 
 options:
   logging: CLOUD_LOGGING_ONLY

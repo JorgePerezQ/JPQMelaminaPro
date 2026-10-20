@@ -7,7 +7,7 @@
 
 require 'json'
 
-module MelaStudioClone
+module JPQMelaminaPro
   class Controller
     class << self
       # ========================================================================
@@ -135,10 +135,10 @@ module MelaStudioClone
       def editar_modulo_seleccionado
         datos = ParametricModifier.leer_seleccion
         if datos.nil?
-          UI.messagebox("Por favor, selecciona primero un módulo creado con MelaStudio.")
+          UI.messagebox("Por favor, selecciona primero un módulo creado con JPQMelaminaPro.")
         else
-          MelaStudioClone.abrir_dialogo_principal('editor')
-          MelaStudioClone.ejecutar_en_dialogo("window.cargarDatosEdicion && window.cargarDatosEdicion(#{JSON.generate(datos)})")
+          JPQMelaminaPro.abrir_dialogo_principal('editor')
+          JPQMelaminaPro.ejecutar_en_dialogo("window.cargarDatosEdicion && window.cargarDatosEdicion(#{JSON.generate(datos)})")
         end
       end
 
@@ -160,8 +160,8 @@ module MelaStudioClone
         if datos.nil?
           UI.messagebox("Selecciona una pieza individual (panel de melamina).")
         else
-          MelaStudioClone.abrir_dialogo_principal('pieza')
-          MelaStudioClone.ejecutar_en_dialogo("window.cargarPiezaIndividual && window.cargarPiezaIndividual(#{JSON.generate(datos)})")
+          JPQMelaminaPro.abrir_dialogo_principal('pieza')
+          JPQMelaminaPro.ejecutar_en_dialogo("window.cargarPiezaIndividual && window.cargarPiezaIndividual(#{JSON.generate(datos)})")
         end
       end
     end

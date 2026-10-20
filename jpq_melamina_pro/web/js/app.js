@@ -1,6 +1,6 @@
 /**
  * ==============================================================================
- * MelaStudio PRO - Lógica de Interfaz y Puente de Comunicación con SketchUp
+ * JPQMelaminaPro - Lógica de Interfaz y Puente de Comunicación con SketchUp
  * Control de formularios paramétricos, llamadas asíncronas con window.sketchup,
  * gestión de temas y renderizado de tablas de despiece en tiempo real.
  * ==============================================================================
@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
  * Configura el sistema de temas (Claro, Oscuro, Taller Madera) persistente en localStorage.
  */
 function inicializarTemas() {
-  const temaGuardado = localStorage.getItem('melastudio_theme') || 'claro';
+  const temaGuardado = localStorage.getItem('jpqmelaminapro_theme') || 'claro';
   cambiarTema(temaGuardado);
 
   const themeSelector = document.getElementById('themeSelector');
@@ -52,7 +52,7 @@ function cambiarTema(tema) {
     document.body.classList.add('theme-taller');
   }
   AppState.temaActual = tema;
-  localStorage.setItem('melastudio_theme', tema);
+  localStorage.setItem('jpqmelaminapro_theme', tema);
 }
 
 // ==============================================================================
@@ -302,7 +302,7 @@ window.onModuloCreado = function(resultado) {
 
 window.onModuloSeleccionado = function(datos) {
   if (!datos) {
-    mostrarNotificacion('No se detectó ningún módulo MelaStudio en la selección.', 'error');
+    mostrarNotificacion('No se detectó ningún módulo JPQMelaminaPro en la selección.', 'error');
     return;
   }
   AppState.moduloSeleccionado = datos;

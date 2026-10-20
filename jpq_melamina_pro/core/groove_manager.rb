@@ -7,7 +7,7 @@
 
 require 'sketchup.rb'
 
-module MelaStudioClone
+module JPQMelaminaPro
   class GrooveManager
     class << self
       # ========================================================================
@@ -40,7 +40,7 @@ module MelaStudioClone
         t_fondo_num  = (params['espesor_fondo'] || 3.0).to_f
         t_fondo      = t_fondo_num.mm
 
-        model.start_operation('MelaStudio: Configurar Fondo y Ranuras', true)
+        model.start_operation('JPQMelaminaPro: Configurar Fondo y Ranuras', true)
 
         begin
           # Eliminar fondo previo si existe

@@ -1,6 +1,8 @@
-# MelaStudio PRO - Suite de Carpintería y Despiece Milimétrico para SketchUp
+# JPQMelaminaPro - Suite de Carpintería y Despiece Milimétrico para SketchUp
 
-Clon 100% configurable, sin simulaciones ni mocks, desarrollado como una extensión nativa para **Trimble SketchUp** (API Ruby + UI interactiva moderna en `UI::HtmlDialog`). Diseñado especialmente para carpinteros, fabricantes de muebles de melamina y talleres de producción.
+**JPQMelaminaPro** es una suite de ingeniería y diseño para carpinteros y fabricantes de muebles de melamina, desarrollada como extensión nativa para **Trimble SketchUp** (API Ruby + UI interactiva moderna en `UI::HtmlDialog`).
+
+Es 100% configurable, sin simulaciones ni mocks, con cálculo geométrico en tiempo real y tolerancias de ensamble industriales.
 
 ---
 
@@ -8,7 +10,7 @@ Clon 100% configurable, sin simulaciones ni mocks, desarrollado como una extensi
 
 - **Precisión Milimétrica Real**: Todas las dimensiones y cálculos espaciales se procesan internamente con la unidad nativa `.mm` de la API de SketchUp, garantizando cero desfases por redondeo flotante.
 - **100% Configurable**: Sin valores fijos forzados; cada medida, luz, ranura, holgura de corredera o espesor de tapacanto puede ajustarse libremente.
-- **Barra Flotante con 12 Herramientas**: Integrada directamente en el espacio de trabajo de SketchUp.
+- **Barra Flotante con 12 Herramientas**: Integrada directamente en el espacio de trabajo de SketchUp bajo el nombre **JPQMelaminaPro**.
 - **Edición No Destructiva**: Permite reabrir y modificar cualquier módulo previamente creado conservando su rotación y ubicación en la escena.
 - **Reglas Automáticas de Taller**:
   - **Descuento de Tapacantos**: Descuenta milimétricamente el grosor de los cantos (0.45 mm, 1 mm, 2 mm, 3 mm) en $L_1, L_2, A_1, A_2$ para entregar la **medida neta de corte**.
@@ -25,11 +27,11 @@ Clon 100% configurable, sin simulaciones ni mocks, desarrollado como una extensi
 
 ```plaintext
 clon/
-├── mela_studio_clone.rb            # Registrador oficial de la extensión de SketchUp
-├── mela_studio_pro_clone.rbz       # Instalador empaquetado para SketchUp
+├── jpq_melamina_pro.rb             # Registrador oficial de la extensión de SketchUp
+├── jpq_melamina_pro.rbz            # Instalador empaquetado para SketchUp
 ├── package_extension.py            # Script empaquetador ZIP/RBZ
 ├── package_extension.rb            # Script empaquetador nativo Ruby
-├── mela_studio_clone/
+├── jpq_melamina_pro/
 │   ├── main.rb                     # Barra de 12 iconos, menús y UI::HtmlDialog
 │   ├── controller.rb               # Despachador de eventos JS <-> Ruby
 │   ├── core/
@@ -69,12 +71,12 @@ clon/
 3. Haz clic en el botón **Instalar extensión...** en la esquina inferior izquierda.
 4. Selecciona el archivo:
    ```plaintext
-   /home/jorge/_desarrollo/clon/mela_studio_pro_clone.rbz
+   /home/jorge/_desarrollo/clon/jpq_melamina_pro.rbz
    ```
-5. ¡Listo! Aparecerá de inmediato la barra flotante con los 12 iconos y el menú `Plugins` > `MelaStudio PRO`.
+5. ¡Listo! Aparecerá de inmediato la barra flotante con los 12 iconos y el menú `Plugins` > `JPQMelaminaPro`.
 
 ### Método 2: Enlace directo en carpeta de Plugins (Modo Desarrollo)
-Copia o crea un enlace simbólico de `mela_studio_clone.rb` y la carpeta `mela_studio_clone/` dentro de tu directorio de plugins de SketchUp:
+Copia o crea un enlace simbólico de `jpq_melamina_pro.rb` y la carpeta `jpq_melamina_pro/` dentro de tu directorio de plugins de SketchUp:
 - **Windows**: `%AppData%\SketchUp\SketchUp 202X\SketchUp\Plugins\`
 - **Linux (Wine)**: `~/.wine/drive_c/users/<usuario>/AppData/Roaming/SketchUp/SketchUp 202X/SketchUp/Plugins/`
 - **macOS**: `~/Library/Application Support/SketchUp 202X/SketchUp/Plugins/`

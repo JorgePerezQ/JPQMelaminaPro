@@ -7,7 +7,7 @@
 
 require 'sketchup.rb'
 
-module MelaStudioClone
+module JPQMelaminaPro
   class DoorsBuilder
     class << self
       # ========================================================================
@@ -42,7 +42,7 @@ module MelaStudioClone
         t_p_num     = (params['espesor'] || dict_mod['espesor_mm'].to_f).to_f
         t_puerta    = t_p_num.mm
 
-        model.start_operation('MelaStudio: Generar Puertas Batientes', true)
+        model.start_operation('JPQMelaminaPro: Generar Puertas Batientes', true)
 
         begin
           grupo_puertas = modulo.entities.add_group

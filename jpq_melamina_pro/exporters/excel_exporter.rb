@@ -7,7 +7,7 @@
 
 require 'sketchup.rb'
 
-module MelaStudioClone
+module JPQMelaminaPro
   class ExcelExporter
     class << self
       # ========================================================================
@@ -113,7 +113,7 @@ module MelaStudioClone
              <Column ss:Width="60"/>
              <Column ss:Width="130"/>
              <Row ss:Height="26">
-              <Cell ss:MergeAcross="12" ss:StyleID="Titulo"><Data ss:Type="String">MelaStudio PRO - Hoja Oficial de Despiece de Taller</Data></Cell>
+              <Cell ss:MergeAcross="12" ss:StyleID="Titulo"><Data ss:Type="String">JPQMelaminaPro - Hoja Oficial de Despiece de Taller</Data></Cell>
              </Row>
              <Row ss:Height="18">
               <Cell ss:MergeAcross="12" ss:StyleID="Subtitulo"><Data ss:Type="String">Proyecto: #{extraccion['modelo']} | Fecha: #{extraccion['fecha']}</Data></Cell>

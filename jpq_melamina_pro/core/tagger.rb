@@ -8,7 +8,7 @@
 
 require 'sketchup.rb'
 
-module MelaStudioClone
+module JPQMelaminaPro
   class Tagger
     class << self
       # ========================================================================
@@ -25,7 +25,7 @@ module MelaStudioClone
         sel = model.selection
         origen = sel.empty? ? model.entities : sel
 
-        model.start_operation('MelaStudio: Etiquetar Piezas', true)
+        model.start_operation('JPQMelaminaPro: Etiquetar Piezas', true)
 
         conteo = 0
         prefijo = opciones['prefijo'] || 'PZA'

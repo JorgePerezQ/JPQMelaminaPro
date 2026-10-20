@@ -7,7 +7,7 @@
 
 require 'sketchup.rb'
 
-module MelaStudioClone
+module JPQMelaminaPro
   class EdgetapeManager
     class << self
       # ========================================================================
@@ -31,7 +31,7 @@ module MelaStudioClone
 
         aplicar_a = params['aplicar_a'] || 'seleccion'
 
-        model.start_operation('MelaStudio: Aplicar Tapacantos', true)
+        model.start_operation('JPQMelaminaPro: Aplicar Tapacantos', true)
 
         begin
           piezas_actualizadas = 0

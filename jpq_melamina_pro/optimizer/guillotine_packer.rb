@@ -6,7 +6,7 @@
 #              sentido obligatorio de la veta y genera diagramas secuenciales de corte.
 # ==============================================================================
 
-module MelaStudioClone
+module JPQMelaminaPro
   class GuillotinePacker
     # Representación de un rectángulo libre dentro de la plancha
     RectanguloLibre = Struct.new(:x, :y, :w, :h)
@@ -183,7 +183,7 @@ module MelaStudioClone
 
           # Si ninguna pieza pudo entrar en una plancha nueva vacía, detenerse para evitar bucle infinito
           if piezas_ubicadas.empty?
-            puts "[MelaStudio] Advertencia: La pieza '#{piezas_pendientes.first['nombre']}' excede las dimensiones del tablero útil."
+            puts "[JPQMelaminaPro] Advertencia: La pieza '#{piezas_pendientes.first['nombre']}' excede las dimensiones del tablero útil."
             break
           end
 

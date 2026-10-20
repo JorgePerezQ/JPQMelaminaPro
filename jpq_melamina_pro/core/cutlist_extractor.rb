@@ -8,7 +8,7 @@
 
 require 'sketchup.rb'
 
-module MelaStudioClone
+module JPQMelaminaPro
   class CutlistExtractor
     class << self
       # ========================================================================

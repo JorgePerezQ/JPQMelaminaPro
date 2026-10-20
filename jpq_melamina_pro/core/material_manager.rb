@@ -8,7 +8,7 @@
 
 require 'sketchup.rb'
 
-module MelaStudioClone
+module JPQMelaminaPro
   class MaterialManager
     class << self
       # Catálogo base predeterminado de materiales (100% ampliable por el usuario)
@@ -28,7 +28,7 @@ module MelaStudioClone
       # ========================================================================
       def obtener_catalogo
         model = Sketchup.active_model
-        dict = model.attribute_dictionary('MelaStudioConfig')
+        dict = model.attribute_dictionary('JPQMelaminaProConfig')
         if dict && dict['catalogo_materiales']
           begin
             return JSON.parse(dict['catalogo_materiales'])
@@ -55,7 +55,7 @@ module MelaStudioClone
         end
 
         model = Sketchup.active_model
-        dict = model.attribute_dictionary('MelaStudioConfig', true)
+        dict = model.attribute_dictionary('JPQMelaminaProConfig', true)
         dict['catalogo_materiales'] = JSON.generate(catalogo)
         { 'ok' => true, 'mensaje' => "Material '#{material_data['nombre']}' guardado en catálogo." }
       end
@@ -79,7 +79,7 @@ module MelaStudioClone
         veta_mat   = params['veta'] || 'longitudinal'
         color_hex  = params['color_hex']
 
-        model.start_operation('MelaStudio: Asignar Material y Veta', true)
+        model.start_operation('JPQMelaminaPro: Asignar Material y Veta', true)
 
         begin
           # Obtener o crear material nativo en SketchUp

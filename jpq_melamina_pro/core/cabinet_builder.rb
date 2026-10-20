@@ -7,7 +7,7 @@
 
 require 'sketchup.rb'
 
-module MelaStudioClone
+module JPQMelaminaPro
   class CabinetBuilder
     class << self
       # ========================================================================
@@ -24,7 +24,7 @@ module MelaStudioClone
       # ========================================================================
       def build(params)
         model = Sketchup.active_model
-        model.start_operation('MelaStudio: Crear Módulo', true)
+        model.start_operation('JPQMelaminaPro: Crear Módulo', true)
 
         begin
           # 1. Extracción y conversión estricta a milímetros con .mm de SketchUp

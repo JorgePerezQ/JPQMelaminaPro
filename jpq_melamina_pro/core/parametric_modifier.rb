@@ -7,13 +7,13 @@
 
 require 'sketchup.rb'
 
-module MelaStudioClone
+module JPQMelaminaPro
   class ParametricModifier
     class << self
       # ========================================================================
       # Método: leer_seleccion
       # Descripción: Examina el objeto actualmente seleccionado en SketchUp y extrae
-      #              sus variables maestras si corresponde a un módulo MelaStudio.
+      #              sus variables maestras si corresponde a un módulo JPQMelaminaPro.
       # Retorno:
       #   - Hash con los parámetros del módulo o nil si no es un módulo válido.
       # ========================================================================
@@ -81,7 +81,7 @@ module MelaStudioClone
 
         return { 'ok' => false, 'error' => 'No se encontró el módulo original para actualizar.' } unless entidad
 
-        model.start_operation('MelaStudio: Actualizar Módulo', true)
+        model.start_operation('JPQMelaminaPro: Actualizar Módulo', true)
 
         begin
           transformacion = entidad.transformation

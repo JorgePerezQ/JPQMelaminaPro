@@ -7,7 +7,7 @@
 
 require 'sketchup.rb'
 
-module MelaStudioClone
+module JPQMelaminaPro
   class DrawerBuilder
     class << self
       # ========================================================================
@@ -42,7 +42,7 @@ module MelaStudioClone
         t_caja_mm      = (params['espesor_caja'] || 15.0).to_f
         tipo_frente    = params['tipo_frente'] || 'exterior'
 
-        model.start_operation('MelaStudio: Insertar Cajonera', true)
+        model.start_operation('JPQMelaminaPro: Insertar Cajonera', true)
 
         begin
           ancho_int_vano = ancho_mod - (2 * t)

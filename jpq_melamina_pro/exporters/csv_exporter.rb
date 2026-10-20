@@ -7,7 +7,7 @@
 require 'csv'
 require 'sketchup.rb'
 
-module MelaStudioClone
+module JPQMelaminaPro
   class CsvExporter
     class << self
       # ========================================================================
@@ -42,7 +42,7 @@ module MelaStudioClone
         # Construcción del archivo CSV según el formato elegido
         CSV.open(ruta_salida, 'wb', col_sep: separador, encoding: 'UTF-8') do |csv|
           # Encabezado informativo del proyecto
-          csv << ["MelaStudio PRO - Lista de Despiece y Centro de Corte"]
+          csv << ["JPQMelaminaPro - Lista de Despiece y Centro de Corte"]
           csv << ["Proyecto:", extraccion['modelo'], "Fecha:", extraccion['fecha']]
           csv << ["Total Piezas:", metricas['total_piezas'], "Total Superficie m2:", metricas['area_total_m2']]
           csv << ["Canto Delgado (m):", metricas['canto_delgado_metros'], "Canto Grueso (m):", metricas['canto_grueso_metros']]

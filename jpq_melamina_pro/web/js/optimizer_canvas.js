@@ -1,6 +1,6 @@
 /**
  * ==============================================================================
- * MelaStudio PRO - Motor de Renderizado 2D en HTML5 Canvas
+ * JPQMelaminaPro - Motor de Renderizado 2D en HTML5 Canvas
  * Dibuja los diagramas de corte de guillotina para taller con secuencia de sierra,
  * refilado perimetral, dimensiones de piezas y cálculo de merma en tiempo real.
  * ==============================================================================
