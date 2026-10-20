@@ -35,6 +35,7 @@ module JPQMelaminaPro
 
           nombre_mod   = params['nombre'] || 'Módulo Melamina'
           tipo_mod     = params['tipo'] || 'librero' # 'librero', 'bajo', 'aereo', 'columna'
+          material     = params['material'] || 'Melamina Blanca 18mm'
           modulo_id    = params['modulo_id'] || "MOD-#{Time.now.to_i % 10000}"
 
           # Opciones de fondo y ranurado
