@@ -97,7 +97,8 @@ module JPQMelaminaPro
           Geom::Point3d.new(x, y + dy, z)
         ]
         face = sub.entities.add_face(pts)
-        face.pushpull(dz)
+        face.reverse! if face.normal.z < 0
+        face.pushpull(dz.abs)
 
         dict = sub.attribute_dictionary('DespieceMela', true)
         dict['modulo_id']      = mod_id
@@ -132,7 +133,8 @@ module JPQMelaminaPro
           Geom::Point3d.new(x, y + dy, z)
         ]
         face = sub.entities.add_face(pts)
-        face.pushpull(dz)
+        face.reverse! if face.normal.z < 0
+        face.pushpull(dz.abs)
 
         dict = sub.attribute_dictionary('DespieceMela', true)
         dict['modulo_id']      = mod_id

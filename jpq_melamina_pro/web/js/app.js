@@ -19,6 +19,7 @@ const AppState = {
 document.addEventListener('DOMContentLoaded', () => {
   inicializarTemas();
   inicializarEventos();
+  inicializarPrevisualizador3D();
 
   // Notificar a SketchUp que el DOM está completamente listo
   if (window.sketchup && window.sketchup.domListo) {
@@ -36,7 +37,10 @@ function inicializarTemas() {
   const themeSelector = document.getElementById('themeSelector');
   if (themeSelector) {
     themeSelector.value = temaGuardado;
-    themeSelector.addEventListener('change', (e) => cambiarTema(e.target.value));
+    themeSelector.addEventListener('change', (e) => {
+      cambiarTema(e.target.value);
+      if (window.Preview3D) Preview3D.render();
+    });
   }
 }
 
@@ -56,7 +60,7 @@ function cambiarTema(tema) {
 }
 
 // ==============================================================================
-// 2. Navegación por Pestañas
+// 2. Navegación por Pestañas y Eventos de Interfaz
 // ==============================================================================
 function inicializarEventos() {
   const tabButtons = document.querySelectorAll('.nav-tab');
@@ -76,6 +80,192 @@ function inicializarEventos() {
 }
 
 /**
+ * Inicializa el motor de previsualización 3D y conecta los inputs del formulario
+ * para redibujar en vivo por cada característica modificada.
+ */
+function inicializarPrevisualizador3D() {
+  if (window.Preview3D) {
+    Preview3D.init('preview3DCanvas');
+  }
+
+  // Lista de campos del formulario generador que disparan actualización inmediata
+  const camposGenerador = [
+    'modTipo', 'modAlto', 'modAncho', 'modProfundidad', 'modEspesor',
+    'modMaterial', 'modAltoZocalo', 'modVuelo', 'modFondo',
+    'modProfRanura', 'modDistRanura', 'modRepisasCheck', 'modCantRepisas', 'modAmarresCheck'
+  ];
+
+  camposGenerador.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', actualizarPrevisualizacionDesdeFormulario);
+      el.addEventListener('change', actualizarPrevisualizacionDesdeFormulario);
+    }
+  });
+
+  alCambiarTipoMueble();
+}
+
+/**
+ * Cambia los valores predeterminados y muestra u oculta campos según el mueble seleccionado.
+ */
+function alCambiarTipoMueble() {
+  const selectTipo = document.getElementById('modTipo');
+  if (!selectTipo) return;
+  const tipo = selectTipo.value;
+
+  const elNombre = document.getElementById('modNombre');
+  const elAlto = document.getElementById('modAlto');
+  const elAncho = document.getElementById('modAncho');
+  const elProf = document.getElementById('modProfundidad');
+  const elZocalo = document.getElementById('modAltoZocalo');
+  const elVuelo = document.getElementById('modVuelo');
+  const elRepisasCheck = document.getElementById('modRepisasCheck');
+  const elCantRepisas = document.getElementById('modCantRepisas');
+  const elAmarresCheck = document.getElementById('modAmarresCheck');
+  const elFondo = document.getElementById('modFondo');
+
+  const grupoZocalo = document.getElementById('grupoZocalo');
+  const grupoVuelo = document.getElementById('grupoVuelo');
+  const seccionRepisas = document.getElementById('seccionRepisasModulo');
+  const filaAmarres = document.getElementById('filaAmarresCheck');
+  const filaFondo = document.getElementById('filaFondoCheck');
+  const filaRanura = document.getElementById('filaRanuraConfig');
+
+  switch (tipo) {
+    case 'escritorio':
+      if (elNombre) elNombre.value = 'Escritorio Profesional';
+      if (elAlto) elAlto.value = 750;
+      if (elAncho) elAncho.value = 1200;
+      if (elProf) elProf.value = 600;
+      if (elVuelo) elVuelo.value = 20;
+      if (grupoZocalo) grupoZocalo.style.display = 'none';
+      if (grupoVuelo) grupoVuelo.style.display = 'block';
+      if (seccionRepisas) seccionRepisas.style.display = 'none';
+      if (filaAmarres) filaAmarres.style.display = 'none';
+      if (filaFondo) filaFondo.style.display = 'none';
+      if (filaRanura) filaRanura.style.display = 'none';
+      break;
+
+    case 'comoda':
+      if (elNombre) elNombre.value = 'Cómoda 4 Cajones';
+      if (elAlto) elAlto.value = 950;
+      if (elAncho) elAncho.value = 800;
+      if (elProf) elProf.value = 450;
+      if (elZocalo) elZocalo.value = 80;
+      if (grupoZocalo) grupoZocalo.style.display = 'block';
+      if (grupoVuelo) grupoVuelo.style.display = 'none';
+      if (seccionRepisas) seccionRepisas.style.display = 'none';
+      if (filaAmarres) filaAmarres.style.display = 'none';
+      if (filaFondo) filaFondo.style.display = 'flex';
+      if (filaRanura) filaRanura.style.display = 'grid';
+      break;
+
+    case 'ropero':
+      if (elNombre) elNombre.value = 'Ropero Clóset 2 Cuerpos';
+      if (elAlto) elAlto.value = 2100;
+      if (elAncho) elAncho.value = 1400;
+      if (elProf) elProf.value = 550;
+      if (elZocalo) elZocalo.value = 80;
+      if (grupoZocalo) grupoZocalo.style.display = 'block';
+      if (grupoVuelo) grupoVuelo.style.display = 'none';
+      if (seccionRepisas) seccionRepisas.style.display = 'none';
+      if (filaAmarres) filaAmarres.style.display = 'none';
+      if (filaFondo) filaFondo.style.display = 'flex';
+      if (filaRanura) filaRanura.style.display = 'grid';
+      break;
+
+    case 'bajo':
+      if (elNombre) elNombre.value = 'Módulo Bajo Cocina';
+      if (elAlto) elAlto.value = 850;
+      if (elAncho) elAncho.value = 800;
+      if (elProf) elProf.value = 600;
+      if (elZocalo) elZocalo.value = 100;
+      if (elRepisasCheck) elRepisasCheck.checked = true;
+      if (elCantRepisas) elCantRepisas.value = 1;
+      if (elAmarresCheck) elAmarresCheck.checked = true;
+      if (grupoZocalo) grupoZocalo.style.display = 'block';
+      if (grupoVuelo) grupoVuelo.style.display = 'none';
+      if (seccionRepisas) seccionRepisas.style.display = 'block';
+      if (filaAmarres) filaAmarres.style.display = 'flex';
+      if (filaFondo) filaFondo.style.display = 'flex';
+      if (filaRanura) filaRanura.style.display = 'grid';
+      break;
+
+    case 'aereo':
+      if (elNombre) elNombre.value = 'Alacena Aérea Cocina';
+      if (elAlto) elAlto.value = 700;
+      if (elAncho) elAncho.value = 800;
+      if (elProf) elProf.value = 320;
+      if (elRepisasCheck) elRepisasCheck.checked = true;
+      if (elCantRepisas) elCantRepisas.value = 1;
+      if (grupoZocalo) grupoZocalo.style.display = 'none';
+      if (grupoVuelo) grupoVuelo.style.display = 'none';
+      if (seccionRepisas) seccionRepisas.style.display = 'block';
+      if (filaAmarres) filaAmarres.style.display = 'none';
+      if (filaFondo) filaFondo.style.display = 'flex';
+      if (filaRanura) filaRanura.style.display = 'grid';
+      break;
+
+    case 'librero':
+    default:
+      if (elNombre) elNombre.value = 'Librero con Zócalo';
+      if (elAlto) elAlto.value = 1800;
+      if (elAncho) elAncho.value = 800;
+      if (elProf) elProf.value = 300;
+      if (elZocalo) elZocalo.value = 70;
+      if (elRepisasCheck) elRepisasCheck.checked = true;
+      if (elCantRepisas) elCantRepisas.value = 3;
+      if (grupoZocalo) grupoZocalo.style.display = 'block';
+      if (grupoVuelo) grupoVuelo.style.display = 'none';
+      if (seccionRepisas) seccionRepisas.style.display = 'block';
+      if (filaAmarres) filaAmarres.style.display = 'none';
+      if (filaFondo) filaFondo.style.display = 'flex';
+      if (filaRanura) filaRanura.style.display = 'grid';
+      break;
+  }
+
+  actualizarPrevisualizacionDesdeFormulario();
+}
+
+/**
+ * Lee todos los valores del formulario y actualiza la escena 3D en tiempo real.
+ */
+function actualizarPrevisualizacionDesdeFormulario() {
+  if (!window.Preview3D) return;
+
+  const tipo = document.getElementById('modTipo') ? document.getElementById('modTipo').value : 'librero';
+  const alto = parseFloat(document.getElementById('modAlto') ? document.getElementById('modAlto').value : 750) || 750;
+  const ancho = parseFloat(document.getElementById('modAncho') ? document.getElementById('modAncho').value : 600) || 600;
+  const profundidad = parseFloat(document.getElementById('modProfundidad') ? document.getElementById('modProfundidad').value : 500) || 500;
+  const espesor = parseFloat(document.getElementById('modEspesor') ? document.getElementById('modEspesor').value : 18) || 18;
+  const material = document.getElementById('modMaterial') ? document.getElementById('modMaterial').value : 'Melamina Blanca 18mm';
+  const altoZocalo = parseFloat(document.getElementById('modAltoZocalo') ? document.getElementById('modAltoZocalo').value : 70) || 70;
+  const vuelo = parseFloat(document.getElementById('modVuelo') ? document.getElementById('modVuelo').value : 20) || 20;
+  const tieneFondo = document.getElementById('modFondo') ? document.getElementById('modFondo').checked : true;
+  const cantidadRepisas = parseInt(document.getElementById('modCantRepisas') ? document.getElementById('modCantRepisas').value : 1, 10) || 1;
+  const usarAmarres = document.getElementById('modAmarresCheck') ? document.getElementById('modAmarresCheck').checked : false;
+
+  Preview3D.update({
+    tipo,
+    alto,
+    ancho,
+    profundidad,
+    espesor,
+    material,
+    alto_zocalo: altoZocalo,
+    vuelo,
+    tiene_fondo: tieneFondo,
+    cantidad_repisas: cantidadRepisas,
+    usar_amarres: usarAmarres
+  });
+}
+
+// Exportar globalmente para eventos inline HTML
+window.alCambiarTipoMueble = alCambiarTipoMueble;
+window.actualizarPrevisualizacionDesdeFormulario = actualizarPrevisualizacionDesdeFormulario;
+
+/**
  * Cambia la pestaña activa mostrada en la interfaz.
  * @param {string} paneId - Identificador de la pestaña a mostrar.
  */
@@ -88,6 +278,11 @@ window.cambiarPestana = function(paneId) {
 
   if (activeBtn) activeBtn.classList.add('active');
   if (activePane) activePane.classList.add('active');
+
+  // Si se vuelve al creador, re-renderizar el canvas 3D
+  if (paneId === 'creador' && window.Preview3D) {
+    setTimeout(() => Preview3D.render(), 50);
+  }
 
   // Si se entra a la pestaña de despiece, actualizar automáticamente
   if (paneId === 'despiece') {
@@ -110,11 +305,13 @@ function enviarCrearModulo() {
     ancho: parseFloat(document.getElementById('modAncho').value),
     profundidad: parseFloat(document.getElementById('modProfundidad').value),
     espesor: parseFloat(document.getElementById('modEspesor').value),
-    tiene_fondo: document.getElementById('modFondo').checked,
-    prof_ranura: parseFloat(document.getElementById('modProfRanura').value || 8),
-    dist_ranura: parseFloat(document.getElementById('modDistRanura').value || 18),
-    tiene_repisa: document.getElementById('modRepisasCheck').checked,
-    cantidad_repisas: parseInt(document.getElementById('modCantRepisas').value || 1, 10),
+    alto_zocalo: parseFloat(document.getElementById('modAltoZocalo') ? document.getElementById('modAltoZocalo').value : 70),
+    vuelo: parseFloat(document.getElementById('modVuelo') ? document.getElementById('modVuelo').value : 20),
+    tiene_fondo: document.getElementById('modFondo') ? document.getElementById('modFondo').checked : true,
+    prof_ranura: parseFloat(document.getElementById('modProfRanura') ? document.getElementById('modProfRanura').value : 8),
+    dist_ranura: parseFloat(document.getElementById('modDistRanura') ? document.getElementById('modDistRanura').value : 18),
+    tiene_repisa: document.getElementById('modRepisasCheck') ? document.getElementById('modRepisasCheck').checked : false,
+    cantidad_repisas: parseInt(document.getElementById('modCantRepisas') ? document.getElementById('modCantRepisas').value : 1, 10),
     usar_amarres: document.getElementById('modAmarresCheck') ? document.getElementById('modAmarresCheck').checked : false,
     material: document.getElementById('modMaterial').value
   };

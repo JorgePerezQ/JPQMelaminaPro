@@ -475,3 +475,32 @@ select:focus {
   color: #991B1B;
   border: 1px solid #FECACA;
 }
+
+/* Visor 3D y Controles de Vista */
+.preview-container {
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  transition: all 0.2s ease-in-out;
+}
+
+#preview3DCanvas {
+  cursor: grab;
+  touch-action: none;
+}
+
+#preview3DCanvas:active {
+  cursor: grabbing;
+}
+
+.btn-sm {
+  padding: 3px 8px;
+  font-size: 11px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+}
+
+.btn-sm:hover {
+  background-color: var(--primary);
+  color: #FFFFFF;
+}
+
