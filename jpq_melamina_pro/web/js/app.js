@@ -347,6 +347,14 @@ window.onTapacantosAplicados = function(r) { mostrarNotificacion(r.mensaje, r.ok
 window.onMecanizadosAplicados = function(r) { mostrarNotificacion(r.mensaje, r.ok ? 'success' : 'error'); };
 window.onMaterialAplicado = function(r) { mostrarNotificacion(r.mensaje, r.ok ? 'success' : 'error'); };
 window.onPuertasGeneradas = function(r) { mostrarNotificacion(r.mensaje, r.ok ? 'success' : 'error'); };
+window.onModuloActualizado = function(r) { mostrarNotificacion(r.mensaje, r.ok ? 'success' : 'error'); };
+window.onArchivoExportado = function(r) {
+  if (r && r.ruta) {
+    mostrarNotificacion(`Archivo exportado con éxito en:\n${r.ruta}`, 'success');
+  } else {
+    mostrarNotificacion('Operación de exportación completada.', 'success');
+  }
+};
 
 // ==============================================================================
 // 5. Utilidades y Renderizado de Tablas

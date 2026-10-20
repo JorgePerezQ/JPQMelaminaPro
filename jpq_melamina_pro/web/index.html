@@ -482,11 +482,17 @@
     <!-- 10. PESTAÑA: DESPIECE COMPLETO -->
     <section id="tab-despiece" class="tab-pane">
       <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px; flex-wrap:wrap; gap:8px;">
           <h3 class="card-title" style="margin:0;">Lista Oficial de Despiece</h3>
-          <button class="btn btn-secondary" onclick="solicitarDespiece()" style="padding: 4px 10px; font-size:11px;">
-            🔄 Refrescar
-          </button>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <label class="checkbox-row" style="margin:0; font-size:11px; cursor:pointer;">
+              <input type="checkbox" id="chkSoloSeleccion" onchange="solicitarDespiece()">
+              <span>Solo Selección Activa</span>
+            </label>
+            <button class="btn btn-secondary" onclick="solicitarDespiece()" style="padding: 4px 10px; font-size:11px;">
+              🔄 Refrescar
+            </button>
+          </div>
         </div>
 
         <!-- Métricas Rápidas -->
