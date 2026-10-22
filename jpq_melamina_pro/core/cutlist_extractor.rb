@@ -1,29 +1,31 @@
 # ==============================================================================
-# Archivo: mela_studio_clone/core/cutlist_extractor.rb
-# Descripción: Extractor y consolidador de la lista completa de despiece.
-#              Recorre el modelo 3D, agrupa piezas idénticas y calcula métricas
-#              financieras y de taller (metros lineales de tapacantos por espesor,
-#              área neta de tableros y total de piezas).
+# Archivo: jpq_melamina_pro/core/cutlist_extractor.rb
+# Descripción: Extractor y consolidador de la lista oficial de despiece industrial.
+#              Recorre el modelo 3D en profundidad y clasifica las piezas por:
+#              - Tipo de Material y Espesor (Melamina Estándar vs Melamina RH, MDF Fondos)
+#              - Medidas Brutas vs Medidas Netas (descontando milímetros de tapacantos)
+#              - Indicador de Ranurado "R" a 18mm del borde
+#              - Mecanizados (Minifix, tiras LED, cazoletas de bisagra)
+#              - Cálculo de Peso Total (kg) y cubicación de insumos (tornillos y anclajes)
 # ==============================================================================
 
 require 'sketchup.rb'
+require 'json'
 
 module JPQMelaminaPro
   class CutlistExtractor
     class << self
       # ========================================================================
       # Método: extract
-      # Descripción: Extrae todas las piezas de carpintería del modelo activo
-      #              o de la selección actual.
+      # Descripción: Extrae y estructura todas las piezas del modelo o selección activa.
       # Parámetros:
       #   - opciones (Hash): {'solo_seleccion' => false, 'agrupar_identicas' => true}
-      # Retorno:
-      #   - Hash con la lista detallada de piezas y el resumen de métricas.
       # ========================================================================
       def extract(opciones = {})
         model = Sketchup.active_model
-        sel = model.selection
+        return { 'piezas' => [], 'metricas' => metricas_vacias } unless model
 
+        sel = model.selection
         solo_sel = opciones['solo_seleccion'] == true && !sel.empty?
         raices = solo_sel ? sel.to_a : model.entities.to_a
 
@@ -34,10 +36,7 @@ module JPQMelaminaPro
 
         return { 'piezas' => [], 'metricas' => metricas_vacias } if piezas_crudas.empty?
 
-        # Agrupación o consolidación opcional de piezas idénticas
         piezas_finales = consolidar_piezas(piezas_crudas)
-
-        # Cálculo de métricas globales (metros de cantos, área total m2, etc.)
         metricas = calcular_metricas(piezas_finales)
 
         {
@@ -45,15 +44,15 @@ module JPQMelaminaPro
           'piezas' => piezas_finales,
           'metricas' => metricas,
           'fecha' => Time.now.strftime('%Y-%m-%d %H:%M:%S'),
-          'modelo' => model.title.empty? ? 'Proyecto Sin Título' : model.title
+          'modelo' => model.title.empty? ? 'Proyecto Carpintería JPQ' : model.title
         }
       end
 
       private
 
       # ========================================================================
-      # Método: recolectar_piezas
-      # Descripción: Escanea entidades en profundidad buscando metadatos DespieceMela.
+      # Sub-método: recolectar_piezas
+      # Descripción: Recorre el árbol de componentes y lee metadatos DespieceMela.
       # ========================================================================
       def recolectar_piezas(ent, acumulador)
         if ent.is_a?(Sketchup::Group) || ent.is_a?(Sketchup::ComponentInstance)
@@ -61,28 +60,42 @@ module JPQMelaminaPro
           if dict
             largo_b = dict['largo_bruto_mm'].to_f
             ancho_b = dict['ancho_bruto_mm'].to_f
-            largo_n = dict['largo_neto_mm'] ? dict['largo_neto_mm'].to_f : largo_b
-            ancho_n = dict['ancho_neto_mm'] ? dict['ancho_neto_mm'].to_f : ancho_b
+            espesor = dict['espesor_mm'].to_f
+
+            c_l1 = (dict['canto_L1'] || 0.0).to_f
+            c_l2 = (dict['canto_L2'] || 0.0).to_f
+            c_a1 = (dict['canto_A1'] || 0.0).to_f
+            c_a2 = (dict['canto_A2'] || 0.0).to_f
+
+            # Cálculo de medida neta exacta de corte descontando los cantos
+            largo_n = dict['largo_neto_mm'] ? dict['largo_neto_mm'].to_f : (largo_b - c_l1 - c_l2)
+            ancho_n = dict['ancho_neto_mm'] ? dict['ancho_neto_mm'].to_f : (ancho_b - c_a1 - c_a2)
+
+            # Clasificación de ranura técnica para taller
+            ranura_str = dict['ranura'] || 'Ninguna'
+            ranura_str = 'R (18mm)' if ranura_str =~ /Ranura/i && !(ranura_str =~ /Ninguna/i)
 
             pieza = {
               'id'             => dict['pieza_id'] || "PZA-#{ent.entityID}",
               'etiqueta'       => dict['numero_etiqueta'] || '',
               'modulo_id'      => dict['modulo_id'] || '',
               'nombre'         => dict['pieza_nombre'] || ent.name,
-              'material'       => dict['material'] || 'Melamina 18mm',
-              'espesor'        => dict['espesor_mm'].to_f,
-              'largo_bruto'    => largo_b,
-              'ancho_bruto'    => ancho_b,
-              'largo_neto'     => largo_n,
-              'ancho_neto'     => ancho_n,
+              'material'       => dict['material'] || 'Pelikano Blanco 18mm',
+              'resistencia'    => dict['resistencia'] || (dict['material'].to_s =~ /RH/i ? 'RH' : 'Normal'),
+              'espesor'        => espesor > 0 ? espesor : 18.0,
+              'largo_bruto'    => largo_b.round(1),
+              'ancho_bruto'    => ancho_b.round(1),
+              'largo_neto'     => largo_n.round(1),
+              'ancho_neto'     => ancho_n.round(1),
               'cantidad'       => (dict['cantidad'] || 1).to_i,
               'veta'           => dict['veta'] || 'longitudinal',
-              'canto_L1'       => (dict['canto_L1'] || 0.0).to_f,
-              'canto_L2'       => (dict['canto_L2'] || 0.0).to_f,
-              'canto_A1'       => (dict['canto_A1'] || 0.0).to_f,
-              'canto_A2'       => (dict['canto_A2'] || 0.0).to_f,
-              'ranura'         => dict['ranura'] || 'Ninguna',
+              'canto_L1'       => c_l1,
+              'canto_L2'       => c_l2,
+              'canto_A1'       => c_a1,
+              'canto_A2'       => c_a2,
+              'ranura'         => ranura_str,
               'mecanizados'    => dict['mecanizados'] || '[]',
+              'mecanizado_led' => dict['mecanizado_led'] || '',
               'entity_id'      => ent.entityID
             }
             acumulador << pieza
@@ -95,109 +108,115 @@ module JPQMelaminaPro
       end
 
       # ========================================================================
-      # Método: consolidar_piezas
-      # Descripción: Agrupa piezas con dimensiones, espesor, material, veta y cantos idénticos.
+      # Sub-método: consolidar_piezas
+      # Descripción: Agrupa piezas idénticas sumando sus cantidades.
       # ========================================================================
       def consolidar_piezas(piezas)
-        grupos = {}
+        grupos = Hash.new { |h, k| h[k] = [] }
 
         piezas.each do |p|
           clave = [
-            p['material'], p['espesor'], p['largo_neto'], p['ancho_neto'],
-            p['veta'], p['canto_L1'], p['canto_L2'], p['canto_A1'], p['canto_A2'],
+            p['nombre'], p['material'], p['espesor'],
+            p['largo_neto'], p['ancho_neto'], p['veta'],
+            p['canto_L1'], p['canto_L2'], p['canto_A1'], p['canto_A2'],
             p['ranura']
-          ].join('|')
-
-          if grupos[clave]
-            grupos[clave]['cantidad'] += p['cantidad']
-            grupos[clave]['nombres_incluidos'] << p['nombre'] unless grupos[clave]['nombres_incluidos'].include?(p['nombre'])
-          else
-            item = p.dup
-            item['nombres_incluidos'] = [p['nombre']]
-            grupos[clave] = item
-          end
+          ].join('__')
+          grupos[clave] << p
         end
 
-        # Asignar índice y consolidar nombres
-        lista = []
-        grupos.values.each_with_index do |item, idx|
-          item['item_numero'] = idx + 1
-          item['detalle_piezas'] = item['nombres_incluidos'].join(', ')
-          lista << item
+        piezas_consolidadas = []
+        grupos.each do |_k, items|
+          p_base = items.first.dup
+          p_base['cantidad'] = items.sum { |i| i['cantidad'] }
+          piezas_consolidadas << p_base
         end
-        lista
+
+        piezas_consolidadas.sort_by { |p| [p['material'], -p['espesor'], -p['largo_neto']] }
       end
 
       # ========================================================================
-      # Método: calcular_metricas
-      # Descripción: Calcula metros lineales de tapacanto por tipo y superficie total.
+      # Sub-método: calcular_metricas
+      # Descripción: Computa superficie m², metros lineales de cantos,
+      #              peso total estimado en kg y cálculo de tornillería / anclajes.
       # ========================================================================
       def calcular_metricas(piezas)
         total_piezas = 0
+        area_m2_melamina_18 = 0.0
+        area_m2_melamina_rh = 0.0
+        area_m2_mdf = 0.0
         metros_canto_delgado = 0.0
-        metros_canto_medio   = 0.0
         metros_canto_grueso  = 0.0
-        metros_ranura        = 0.0
-        area_por_material    = {}
 
         piezas.each do |p|
           cant = p['cantidad']
           total_piezas += cant
 
-          largo_m = p['largo_bruto'] / 1000.0
-          ancho_m = p['ancho_bruto'] / 1000.0
-          area_m2 = largo_m * ancho_m * cant
+          # Área neta en m²
+          area_pieza_m2 = (p['largo_neto'] * p['ancho_neto'] / 1_000_000.0) * cant
 
-          # Sumar área por tipo de material
-          mat = p['material']
-          area_por_material[mat] = (area_por_material[mat] || 0.0) + area_m2
+          if p['espesor'] <= 5.5
+            area_m2_mdf += area_pieza_m2
+          elsif p['resistencia'] == 'RH'
+            area_m2_melamina_rh += area_pieza_m2
+          else
+            area_m2_melamina_18 += area_pieza_m2
+          end
 
-          # Sumar metros lineales de tapacantos
-          sumar_canto = lambda do |espesor_canto, longitud_m|
-            if espesor_canto > 0.0 && espesor_canto <= 0.6
-              metros_canto_delgado += (longitud_m * cant)
-            elsif espesor_canto > 0.6 && espesor_canto <= 1.5
-              metros_canto_medio += (longitud_m * cant)
-            elsif espesor_canto > 1.5
-              metros_canto_grueso += (longitud_m * cant)
+          # Metros lineales de tapacantos
+          largo_m = (p['largo_neto'] / 1000.0) * cant
+          ancho_m = (p['ancho_neto'] / 1000.0) * cant
+
+          [p['canto_L1'], p['canto_L2']].each do |c|
+            if c >= 1.5
+              metros_canto_grueso += largo_m
+            elsif c > 0.0
+              metros_canto_delgado += largo_m
             end
           end
 
-          sumar_canto.call(p['canto_L1'], largo_m)
-          sumar_canto.call(p['canto_L2'], largo_m)
-          sumar_canto.call(p['canto_A1'], ancho_m)
-          sumar_canto.call(p['canto_A2'], ancho_m)
-
-          # Ranuras
-          if p['ranura'] && p['ranura'] != 'Ninguna'
-            metros_ranura += (largo_m * cant)
+          [p['canto_A1'], p['canto_A2']].each do |c|
+            if c >= 1.5
+              metros_canto_grueso += ancho_m
+            elsif c > 0.0
+              metros_canto_delgado += ancho_m
+            end
           end
         end
 
-        area_total = area_por_material.values.sum
+        # PESO TOTAL: Melamina 18mm = 12.5 kg/m² | MDF 3mm = 2.5 kg/m²
+        peso_total_kg = ((area_m2_melamina_18 + area_m2_melamina_rh) * 12.5) + (area_m2_mdf * 2.5)
+
+        # RECOMENDACIÓN DE FIJACIONES A MURO
+        chazos_sugeridos = [((peso_total_kg / 20.0).ceil * 2), 4].max
+        tornillos_soberbios = (total_piezas * 4).round
+        tornillos_correderas = (total_piezas * 2).round
 
         {
           'total_piezas'         => total_piezas,
-          'area_total_m2'        => area_total.round(2),
-          'area_por_material'    => area_por_material.transform_values { |v| v.round(2) },
-          'canto_delgado_metros' => metros_canto_delgado.round(2),
-          'canto_medio_metros'   => metros_canto_medio.round(2),
-          'canto_grueso_metros'  => metros_canto_grueso.round(2),
-          'total_canto_metros'   => (metros_canto_delgado + metros_canto_medio + metros_canto_grueso).round(2),
-          'metros_ranura'        => metros_ranura.round(2)
+          'area_total_m2'        => (area_m2_melamina_18 + area_m2_melamina_rh + area_m2_mdf).round(2),
+          'area_melamina_std_m2' => area_m2_melamina_18.round(2),
+          'area_melamina_rh_m2'  => area_m2_melamina_rh.round(2),
+          'area_mdf_m2'          => area_m2_mdf.round(2),
+          'canto_delgado_m'      => metros_canto_delgado.round(1),
+          'canto_grueso_m'       => metros_canto_grueso.round(1),
+          'peso_total_kg'        => peso_total_kg.round(1),
+          'anclajes_muro_sugeridos' => "#{chazos_sugeridos} anclajes de expansión 3/8\"",
+          'tornillos_soberbios_est' => "#{tornillos_soberbios} tornillos 4x50mm",
+          'tornillos_bisagras_est'  => "#{tornillos_correderas} tornillos 3.5x15mm"
         }
       end
 
       # ========================================================================
-      # Método: metricas_vacias
-      # Descripción: Retorna un esquema de métricas en cero si no hay piezas.
+      # Sub-método: metricas_vacias
       # ========================================================================
       def metricas_vacias
         {
-          'total_piezas' => 0, 'area_total_m2' => 0.0,
-          'area_por_material' => {}, 'canto_delgado_metros' => 0.0,
-          'canto_medio_metros' => 0.0, 'canto_grueso_metros' => 0.0,
-          'total_canto_metros' => 0.0, 'metros_ranura' => 0.0
+          'total_piezas' => 0, 'area_total_m2' => 0.0, 'area_melamina_std_m2' => 0.0,
+          'area_melamina_rh_m2' => 0.0, 'area_mdf_m2' => 0.0, 'canto_delgado_m' => 0.0,
+          'canto_grueso_m' => 0.0, 'peso_total_kg' => 0.0,
+          'anclajes_muro_sugeridos' => '4 anclajes 3/8"',
+          'tornillos_soberbios_est' => '0 tornillos',
+          'tornillos_bisagras_est' => '0 tornillos'
         }
       end
     end

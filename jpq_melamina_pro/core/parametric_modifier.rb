@@ -21,15 +21,15 @@ module JPQMelaminaPro
         model = Sketchup.active_model
         sel = model.selection
 
-        return nil if sel.empty?
+        entidad = sel.find { |e| e.attribute_dictionary('DespieceMelaModulo') }
+        entidad ||= sel.first if !sel.empty? && sel.first.respond_to?(:attribute_dictionary) && sel.first.attribute_dictionary('DespieceMelaModulo')
+        entidad ||= CabinetBuilder.ultimo_modulo_activo if defined?(CabinetBuilder) && CabinetBuilder.ultimo_modulo_activo && CabinetBuilder.ultimo_modulo_activo.valid?
 
-        entidad = sel.first
-        return nil unless entidad.is_a?(Sketchup::Group) || entidad.is_a?(Sketchup::ComponentInstance)
+        return nil unless entidad && (entidad.is_a?(Sketchup::Group) || entidad.is_a?(Sketchup::ComponentInstance))
 
         dict = entidad.attribute_dictionary('DespieceMelaModulo')
         return nil unless dict
 
-        # Mapeo de atributos a un Hash estándar de Ruby
         datos = {}
         dict.each_pair do |k, v|
           datos[k] = v
@@ -66,7 +66,8 @@ module JPQMelaminaPro
       # ========================================================================
       # Método: update
       # Descripción: Actualiza paramétricamente el módulo seleccionado conservando
-      #              su posición y orientación original en el espacio 3D.
+      #              su tipo original (evita deformación a librero) y manteniendo
+      #              todos los accesorios estructurales de carpintería.
       # Parámetros:
       #   - params (Hash): Nuevas dimensiones y opciones del formulario.
       # ========================================================================
@@ -74,39 +75,47 @@ module JPQMelaminaPro
         model = Sketchup.active_model
         sel = model.selection
 
-        # Buscar la entidad correspondiente
-        entidad = sel.find do |e|
-          e.attribute_dictionary('DespieceMelaModulo') != nil
-        end
+        # Buscar la entidad correspondiente o el último módulo activo
+        entidad = sel.find { |e| e.attribute_dictionary('DespieceMelaModulo') != nil }
+        entidad ||= CabinetBuilder.ultimo_modulo_activo if defined?(CabinetBuilder) && CabinetBuilder.ultimo_modulo_activo && CabinetBuilder.ultimo_modulo_activo.valid?
 
         return { 'ok' => false, 'error' => 'No se encontró el módulo original para actualizar.' } unless entidad
 
         model.start_operation('JPQMelaminaPro: Actualizar Módulo', true)
 
         begin
-          transformacion = entidad.transformation
+          dict_mod = entidad.attribute_dictionary('DespieceMelaModulo', true)
+
+          # Recuperar parámetros originales serializados para preservar opciones del mueble
+          params_originales = {}
+          if dict_mod['params_json']
+            begin
+              params_originales = JSON.parse(dict_mod['params_json'])
+            rescue
+            end
+          end
+
+          tipo_preservado = params['tipo'] || params_originales['tipo'] || dict_mod['tipo'] || 'librero'
+
+          # Mezclar parámetros sin perder el tipo de mueble ni accesorios
+          params_combinados = params_originales.merge(params)
+          params_combinados['tipo']        = tipo_preservado
+          params_combinados['alto']        = (params['alto'] && params['alto'].to_f > 0) ? params['alto'].to_f : dict_mod['alto_mm'].to_f
+          params_combinados['ancho']       = (params['ancho'] && params['ancho'].to_f > 0) ? params['ancho'].to_f : dict_mod['ancho_mm'].to_f
+          params_combinados['profundidad'] = (params['profundidad'] && params['profundidad'].to_f > 0) ? params['profundidad'].to_f : dict_mod['prof_mm'].to_f
+          esp_val = (params['espesor'] && params['espesor'].to_f > 0) ? params['espesor'].to_f : (dict_mod['espesor_mm'] ? dict_mod['espesor_mm'].to_f : 18.0)
+          params_combinados['espesor']     = esp_val
+          params_combinados['material']    = params['material'] || dict_mod['material'] || 'Pelikano Bellota 18mm'
+          params_combinados['target_group']= entidad
 
           # Eliminar geometría interna previa
           entidad.entities.clear!
 
-          # Reconstruir los paneles dentro del mismo grupo
-          alto_total   = params['alto'].to_f.mm
-          ancho_total  = params['ancho'].to_f.mm
-          prof_total   = params['profundidad'].to_f.mm
-          t            = params['espesor'].to_f.mm
-
-          # Actualizar diccionario del módulo
-          dict_mod = entidad.attribute_dictionary('DespieceMelaModulo', true)
-          dict_mod['alto_mm']    = params['alto'].to_f
-          dict_mod['ancho_mm']   = params['ancho'].to_f
-          dict_mod['prof_mm']    = params['profundidad'].to_f
-          dict_mod['espesor_mm'] = params['espesor'].to_f
-
-          # Reejecutar la lógica de paneles
-          CabinetBuilder.build(params.merge('target_group' => entidad))
+          # Reejecutar la lógica de paneles con el tipo exacto preservado
+          resultado = CabinetBuilder.build(params_combinados)
 
           model.commit_operation
-          { 'ok' => true, 'mensaje' => 'Módulo actualizado correctamente.' }
+          { 'ok' => true, 'mensaje' => "Módulo '#{tipo_preservado}' actualizado gradualmente sin deformación.", 'resultado' => resultado }
         rescue => e
           model.abort_operation
           { 'ok' => false, 'error' => e.message }
@@ -115,3 +124,4 @@ module JPQMelaminaPro
     end
   end
 end
+

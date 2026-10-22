@@ -1,19 +1,19 @@
 /* ==============================================================================
-   JPQMelaminaPro - Hoja de Estilos UI (Inspirada en PrimeNG Design System)
-   Soporte completo de temas: Oscuro, Claro y Personalizado Taller.
-   Diseño totalmente adaptativo y responsivo.
+   JPQMelaminaPro - Hoja de Estilos UI (PrimeNG Design System & CAD Industrial)
+   Soporte completo de 3 temas: Claro, Oscuro y Taller Madera.
+   Diseño 100% responsivo, adaptativo y libre de elementos hardcodeados.
    ============================================================================== */
 
 :root {
   --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   
-  /* Tema Claro (Predeterminado) */
+  /* --- TEMA CLARO (PREDETERMINADO) --- */
   --bg-primary: #F8FAFC;
   --bg-surface: #FFFFFF;
   --bg-card: #FFFFFF;
   --bg-hover: #F1F5F9;
   --border-color: #E2E8F0;
-  --border-focus: #3B82F6;
+  --border-focus: #2563EB;
   
   --text-primary: #0F172A;
   --text-secondary: #475569;
@@ -26,16 +26,19 @@
   --accent-hover: #059669;
   --danger: #EF4444;
   --warning: #F59E0B;
+  --rh-green: #15803D;
+  --rh-bg: #DCFCE7;
   
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
-/* Tema Oscuro */
-body.theme-dark {
+/* --- TEMA OSCURO --- */
+body.theme-oscuro {
   --bg-primary: #0F172A;
   --bg-surface: #1E293B;
   --bg-card: #1E293B;
@@ -50,11 +53,13 @@ body.theme-dark {
   --primary: #3B82F6;
   --primary-hover: #60A5FA;
   --primary-light: #1E3A8A;
+  --rh-green: #22C55E;
+  --rh-bg: #14532D;
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
 }
 
-/* Tema Carpintero / Taller Madera */
+/* --- TEMA TALLER MADERA --- */
 body.theme-taller {
   --bg-primary: #1C1917;
   --bg-surface: #292524;
@@ -70,6 +75,8 @@ body.theme-taller {
   --primary: #D97706;
   --primary-hover: #B45309;
   --primary-light: #78350F;
+  --rh-green: #4ADE80;
+  --rh-bg: #14532D;
 }
 
 * {
@@ -82,7 +89,7 @@ body {
   font-family: var(--font-family);
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: 12.5px;
   line-height: 1.5;
   display: flex;
   flex-direction: column;
@@ -91,16 +98,18 @@ body {
   user-select: none;
 }
 
-/* Header & Barra Superior */
+/* ==============================================================================
+   HEADER & BARRA DE ESTADO
+   ============================================================================== */
 .app-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 16px;
+  padding: 8px 16px;
   background-color: var(--bg-surface);
   border-bottom: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
-  z-index: 10;
+  z-index: 20;
 }
 
 .brand {
@@ -112,123 +121,208 @@ body {
 .brand-badge {
   background: linear-gradient(135deg, #2563EB, #10B981);
   color: #FFFFFF;
-  padding: 4px 8px;
-  font-size: 11px;
-  font-weight: 700;
+  padding: 3px 7px;
+  font-size: 10px;
+  font-weight: 800;
   border-radius: var(--radius-sm);
   letter-spacing: 0.5px;
 }
 
+.brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
 .brand-title {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.2px;
+}
+
+.brand-sub {
+  font-size: 10px;
+  color: var(--text-muted);
 }
 
 .header-controls {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
-/* Navegación por Pestañas Horizontales */
-.nav-tabs {
+.theme-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-hover);
+  padding: 3px 8px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+}
+
+.theme-pill select {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 11px;
+  cursor: pointer;
+  outline: none;
+}
+
+/* ==============================================================================
+   NAVEGACIÓN POR HUBS PRINCIPALES
+   ============================================================================== */
+.hub-nav {
   display: flex;
   background-color: var(--bg-surface);
   border-bottom: 1px solid var(--border-color);
+  padding: 4px 8px;
+  gap: 6px;
   overflow-x: auto;
-  scrollbar-width: thin;
 }
 
-.nav-tab {
+.hub-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   padding: 8px 14px;
   font-size: 12px;
   font-weight: 600;
   color: var(--text-secondary);
-  background: none;
+  background: transparent;
   border: none;
-  border-bottom: 2px solid transparent;
+  border-radius: var(--radius-sm);
   cursor: pointer;
+  transition: all 0.15s ease-in-out;
   white-space: nowrap;
-  transition: all 0.2s ease;
+}
+
+.hub-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.hub-btn.active {
+  background: var(--primary-light);
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.hub-icon {
+  font-size: 14px;
+}
+
+/* Barra de Módulo Activo Global */
+.active-module-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 16px;
+  background: var(--bg-hover);
+  border-bottom: 1px solid var(--border-color);
+  font-size: 11px;
+}
+
+.active-module-info {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
-.nav-tab:hover {
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+}
+
+.active-module-title {
+  font-weight: 700;
   color: var(--text-primary);
-  background-color: var(--bg-hover);
 }
 
-.nav-tab.active {
-  color: var(--primary);
-  border-bottom-color: var(--primary);
-  background-color: var(--primary-light);
+.active-module-meta {
+  color: var(--text-muted);
+  display: flex;
+  gap: 6px;
+  align-items: center;
 }
 
-/* Contenedor Principal de Vistas */
+.bullet {
+  color: var(--text-muted);
+}
+
+/* ==============================================================================
+   CONTENIDO Y CONTENEDORES
+   ============================================================================== */
 .app-content {
   flex: 1;
   overflow-y: auto;
-  padding: 14px;
-  scrollbar-width: thin;
+  padding: 12px 16px;
 }
 
-.tab-pane {
+.hub-pane {
   display: none;
-  animation: fadeIn 0.2s ease;
 }
 
-.tab-pane.active {
+.hub-pane.active {
   display: block;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Tarjetas y Grupos de Controles */
 .card {
-  background-color: var(--bg-card);
+  background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: 14px;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
   box-shadow: var(--shadow-sm);
+}
+
+.card-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
 }
 
 .card-title {
   font-size: 13px;
   font-weight: 700;
-  margin-bottom: 12px;
   color: var(--text-primary);
-  display: flex;
-  align-items: center;
-  gap: 6px;
 }
 
-/* Formularios y Grillas */
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 10px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.card-subtitle {
+  font-size: 11px;
+  color: var(--text-muted);
   margin-bottom: 10px;
 }
 
-label {
+/* ==============================================================================
+   FORMULARIOS Y GRIDS
+   ============================================================================== */
+.form-group {
+  margin-bottom: 8px;
+}
+
+.form-group label {
+  display: block;
   font-size: 11px;
   font-weight: 600;
   color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
+  margin-bottom: 4px;
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.form-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
 }
 
 input[type="text"],
@@ -236,271 +330,1128 @@ input[type="number"],
 select {
   width: 100%;
   padding: 7px 10px;
-  font-size: 13px;
-  font-family: inherit;
-  color: var(--text-primary);
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 12px;
   outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: border-color 0.15s;
 }
 
-input[type="text"]:focus,
-input[type="number"]:focus,
+input:focus,
 select:focus {
   border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
-.checkbox-row {
+.input-readonly {
+  background: var(--bg-hover) !important;
+  color: var(--text-muted) !important;
+  cursor: not-allowed;
+}
+
+/* ==============================================================================
+   PREVIEW 3D CANVAS
+   ============================================================================== */
+.preview-card {
+  padding: 10px;
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.preview-title {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.preview-hint {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: normal;
+  margin-left: 6px;
+}
+
+.canvas-container {
+  width: 100%;
+  height: 240px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+}
+
+#preview3DCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ==============================================================================
+   PRESETS & CHIPS DE ADN
+   ============================================================================== */
+.preset-chips-container {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filter-chips-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.preset-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--text-secondary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.preset-chip:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-light);
+  transform: translateY(-1px);
+}
+
+.preset-chip.active {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+}
+
+.preset-chip .chip-icon {
+  font-size: 13px;
+  line-height: 1;
+}
+
+.preset-chip .chip-name {
+  white-space: nowrap;
+}
+
+.preset-chip .chip-badge {
+  font-size: 9.5px;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: var(--bg-hover);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+.preset-chip.active .chip-badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* ==============================================================================
+   SUB-MODULACIÓN EN 3 ZONAS
+   ============================================================================== */
+.zone-config-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+
+.zone-card {
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: var(--bg-hover);
+}
+
+.zone-title {
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+/* ==============================================================================
+   GRILLA MATRICIAL DE COLUMNAS
+   ============================================================================== */
+.column-counter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-stepper {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.counter-display {
+  font-weight: 700;
+  min-width: 20px;
+  text-align: center;
+}
+
+.matrix-grid-wrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.matrix-col-card {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  padding: 10px;
+}
+
+.matrix-col-header {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* ==============================================================================
+   SEGMENTED CONTROLS & RADIO TILES
+   ============================================================================== */
+.segmented-control {
+  display: flex;
+  background: var(--bg-hover);
+  padding: 3px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  gap: 4px;
+}
+
+.seg-btn {
+  flex: 1;
+  padding: 6px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+
+.seg-btn.active {
+  background: var(--bg-surface);
+  color: var(--primary);
+  box-shadow: var(--shadow-sm);
+  font-weight: 700;
+}
+
+.radio-tiles-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+}
+
+.radio-tile {
+  cursor: pointer;
+  display: block;
+}
+
+.radio-tile input {
+  display: none;
+}
+
+.radio-tile-box {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  transition: all 0.15s;
+}
+
+.radio-tile.active .radio-tile-box {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.radio-tile.tile-rh.active .radio-tile-box {
+  border-color: var(--rh-green);
+  background: var(--rh-bg);
+}
+
+.radio-tile-title {
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.radio-tile-desc {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* Switch Toggle */
+.switch-control {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 6px 0;
   cursor: pointer;
 }
 
-.checkbox-row input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--primary);
-  cursor: pointer;
+.switch-control input {
+  display: none;
 }
 
-/* Botones */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 8px 14px;
-  font-size: 12px;
-  font-weight: 600;
-  border-radius: var(--radius-sm);
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.btn-primary {
-  background-color: var(--primary);
-  color: #FFFFFF;
-}
-
-.btn-primary:hover {
-  background-color: var(--primary-hover);
-}
-
-.btn-accent {
-  background-color: var(--accent);
-  color: #FFFFFF;
-}
-
-.btn-accent:hover {
-  background-color: var(--accent-hover);
-}
-
-.btn-secondary {
-  background-color: var(--bg-surface);
-  border-color: var(--border-color);
-  color: var(--text-primary);
-}
-
-.btn-secondary:hover {
-  background-color: var(--bg-hover);
-}
-
-.btn-block {
-  width: 100%;
-  padding: 10px 14px;
-  font-size: 13px;
-}
-
-/* Previsualizador de Tapacantos (4 Aristas) */
-.edge-visualizer {
+.switch-slider {
+  width: 34px;
+  height: 18px;
+  background: var(--border-color);
+  border-radius: 20px;
   position: relative;
-  width: 100%;
-  max-width: 260px;
-  height: 180px;
-  margin: 14px auto;
-  background-color: var(--bg-hover);
-  border: 2px dashed var(--border-color);
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  transition: background 0.2s;
 }
 
-.edge-box-label {
-  text-align: center;
-  font-size: 12px;
+.switch-slider:before {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  left: 2px;
+  top: 2px;
+  background: #FFF;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.switch-control input:checked + .switch-slider {
+  background: var(--primary);
+}
+
+.switch-control input:checked + .switch-slider:before {
+  transform: translateX(16px);
+}
+
+.switch-label {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* ==============================================================================
+   BADGES & CHIPS
+   ============================================================================== */
+.badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 12px;
+  font-size: 10px;
   font-weight: 700;
+}
+
+.badge-info {
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+.badge-rh {
+  background: var(--rh-bg);
+  color: var(--rh-green);
+}
+
+.badge-normal {
+  background: var(--bg-hover);
   color: var(--text-secondary);
 }
 
-.edge-control {
-  position: absolute;
+.badge-success {
+  background: #DCFCE7;
+  color: #15803D;
 }
 
-.edge-control.l1 { top: -14px; left: 50%; transform: translateX(-50%); }
-.edge-control.l2 { bottom: -14px; left: 50%; transform: translateX(-50%); }
-.edge-control.a1 { left: -14px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
-.edge-control.a2 { right: -14px; top: 50%; transform: translateY(-50%) rotate(90deg); }
+/* ==============================================================================
+   EDGE VISUALIZER (TAPACANTOS)
+   ============================================================================== */
+.edge-visualizer {
+  display: grid;
+  grid-template-areas:
+    ". l1 ."
+    "a1 box a2"
+    ". l2 .";
+  grid-template-columns: 80px 1fr 80px;
+  gap: 8px;
+  align-items: center;
+  justify-items: center;
+  padding: 14px;
+  background: var(--bg-hover);
+  border-radius: var(--radius-sm);
+}
 
-.edge-control select {
+.edge-control.l1 { grid-area: l1; width: 100%; text-align: center; }
+.edge-control.a1 { grid-area: a1; width: 100%; }
+.edge-control.a2 { grid-area: a2; width: 100%; }
+.edge-control.l2 { grid-area: l2; width: 100%; text-align: center; }
+
+.edge-box-label {
+  grid-area: box;
+  width: 100%;
+  padding: 20px 10px;
+  background: var(--bg-surface);
+  border: 2px dashed var(--border-color);
+  border-radius: var(--radius-sm);
+  text-align: center;
+  font-weight: 700;
   font-size: 11px;
-  padding: 2px 6px;
-  height: 26px;
 }
 
-/* Tablas de Despiece Estilo PrimeNG */
+.highlight-text {
+  color: var(--primary);
+  font-size: 10px;
+}
+
+/* ==============================================================================
+   TABLAS DE DATOS (PRIMENG STYLE)
+   ============================================================================== */
 .table-container {
-  overflow-x: auto;
+  max-height: 280px;
+  overflow-y: auto;
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  background-color: var(--bg-surface);
-  max-height: 480px;
+  border-radius: var(--radius-sm);
 }
 
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
-  text-align: left;
+  font-size: 11px;
 }
 
 .data-table th {
-  background-color: var(--bg-hover);
+  background: var(--bg-hover);
   color: var(--text-secondary);
   font-weight: 700;
-  padding: 8px 10px;
+  padding: 8px 6px;
+  text-align: left;
   border-bottom: 1px solid var(--border-color);
   position: sticky;
   top: 0;
-  z-index: 2;
-  white-space: nowrap;
+  z-index: 5;
 }
 
 .data-table td {
-  padding: 8px 10px;
+  padding: 6px;
   border-bottom: 1px solid var(--border-color);
   color: var(--text-primary);
-  white-space: nowrap;
 }
 
 .data-table tr:hover {
-  background-color: var(--bg-hover);
+  background: var(--bg-hover);
 }
 
-.badge {
-  display: inline-block;
-  padding: 2px 6px;
-  font-size: 10px;
-  font-weight: 700;
-  border-radius: 4px;
+.text-center-muted {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 20px !important;
 }
 
-.badge-blue { background-color: #DBEAFE; color: #1E40AF; }
-.badge-green { background-color: #D1FAE5; color: #065F46; }
-.badge-amber { background-color: #FEF3C7; color: #92400E; }
-
-/* Canvas de Optimización 2D */
-.canvas-wrapper {
-  background-color: #1E293B;
-  border-radius: var(--radius-md);
-  padding: 10px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-  position: relative;
-  min-height: 380px;
-}
-
-#optimizerCanvas {
-  background-color: #0F172A;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-  border-radius: 4px;
-}
-
-/* Métricas y Stats */
+/* ==============================================================================
+   STATS & BOTONES
+   ============================================================================== */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-  gap: 10px;
-  margin-bottom: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .stat-card {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
   padding: 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
   text-align: center;
 }
 
+.stat-card.highlight-card {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
 .stat-value {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 800;
   color: var(--primary);
 }
 
 .stat-label {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-muted);
-  text-transform: uppercase;
-  margin-top: 2px;
 }
 
-/* Alertas de Notificación */
-.notification {
-  padding: 10px 14px;
+.button-group-dual {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.btn {
+  padding: 8px 12px;
   border-radius: var(--radius-sm);
-  margin-bottom: 12px;
   font-size: 12px;
-  display: flex;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 6px;
 }
 
-.notification-success {
-  background-color: #D1FAE5;
-  color: #065F46;
-  border: 1px solid #A7F3D0;
+.btn-primary {
+  background: var(--primary);
+  color: #FFF;
 }
 
-.notification-error {
-  background-color: #FEE2E2;
-  color: #991B1B;
-  border: 1px solid #FECACA;
+.btn-primary:hover {
+  background: var(--primary-hover);
 }
 
-/* Visor 3D y Controles de Vista */
-.preview-container {
+.btn-secondary {
+  background: var(--bg-hover);
+  color: var(--text-primary);
   border: 1px solid var(--border-color);
-  background: var(--bg-surface);
-  transition: all 0.2s ease-in-out;
 }
 
-#preview3DCanvas {
-  cursor: grab;
-  touch-action: none;
+.btn-secondary:hover {
+  background: var(--border-color);
 }
 
-#preview3DCanvas:active {
-  cursor: grabbing;
+.btn-accent {
+  background: var(--accent);
+  color: #FFF;
+}
+
+.btn-accent:hover {
+  background: var(--accent-hover);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: #FFF;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn-lg {
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .btn-sm {
-  padding: 3px 8px;
+  padding: 5px 8px;
   font-size: 11px;
-  border-radius: var(--radius-sm);
-  font-weight: 600;
 }
 
-.btn-sm:hover {
-  background-color: var(--primary);
-  color: #FFFFFF;
+.btn-xs {
+  padding: 3px 6px;
+  font-size: 10px;
 }
+
+.export-buttons-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+/* ==============================================================================
+   MODAL DIALOG
+   ============================================================================== */
+.modal-backdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  backdrop-filter: blur(2px);
+}
+
+.modal-dialog {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  width: 90%;
+  max-width: 480px;
+  padding: 16px;
+  box-shadow: var(--shadow-lg);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.modal-title {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.modal-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+/* Notificaciones Toast */
+.notification-container {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 110;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.toast {
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 11.5px;
+  font-weight: 600;
+  box-shadow: var(--shadow-md);
+  color: #FFF;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.toast-success { background: var(--accent); }
+.toast-info { background: var(--primary); }
+.toast-error { background: var(--danger); }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==============================================================================
+   BANDEJA DE MATERIALES DE SKETCHUP & MUESTRAS
+   ============================================================================== */
+.tray-sync-toolbar {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.material-swatch-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  margin-top: 10px;
+  padding: 4px;
+}
+
+.swatch-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.swatch-card:hover {
+  border-color: var(--primary);
+  background: var(--bg-hover);
+  transform: translateY(-1px);
+}
+
+.swatch-card.active {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.swatch-color-preview {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+}
+
+.swatch-info {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.swatch-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.swatch-brand {
+  font-size: 9.5px;
+  color: var(--text-muted);
+}
+
+/* ==============================================================================
+   ICONOS VECTORIALES SVG PROFESIONALES (CAD / BIM)
+   ============================================================================== */
+.svg-icon {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vertical-align: middle;
+  flex-shrink: 0;
+  display: inline-block;
+  transition: transform 0.15s ease, stroke 0.15s ease;
+}
+
+.hub-btn .svg-icon {
+  width: 18px;
+  height: 18px;
+  margin-bottom: 3px;
+  stroke-width: 1.8;
+}
+
+.btn .svg-icon {
+  width: 13px;
+  height: 13px;
+  margin-right: 5px;
+  stroke-width: 2;
+}
+
+.btn-xs .svg-icon {
+  width: 11px;
+  height: 11px;
+  margin-right: 3px;
+  stroke-width: 2.2;
+}
+
+.btn-block .svg-icon {
+  width: 15px;
+  height: 15px;
+  margin-right: 6px;
+}
+
+.preset-chip .svg-icon {
+  width: 13px;
+  height: 13px;
+}
+
+.logo .svg-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 6px;
+  color: var(--primary);
+  stroke-width: 2.2;
+}
+
+.zone-title .svg-icon {
+  width: 14px;
+  height: 14px;
+  margin-right: 4px;
+  color: var(--primary);
+}
+
+/* ==============================================================================
+   WORKSPACE DIVIDIDO: 1/3 DETALLE (IZQ) - 2/3 DIBUJO PARAMÉTRICO (DER)
+   ============================================================================== */
+.split-workspace {
+  display: flex;
+  flex: 1;
+  height: calc(100vh - 46px);
+  width: 100%;
+  overflow: hidden;
+  background-color: var(--bg-primary);
+}
+
+.panel-left-config {
+  width: 35%;
+  min-width: 360px;
+  max-width: 480px;
+  flex-shrink: 0;
+  height: 100%;
+  overflow-y: auto;
+  padding: 14px 16px;
+  background-color: var(--bg-surface);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.panel-right-viewport {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-primary);
+  overflow: hidden;
+  position: relative;
+}
+
+.viewport-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  z-index: 10;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.viewport-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.viewport-canvas-container {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-primary);
+}
+
+#preview3DCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ==============================================================================
+   PESTAÑAS MODULARES DINÁMICAS (TABS)
+   ============================================================================== */
+.module-tabs-header {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.module-tab-btn {
+  padding: 6px 12px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 11.5px;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.module-tab-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.module-tab-btn.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #FFFFFF;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.28);
+}
+
+.module-tab-badge {
+  font-size: 10px;
+  padding: 1px 6px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 10px;
+}
+
+.module-tab-btn:not(.active) .module-tab-badge {
+  background: var(--border-color);
+  color: var(--text-secondary);
+}
+
+/* ==============================================================================
+   ALERTAS TÉCNICAS Y REGLAS DE PANDEO
+   ============================================================================== */
+.alert-technical {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  margin-top: 8px;
+  line-height: 1.4;
+}
+
+.alert-technical.warning {
+  background: #FEF3C7;
+  border: 1px solid #F59E0B;
+  color: #92400E;
+}
+
+.alert-technical.danger {
+  background: #FEE2E2;
+  border: 1px solid #EF4444;
+  color: #991B1B;
+}
+
+.alert-technical.info {
+  background: #EFF6FF;
+  border: 1px solid #3B82F6;
+  color: #1E40AF;
+}
+
+.alert-technical.success {
+  background: #DCFCE7;
+  border: 1px solid #10B981;
+  color: #065F46;
+}
+
+body.theme-oscuro .alert-technical.warning {
+  background: #451A03;
+  border-color: #B45309;
+  color: #FDE68A;
+}
+
+body.theme-oscuro .alert-technical.danger {
+  background: #450A0A;
+  border-color: #B91C1C;
+  color: #FECACA;
+}
+
+body.theme-oscuro .alert-technical.info {
+  background: #172554;
+  border-color: #1D4ED8;
+  color: #BFDBFE;
+}
+
+body.theme-oscuro .alert-technical.success {
+  background: #052E16;
+  border-color: #15803D;
+  color: #BBF7D0;
+}
+
+/* ==============================================================================
+   CONTROLES SWITCH Y SPINNER (PRIMENG STYLE)
+   ============================================================================== */
+.switch-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 11.5px;
+  font-weight: 600;
+  user-select: none;
+}
+
+.switch-input {
+  display: none;
+}
+
+.switch-slider {
+  width: 34px;
+  height: 18px;
+  background-color: var(--border-color);
+  border-radius: 20px;
+  position: relative;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+}
+
+.switch-slider::before {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  left: 2px;
+  top: 2px;
+  background-color: #FFFFFF;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.switch-input:checked + .switch-slider {
+  background-color: var(--primary);
+}
+
+.switch-input:checked + .switch-slider::before {
+  transform: translateX(16px);
+}
+
+.spinner-control {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.spinner-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.spinner-btn:hover {
+  background: var(--primary);
+  color: #FFFFFF;
+  border-color: var(--primary);
+}
+
+.spinner-input {
+  text-align: center;
+  font-weight: 700;
+  width: 60px !important;
+}
+
+/* ==============================================================================
+   MODAL DE DESPIECE Y OPTIMIZACIÓN (PRIMENG DIALOG)
+   ============================================================================== */
+.p-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.p-dialog-window {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: 95%;
+  max-width: 1100px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.p-dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-hover);
+}
+
+.p-dialog-title {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.p-dialog-close {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.p-dialog-close:hover {
+  color: var(--text-primary);
+}
+
+.p-dialog-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
 

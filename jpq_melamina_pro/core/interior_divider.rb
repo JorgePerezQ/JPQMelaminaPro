@@ -25,9 +25,10 @@ module JPQMelaminaPro
         model = Sketchup.active_model
         sel = model.selection
 
-        # Buscar grupo del módulo
+        # Buscar grupo del módulo o usar el último módulo activo
         modulo = sel.find { |e| e.attribute_dictionary('DespieceMelaModulo') }
-        return { 'ok' => false, 'error' => 'Por favor, selecciona un módulo primero.' } unless modulo
+        modulo ||= CabinetBuilder.ultimo_modulo_activo if defined?(CabinetBuilder) && CabinetBuilder.ultimo_modulo_activo && CabinetBuilder.ultimo_modulo_activo.valid?
+        return { 'ok' => false, 'error' => 'Por favor, crea o selecciona un módulo primero.' } unless modulo
 
         dict_mod = modulo.attribute_dictionary('DespieceMelaModulo')
         alto_mod   = dict_mod['alto_mm'].to_f.mm
@@ -101,6 +102,10 @@ module JPQMelaminaPro
         face.reverse! if face.normal.z < 0
         face.pushpull(dz.abs)
 
+        # Asignar material y textura fotorrealista de SketchUp
+        su_mat = MaterialManager.obtener_o_crear_material_su(parent.model, material)
+        sub.material = su_mat if su_mat
+
         dict = sub.attribute_dictionary('DespieceMela', true)
         dict['modulo_id']      = mod_id
         dict['pieza_id']       = "#{mod_id}-REP-#{index}"
@@ -136,6 +141,10 @@ module JPQMelaminaPro
         face = sub.entities.add_face(pts)
         face.reverse! if face.normal.z < 0
         face.pushpull(dz.abs)
+
+        # Asignar material y textura fotorrealista de SketchUp
+        su_mat = MaterialManager.obtener_o_crear_material_su(parent.model, material)
+        sub.material = su_mat if su_mat
 
         dict = sub.attribute_dictionary('DespieceMela', true)
         dict['modulo_id']      = mod_id

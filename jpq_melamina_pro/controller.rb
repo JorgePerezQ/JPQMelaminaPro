@@ -1,126 +1,227 @@
 # ==============================================================================
-# Archivo: mela_studio_clone/controller.rb
+# Archivo: jpq_melamina_pro/controller.rb
 # Descripción: Controlador central de eventos y despachador de peticiones.
-#              Recibe las llamadas de JavaScript desde el UI::HtmlDialog,
-#              ejecuta la lógica de negocio correspondiente en Ruby y responde a la interfaz.
+#              Enlaza las llamadas de JavaScript (UI::HtmlDialog) con la API Ruby:
+#              - Construcción de módulos base y matrices modulares (N columnas x 3 zonas)
+#              - Simulación cinemática (abrir/cerrar puertas y cajones) y cotas 3D
+#              - Gestión de perfiles y ADN técnico (CRUD en JSON)
+#              - Fondos con ranura a 18mm y amarres traseros de melamina
+#              - Mecanizados eléctricos (perfiles LED, dicroicos y pasacables)
+#              - Despiece industrial, optimización 2D y exportaciones oficiales
 # ==============================================================================
 
+require 'sketchup.rb'
 require 'json'
+
+# Carga de módulos core
+require_relative 'core/cabinet_builder'
+require_relative 'core/spatial_matrix_builder'
+require_relative 'core/kinematics_engine'
+require_relative 'core/profile_manager'
+require_relative 'core/electrical_engine'
+require_relative 'core/parametric_modifier'
+require_relative 'core/interior_divider'
+require_relative 'core/drawer_builder'
+require_relative 'core/groove_manager'
+require_relative 'core/edgetape_manager'
+require_relative 'core/machining_engine'
+require_relative 'core/material_manager'
+require_relative 'core/doors_builder'
+require_relative 'core/tagger'
+require_relative 'core/cutlist_extractor'
+require_relative 'optimizer/guillotine_packer'
+require_relative 'exporters/csv_exporter'
+require_relative 'exporters/excel_exporter'
 
 module JPQMelaminaPro
   class Controller
     class << self
       # ========================================================================
       # Método: registrar_callbacks
-      # Descripción: Enlaza los métodos de acción de JavaScript con la API de Ruby.
+      # Descripción: Enlaza todas las acciones de JavaScript con los módulos de Ruby.
       # Parámetros:
       #   - dialog (UI::HtmlDialog): Instancia del diálogo activo.
       # ========================================================================
       def registrar_callbacks(dialog)
-        # 1. Crear nuevo módulo paramétrico
+        # --- HUB 1: ESTUDIO ESPACIAL & MATRIZ MODULAR ---
         dialog.add_action_callback('crearModulo') do |_ctx, params_json|
-          load File.join(__dir__, 'core', 'cabinet_builder.rb')
           params = JSON.parse(params_json)
           resultado = CabinetBuilder.build(params)
           responder_js(dialog, 'onModuloCreado', resultado)
         end
 
-        # 2. Actualizar módulo existente (Edición paramétrica no destructiva)
-        dialog.add_action_callback('actualizarModulo') do |_ctx, params_json|
+        dialog.add_action_callback('generarMatrizModular') do |_ctx, params_json|
           params = JSON.parse(params_json)
-          resultado = ParametricModifier.update(params)
-          responder_js(dialog, 'onModuloActualizado', resultado)
+          resultado = SpatialMatrixBuilder.build_matrix(params)
+          responder_js(dialog, 'onMatrizCreada', resultado)
         end
 
-        # 3. Obtener datos del módulo seleccionado en pantalla
-        dialog.add_action_callback('obtenerModuloSeleccionado') do |_ctx, _params|
-          datos = ParametricModifier.leer_seleccion
-          responder_js(dialog, 'onModuloSeleccionado', datos)
-        end
-
-        # 4. Insertar repisas o divisiones interiores
-        dialog.add_action_callback('aplicarRepisas') do |_ctx, params_json|
+        dialog.add_action_callback('construirComposicionModular') do |_ctx, params_json|
           params = JSON.parse(params_json)
-          resultado = InteriorDivider.apply(params)
-          responder_js(dialog, 'onRepisasAplicadas', resultado)
+          resultado = SpatialMatrixBuilder.construir_modulos_parametricos(params)
+          responder_js(dialog, 'onComposicionModularCreada', resultado)
         end
 
-        # 5. Insertar cajonera con holguras de correderas
+        # --- GESTOR DE ADN TÉCNICO Y PERFILES (CRUD) ---
+        dialog.add_action_callback('obtenerPerfilesUsuario') do |_ctx, _params|
+          perfiles = ProfileManager.obtener_perfiles
+          responder_js(dialog, 'onPerfilesObtenidos', perfiles)
+        end
+
+        dialog.add_action_callback('guardarPerfilUsuario') do |_ctx, params_json|
+          params = JSON.parse(params_json)
+          resultado = ProfileManager.guardar_perfil(params)
+          responder_js(dialog, 'onPerfilGuardado', resultado)
+        end
+
+        dialog.add_action_callback('eliminarPerfilUsuario') do |_ctx, perfil_id|
+          resultado = ProfileManager.eliminar_perfil(perfil_id)
+          responder_js(dialog, 'onPerfilEliminado', resultado)
+        end
+
+        dialog.add_action_callback('restaurarPerfilesFabrica') do |_ctx, _params|
+          resultado = ProfileManager.restaurar_perfiles_fabrica
+          responder_js(dialog, 'onPerfilesRestaurados', resultado)
+        end
+
+        # --- HUB 2: INGENIERÍA DE FRENTES, HERRAJES Y FONDO ---
         dialog.add_action_callback('insertarCajonera') do |_ctx, params_json|
           params = JSON.parse(params_json)
           resultado = DrawerBuilder.build(params)
           responder_js(dialog, 'onCajoneraCreada', resultado)
         end
 
-        # 6. Configurar fondo MDF 3mm y ranuras
-        dialog.add_action_callback('configurarFondo') do |_ctx, params_json|
-          params = JSON.parse(params_json)
-          resultado = GrooveManager.apply(params)
-          responder_js(dialog, 'onFondoConfigurado', resultado)
-        end
-
-        # 7. Asignar tapacantos y calcular medida neta de corte
-        dialog.add_action_callback('aplicarTapacantos') do |_ctx, params_json|
-          params = JSON.parse(params_json)
-          resultado = EdgetapeManager.apply(params)
-          responder_js(dialog, 'onTapacantosAplicados', resultado)
-        end
-
-        # 8. Insertar mecanizados de ensamble (Minifix, tarugos, tornillos)
-        dialog.add_action_callback('aplicarMecanizados') do |_ctx, params_json|
-          params = JSON.parse(params_json)
-          resultado = MachiningEngine.apply(params)
-          responder_js(dialog, 'onMecanizadosAplicados', resultado)
-        end
-
-        # 9. Asignar material, color y sentido de veta
-        dialog.add_action_callback('aplicarMaterial') do |_ctx, params_json|
-          params = JSON.parse(params_json)
-          resultado = MaterialManager.apply(params)
-          responder_js(dialog, 'onMaterialAplicado', resultado)
-        end
-
-        # 10. Generar puertas batientes o frentes
         dialog.add_action_callback('generarPuertas') do |_ctx, params_json|
           params = JSON.parse(params_json)
           resultado = DoorsBuilder.build(params)
           responder_js(dialog, 'onPuertasGeneradas', resultado)
         end
 
-        # 11. Extraer lista completa de despiece para cotización y taller
+        dialog.add_action_callback('configurarFondo') do |_ctx, params_json|
+          params = JSON.parse(params_json)
+          resultado = GrooveManager.apply(params)
+          responder_js(dialog, 'onFondoConfigurado', resultado)
+        end
+
+        dialog.add_action_callback('aplicarRanuraLed') do |_ctx, params_json|
+          params = JSON.parse(params_json)
+          resultado = ElectricalEngine.apply_led_groove(params)
+          responder_js(dialog, 'onLedAplicado', resultado)
+        end
+
+        dialog.add_action_callback('aplicarDicroicos') do |_ctx, params_json|
+          params = JSON.parse(params_json)
+          resultado = ElectricalEngine.apply_downlights(params)
+          responder_js(dialog, 'onDicroicosAplicados', resultado)
+        end
+
+        dialog.add_action_callback('aplicarCaladoElectrico') do |_ctx, params_json|
+          params = JSON.parse(params_json)
+          resultado = ElectricalEngine.apply_outlets_and_cables(params)
+          responder_js(dialog, 'onCaladoElectricoAplicado', resultado)
+        end
+
+        # --- HUB 3: INSPECCIÓN TÉCNICA Y CINEMÁTICA 3D ---
+        dialog.add_action_callback('alternarAperturaCinematica') do |_ctx, estado|
+          resultado = KinematicsEngine.alternar_apertura(estado)
+          responder_js(dialog, 'onAperturaCinematica', resultado)
+        end
+
+        dialog.add_action_callback('alternarCotasInternas') do |_ctx, visible_flag|
+          mostrar = (visible_flag == true || visible_flag.to_s == 'true')
+          resultado = KinematicsEngine.alternar_cotas_3d(mostrar)
+          responder_js(dialog, 'onCotasAlternadas', resultado)
+        end
+
+        # --- HUB 4: MATERIALES, MELAMINA RH Y TAPACANTOS ---
+        dialog.add_action_callback('obtenerCatalogoMateriales') do |_ctx, _params|
+          catalogo = MaterialManager.obtener_catalogo
+          responder_js(dialog, 'onCatalogoMateriales', catalogo)
+        end
+
+        dialog.add_action_callback('obtenerMaterialesBandeja') do |_ctx, _params|
+          materiales = MaterialManager.obtener_materiales_de_bandeja(Sketchup.active_model)
+          responder_js(dialog, 'onMaterialesBandejaObtenidos', materiales)
+        end
+
+        dialog.add_action_callback('obtenerMaterialActivoBandeja') do |_ctx, _params|
+          resultado = MaterialManager.obtener_material_activo_bandeja(Sketchup.active_model)
+          responder_js(dialog, 'onMaterialActivoBandeja', resultado)
+        end
+
+        dialog.add_action_callback('obtenerMaterialSeleccion3D') do |_ctx, _params|
+          resultado = MaterialManager.obtener_material_seleccion(Sketchup.active_model)
+          responder_js(dialog, 'onMaterialSeleccion3D', resultado)
+        end
+
+        dialog.add_action_callback('aplicarMaterial') do |_ctx, params_json|
+          params = JSON.parse(params_json)
+          resultado = MaterialManager.aplicar_materiales_a_modelo(params, Sketchup.active_model)
+          responder_js(dialog, 'onMaterialAplicado', resultado)
+        end
+
+        dialog.add_action_callback('aplicarTapacantos') do |_ctx, params_json|
+          params = JSON.parse(params_json)
+          resultado = EdgetapeManager.apply(params)
+          responder_js(dialog, 'onTapacantosAplicados', resultado)
+        end
+
+        dialog.add_action_callback('proponerTapacantos') do |_ctx, nombre_pieza|
+          propuesta = MaterialManager.proponer_tapacantos_pieza(nombre_pieza)
+          responder_js(dialog, 'onPropuestaTapacantos', propuesta)
+        end
+
+        # --- HUB 5: DESPIECE, OPTIMIZADOR 2D Y EXPORTACIÓN ---
         dialog.add_action_callback('extraerDespiece') do |_ctx, params_json|
-          opciones = params_json.empty? ? {} : JSON.parse(params_json)
+          opciones = params_json.nil? || params_json.empty? ? {} : JSON.parse(params_json)
           lista = CutlistExtractor.extract(opciones)
           responder_js(dialog, 'onDespieceExtraido', lista)
         end
 
-        # 12. Optimizar corte de tableros 2D (Guillotina)
         dialog.add_action_callback('optimizarCorte') do |_ctx, params_json|
           params = JSON.parse(params_json)
           resultado = GuillotinePacker.pack(params)
           responder_js(dialog, 'onCorteOptimizado', resultado)
         end
 
-        # 13. Exportar archivo CSV o Excel
         dialog.add_action_callback('exportarArchivo') do |_ctx, params_json|
           params = JSON.parse(params_json)
           archivo_generado = if params['formato'] == 'excel'
-            ExcelExporter.export(params)
-          else
-            CsvExporter.export(params)
-          end
-          responder_js(dialog, 'onArchivoExportado', { ruta: archivo_generado })
+                               ExcelExporter.export(params)
+                             else
+                               CsvExporter.export(params)
+                             end
+          responder_js(dialog, 'onArchivoExportado', { 'ruta' => archivo_generado })
+        end
+
+        # --- ACCIONES GENERALES Y EDICIÓN RÁPIDA ---
+        dialog.add_action_callback('obtenerModuloSeleccionado') do |_ctx, _params|
+          datos = ParametricModifier.leer_seleccion
+          responder_js(dialog, 'onModuloSeleccionado', datos)
+        end
+
+        dialog.add_action_callback('actualizarModulo') do |_ctx, params_json|
+          params = JSON.parse(params_json)
+          resultado = ParametricModifier.update(params)
+          responder_js(dialog, 'onModuloActualizado', resultado)
+        end
+
+        dialog.add_action_callback('aplicarRepisas') do |_ctx, params_json|
+          params = JSON.parse(params_json)
+          resultado = InteriorDivider.apply(params)
+          responder_js(dialog, 'onRepisasAplicadas', resultado)
+        end
+
+        dialog.add_action_callback('aplicarMecanizados') do |_ctx, params_json|
+          params = JSON.parse(params_json)
+          resultado = MachiningEngine.apply(params)
+          responder_js(dialog, 'onMecanizadosAplicados', resultado)
         end
       end
 
       # ========================================================================
       # Método: responder_js
-      # Descripción: Envía un objeto serializado en JSON como argumento a una
-      #              función de respuesta en JavaScript.
-      # Parámetros:
-      #   - dialog (UI::HtmlDialog): Ventana donde se ejecuta el script.
-      #   - funcion_js (String): Nombre de la función receptora en JS.
-      #   - datos (Hash/Array): Estructura de datos Ruby a enviar.
+      # Descripción: Serializa los datos en JSON y los envía de retorno a JS.
       # ========================================================================
       def responder_js(dialog, funcion_js, datos)
         json_data = JSON.generate(datos)
@@ -129,40 +230,29 @@ module JPQMelaminaPro
       end
 
       # ========================================================================
-      # Método: editar_modulo_seleccionado
-      # Descripción: Invocado desde la barra de herramientas al pulsar 'Editar Módulo'.
-      #              Verifica si la selección actual contiene un módulo válido.
+      # Métodos de acceso rápido desde la barra de herramientas de SketchUp
       # ========================================================================
       def editar_modulo_seleccionado
         datos = ParametricModifier.leer_seleccion
         if datos.nil?
           UI.messagebox("Por favor, selecciona primero un módulo creado con JPQMelaminaPro.")
         else
-          JPQMelaminaPro.abrir_dialogo_principal('editor')
+          JPQMelaminaPro.abrir_dialogo_principal('hub-espacio')
           JPQMelaminaPro.ejecutar_en_dialogo("window.cargarDatosEdicion && window.cargarDatosEdicion(#{JSON.generate(datos)})")
         end
       end
 
-      # ========================================================================
-      # Método: etiquetar_piezas_seleccionadas
-      # Descripción: Asigna identificadores y etiquetas de taller a todas las piezas.
-      # ========================================================================
       def etiquetar_piezas_seleccionadas
         conteo = Tagger.tag_selection_or_all
         UI.messagebox("Se han etiquetado #{conteo} piezas exitosamente para taller.")
       end
 
-      # ========================================================================
-      # Método: editar_pieza_individual
-      # Descripción: Abre el diálogo para sobremedidas y rotación de una pieza.
-      # ========================================================================
       def editar_pieza_individual
         datos = ParametricModifier.leer_pieza_individual
         if datos.nil?
           UI.messagebox("Selecciona una pieza individual (panel de melamina).")
         else
-          JPQMelaminaPro.abrir_dialogo_principal('pieza')
-          JPQMelaminaPro.ejecutar_en_dialogo("window.cargarPiezaIndividual && window.cargarPiezaIndividual(#{JSON.generate(datos)})")
+          JPQMelaminaPro.abrir_dialogo_principal('hub-materiales')
         end
       end
     end

@@ -23,3 +23,5 @@ yarn-error.log*
 .vscode/
 dist/
 build/
+__pycache__/
+*.pyc

@@ -8,8 +8,8 @@ require 'sketchup.rb'
 require 'extensions.rb'
 
 module JPQMelaminaPro
-  # Constante de versión del plugin
-  PLUGIN_VERSION = '1.0.0'.freeze
+  # Constante de versión oficial del plugin
+  PLUGIN_VERSION = '2.5.0'.freeze unless defined?(PLUGIN_VERSION)
 
   # Identificador único de la extensión
   PLUGIN_ID = 'jpq_melamina_pro'.freeze

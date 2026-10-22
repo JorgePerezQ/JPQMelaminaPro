@@ -15,6 +15,7 @@ require 'sketchup.rb'
 module JPQMelaminaPro
   class CabinetBuilder
     class << self
+      attr_accessor :ultimo_modulo_activo
       # ========================================================================
       # Método: build
       # Descripción: Punto de entrada para generar cualquier mueble paramétrico 3D.
@@ -59,7 +60,7 @@ module JPQMelaminaPro
         prof_total  = params['profundidad'].to_f.mm
         t_num       = (params['espesor'] && params['espesor'].to_f > 0) ? params['espesor'].to_f : 18.0
         t           = t_num.mm
-        material    = params['material'] || 'Melamina Roble Natural 18mm'
+        material    = params['material'] || 'Pelikano Bellota 18mm'
         nombre_mod  = params['nombre'] || 'Escritorio Profesional'
         modulo_id   = params['modulo_id'] || "ESC-#{Time.now.to_i % 10000}"
 
@@ -94,7 +95,6 @@ module JPQMelaminaPro
         )
 
         # B. Patas / Laterales de Soporte (Izquierdo y Derecho)
-        # Retranqueadas por el vuelo frontal para ergonometría de piernas
         canto_patas = { 'canto_L1' => 2.0, 'canto_L2' => 0.45, 'canto_A1' => 0.45, 'canto_A2' => 0.45 }
         crear_panel(
           grupo_modulo, 'Pata Lateral Izquierda',
@@ -123,15 +123,14 @@ module JPQMelaminaPro
         )
 
         # C. FALDÓN TRASERO ESTRUCTURAL (Elemento de Arriostramiento Anti-Bamboleo)
-        # Esencial en carpintería: amarra ambas patas y sostiene la cubierta impidiendo flexión lateral.
-        alto_faldon_mm = [alto_num * 0.45, 350.0].min # Altura óptima de 350mm
+        alto_faldon_mm = [alto_num * 0.45, 350.0].min
         alto_faldon    = alto_faldon_mm.mm
         ancho_int_num  = ancho_num - (2 * t_num)
         pos_z_faldon   = alto_patas - alto_faldon
 
         crear_panel(
           grupo_modulo, 'Faldón Estructural Arriostrador',
-          t, prof_total - t - 50.mm, pos_z_faldon, # retranqueado 50mm para paso de cables
+          t, prof_total - t - 50.mm, pos_z_faldon,
           ancho_total - (2 * t), t, alto_faldon,
           {
             'modulo_id' => modulo_id, 'pieza_id' => "#{modulo_id}-FALDON",
@@ -144,7 +143,161 @@ module JPQMelaminaPro
           }
         )
 
-        { 'ok' => true, 'modulo_id' => modulo_id, 'mensaje' => "Escritorio profesional con faldón arriostrador creado exitosamente." }
+        # D. CAJONERA INTEGRADA (Pedestal de 3 Cajones paramétrico)
+        cajonera_pos = params['cajonera_pos'] || 'ninguna'
+        if cajonera_pos != 'ninguna' && ancho_num >= 850.0
+          ancho_caj_mm = 380.0
+          ancho_caj = ancho_caj_mm.mm
+          x_caj_base = (cajonera_pos == 'derecha') ? (ancho_total - t - ancho_caj) : t
+          x_lat_int  = (cajonera_pos == 'derecha') ? x_caj_base : (x_caj_base + ancho_caj - t)
+
+          # Lateral interior divisor del pedestal
+          crear_panel(
+            grupo_modulo, 'Lateral Pedestal Cajonera',
+            x_lat_int, vuelo, 0.mm,
+            t, prof_patas, alto_patas,
+            {
+              'modulo_id' => modulo_id, 'pieza_id' => "#{modulo_id}-LAT-CAJ",
+              'pieza_nombre' => 'Lateral Pedestal Cajonera', 'material' => material,
+              'largo_bruto_mm' => alto_num - t_num, 'ancho_bruto_mm' => prof_num - vuelo_mm, 'espesor_mm' => t_num,
+              'largo_neto_mm' => alto_num - t_num - 1.0, 'ancho_neto_mm' => prof_num - vuelo_mm - 0.45,
+              'cantidad' => 1, 'veta' => 'longitudinal', 'ranura' => 'Ninguna'
+            }.merge(canto_patas)
+          )
+
+          # Piso base del pedestal (Zócalo de 60mm)
+          zocalo_caj_mm = 60.0
+          zocalo_caj = zocalo_caj_mm.mm
+          x_piso_caj = (cajonera_pos == 'derecha') ? (x_caj_base + t) : t
+          crear_panel(
+            grupo_modulo, 'Piso Pedestal Cajonera',
+            x_piso_caj, vuelo, zocalo_caj,
+            ancho_caj - (2 * t), prof_patas, t,
+            {
+              'modulo_id' => modulo_id, 'pieza_id' => "#{modulo_id}-PISO-CAJ",
+              'pieza_nombre' => 'Piso Pedestal Cajonera', 'material' => material,
+              'largo_bruto_mm' => ancho_caj_mm - (2 * t_num), 'ancho_bruto_mm' => prof_num - vuelo_mm, 'espesor_mm' => t_num,
+              'largo_neto_mm' => ancho_caj_mm - (2 * t_num) - 0.45, 'ancho_neto_mm' => prof_num - vuelo_mm - 0.45,
+              'cantidad' => 1, 'veta' => 'longitudinal', 'ranura' => 'Ninguna'
+            }
+          )
+
+          # 3 Cajones en el pedestal
+          alto_vano_caj = alto_patas - zocalo_caj - t
+          cant_caj = 3
+          luz_caj_mm = 3.0
+          h_frente_mm = (alto_vano_caj.to_mm - (cant_caj * luz_caj_mm)) / cant_caj
+          h_frente = h_frente_mm.mm
+
+          cant_caj.times do |idx|
+            z_frente = zocalo_caj + t + (idx * (h_frente + luz_caj_mm.mm)) + luz_caj_mm.mm
+            crear_panel(
+              grupo_modulo, "Frente Cajón #{idx + 1}",
+              x_piso_caj, vuelo - 2.mm, z_frente,
+              ancho_caj - (2 * t), t, h_frente,
+              {
+                'modulo_id' => modulo_id, 'pieza_id' => "#{modulo_id}-FR-CAJ-#{idx+1}",
+                'pieza_nombre' => "Frente Cajón Pedestal #{idx + 1}", 'material' => material,
+                'largo_bruto_mm' => ancho_caj_mm - (2 * t_num), 'ancho_bruto_mm' => h_frente_mm, 'espesor_mm' => t_num,
+                'largo_neto_mm' => ancho_caj_mm - (2 * t_num) - 2.0, 'ancho_neto_mm' => h_frente_mm - 2.0,
+                'cantidad' => 1, 'veta' => 'longitudinal',
+                'canto_L1' => 1.0, 'canto_L2' => 1.0, 'canto_A1' => 1.0, 'canto_A2' => 1.0, 'ranura' => 'Ninguna'
+              }
+            )
+          end
+        end
+
+        # E. NICHO PARA TORRE PC CON REPISA ELEVADA DE VENTILACIÓN
+        pc_pos = params['pc_pos'] || 'ninguna'
+        if pc_pos != 'ninguna' && pc_pos != cajonera_pos && ancho_num >= 950.0
+          ancho_pc_mm = 240.0
+          ancho_pc = ancho_pc_mm.mm
+          x_pc_base = (pc_pos == 'derecha') ? (ancho_total - t - ancho_pc) : t
+          x_lat_pc  = (pc_pos == 'derecha') ? x_pc_base : (x_pc_base + ancho_pc - t)
+
+          # Lateral divisor del nicho PC
+          crear_panel(
+            grupo_modulo, 'Lateral Nicho CPU',
+            x_lat_pc, vuelo, 0.mm,
+            t, prof_patas, alto_patas,
+            {
+              'modulo_id' => modulo_id, 'pieza_id' => "#{modulo_id}-LAT-CPU",
+              'pieza_nombre' => 'Lateral Nicho CPU', 'material' => material,
+              'largo_bruto_mm' => alto_num - t_num, 'ancho_bruto_mm' => prof_num - vuelo_mm, 'espesor_mm' => t_num,
+              'largo_neto_mm' => alto_num - t_num - 1.0, 'ancho_neto_mm' => prof_num - vuelo_mm - 0.45,
+              'cantidad' => 1, 'veta' => 'longitudinal', 'ranura' => 'Ninguna'
+            }.merge(canto_patas)
+          )
+
+          # Repisa elevada para PC (60mm del suelo para proteger de polvo y humedad)
+          x_piso_pc = (pc_pos == 'derecha') ? (x_pc_base + t) : t
+          crear_panel(
+            grupo_modulo, 'Base Elevada CPU',
+            x_piso_pc, vuelo + 20.mm, 60.mm,
+            ancho_pc - (2 * t), prof_patas - 40.mm, t,
+            {
+              'modulo_id' => modulo_id, 'pieza_id' => "#{modulo_id}-BASE-CPU",
+              'pieza_nombre' => 'Base Ventilada CPU', 'material' => material,
+              'largo_bruto_mm' => ancho_pc_mm - (2 * t_num), 'ancho_bruto_mm' => prof_num - vuelo_mm - 40.0, 'espesor_mm' => t_num,
+              'largo_neto_mm' => ancho_pc_mm - (2 * t_num) - 0.45, 'ancho_neto_mm' => prof_num - vuelo_mm - 40.0 - 0.45,
+              'cantidad' => 1, 'veta' => 'longitudinal', 'ranura' => 'Ninguna'
+            }
+          )
+        end
+
+        # F. REPISA ALZADA PARA MONITOR O IMPRESORA
+        if params['impresora_alzada'] == true || params['impresora_alzada'] == 'true'
+          h_alzada_mm = 140.0
+          h_alzada    = h_alzada_mm.mm
+          prof_alzada_mm = [prof_num * 0.42, 280.0].min
+          prof_alzada    = prof_alzada_mm.mm
+          z_alzada_sup   = alto_patas + t + h_alzada
+
+          # Soporte izquierdo de repisa alzada
+          crear_panel(
+            grupo_modulo, 'Soporte Repisa Alzada Izq',
+            0.mm, prof_total - prof_alzada, alto_patas + t,
+            t, prof_alzada, h_alzada,
+            {
+              'modulo_id' => modulo_id, 'pieza_id' => "#{modulo_id}-SOP-ALZ-IZQ",
+              'pieza_nombre' => 'Soporte Repisa Alzada Izq', 'material' => material,
+              'largo_bruto_mm' => prof_alzada_mm, 'ancho_bruto_mm' => h_alzada_mm, 'espesor_mm' => t_num,
+              'largo_neto_mm' => prof_alzada_mm - 0.45, 'ancho_neto_mm' => h_alzada_mm - 0.45,
+              'cantidad' => 1, 'veta' => 'longitudinal', 'ranura' => 'Ninguna'
+            }
+          )
+
+          # Soporte derecho de repisa alzada
+          crear_panel(
+            grupo_modulo, 'Soporte Repisa Alzada Der',
+            ancho_total - t, prof_total - prof_alzada, alto_patas + t,
+            t, prof_alzada, h_alzada,
+            {
+              'modulo_id' => modulo_id, 'pieza_id' => "#{modulo_id}-SOP-ALZ-DER",
+              'pieza_nombre' => 'Soporte Repisa Alzada Der', 'material' => material,
+              'largo_bruto_mm' => prof_alzada_mm, 'ancho_bruto_mm' => h_alzada_mm, 'espesor_mm' => t_num,
+              'largo_neto_mm' => prof_alzada_mm - 0.45, 'ancho_neto_mm' => h_alzada_mm - 0.45,
+              'cantidad' => 1, 'veta' => 'longitudinal', 'ranura' => 'Ninguna'
+            }
+          )
+
+          # Repisa Superior para Monitor / Impresora
+          crear_panel(
+            grupo_modulo, 'Repisa Alzada Impresora / Monitor',
+            0.mm, prof_total - prof_alzada, z_alzada_sup,
+            ancho_total, prof_alzada, t,
+            {
+              'modulo_id' => modulo_id, 'pieza_id' => "#{modulo_id}-REP-ALZADA",
+              'pieza_nombre' => 'Repisa Superior Monitor/Impresora', 'material' => material,
+              'largo_bruto_mm' => ancho_num, 'ancho_bruto_mm' => prof_alzada_mm, 'espesor_mm' => t_num,
+              'largo_neto_mm' => ancho_num - 2.0, 'ancho_neto_mm' => prof_alzada_mm - 2.0,
+              'cantidad' => 1, 'veta' => 'longitudinal',
+              'canto_L1' => 1.0, 'canto_L2' => 1.0, 'canto_A1' => 1.0, 'canto_A2' => 1.0, 'ranura' => 'Ninguna'
+            }
+          )
+        end
+
+        { 'ok' => true, 'modulo_id' => modulo_id, 'mensaje' => "Escritorio profesional con accesorios paramétricos creado exitosamente." }
       end
 
       # ========================================================================
@@ -852,9 +1005,16 @@ module JPQMelaminaPro
         dict_mod['tipo']        = tipo_mod
         dict_mod['alto_mm']     = params['alto'].to_f
         dict_mod['ancho_mm']    = params['ancho'].to_f
+        dict_mod['prof_mm']     = params['profundidad'].to_f
         esp_val = (params['espesor'] && params['espesor'].to_f > 0) ? params['espesor'].to_f : 18.0
         dict_mod['espesor_mm']  = esp_val
-        dict_mod['material']    = params['material'] || 'Melamina Blanca 18mm'
+        dict_mod['material']    = params['material'] || 'Pelikano Bellota 18mm'
+        dict_mod['params_json'] = JSON.generate(params)
+
+        # Seleccionar automáticamente el módulo en SketchUp y registrarlo como activo
+        model.selection.clear
+        model.selection.add(grupo)
+        @ultimo_modulo_activo = grupo
 
         grupo
       end
@@ -878,7 +1038,7 @@ module JPQMelaminaPro
           fondo_ancho_num.mm, t_fondo, fondo_alto_num.mm,
           {
             'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-FONDO",
-            'pieza_nombre' => 'Fondo MDF 3mm', 'material' => 'MDF 3mm Blanco',
+            'pieza_nombre' => 'Fondo MDF 3mm', 'material' => 'MDF Fondo Blanco 3mm',
             'largo_bruto_mm' => fondo_alto_num, 'ancho_bruto_mm' => fondo_ancho_num,
             'espesor_mm' => 3.0, 'largo_neto_mm' => fondo_alto_num,
             'ancho_neto_mm' => fondo_ancho_num, 'cantidad' => 1,
@@ -936,11 +1096,10 @@ module JPQMelaminaPro
         cara.reverse! if cara.normal.z < 0
         cara.pushpull(dz.abs)
 
-        # Asignar color/textura nativa de SketchUp si existe
-        mat_nombre = attrs['material']
-        if mat_nombre && parent_group.model.materials[mat_nombre]
-          panel_group.material = parent_group.model.materials[mat_nombre]
-        end
+        # Asignar color y textura fotorrealista de SketchUp (Pelikano, Vesto o Universal)
+        mat_nombre = attrs['material'] || 'Pelikano Bellota 18mm'
+        su_mat = MaterialManager.obtener_o_crear_material_su(parent_group.model, mat_nombre)
+        panel_group.material = su_mat if su_mat
 
         dict = panel_group.attribute_dictionary('DespieceMela', true)
         attrs.each { |k, v| dict[k.to_s] = v.to_s }

@@ -1,15 +1,25 @@
 # ==============================================================================
-# Archivo: mela_studio_clone/main.rb
-# Descripción: Inicializador principal de la barra de herramientas (12 iconos),
+# Archivo: jpq_melamina_pro/main.rb
+# Descripción: Inicializador principal de la barra de herramientas,
 #              menús y configuración de la interfaz gráfica UI::HtmlDialog.
+#              Organizado en 5 Hubs de Trabajo Profesionales:
+#              1. Estudio Espacial & Grilla Modular
+#              2. Ingeniería de Frentes, Mecanismos & Fondo
+#              3. Inspección Técnica & Cinemática 3D
+#              4. Catálogo de Melaminas, RH & Tapacantos
+#              5. Despiece Industrial, Optimización 2D & Costos
 # ==============================================================================
 
 require 'sketchup.rb'
 require 'json'
 
-# Carga de módulos auxiliares y controladores
+# Carga de controladores y módulos del motor de carpintería
 require_relative 'controller'
+require_relative 'core/profile_manager'
 require_relative 'core/cabinet_builder'
+require_relative 'core/spatial_matrix_builder'
+require_relative 'core/kinematics_engine'
+require_relative 'core/electrical_engine'
 require_relative 'core/parametric_modifier'
 require_relative 'core/interior_divider'
 require_relative 'core/drawer_builder'
@@ -25,11 +35,9 @@ require_relative 'exporters/csv_exporter'
 require_relative 'exporters/excel_exporter'
 
 module JPQMelaminaPro
-  # Referencia global a la ventana principal UI::HtmlDialog
   @main_dialog = nil
-
-  # Diccionario base para almacenar metadatos de carpintería en entidades
   DICT_NAME = 'DespieceMela'.freeze
+  PLUGIN_VERSION = '2.5.0'.freeze unless defined?(PLUGIN_VERSION)
 
   class << self
     # ==========================================================================
@@ -37,25 +45,24 @@ module JPQMelaminaPro
     # Descripción: Abre o enfoca la ventana interactiva HTML5/JS del plugin.
     #              Configura callbacks bidireccionales con SketchUp.
     # Parámetros:
-    #   - vista_inicial (String): Pestaña o módulo a activar al abrir (ej. 'crear', 'despiece')
+    #   - vista_inicial (String): Hub a activar (ej. 'hub-espacio', 'hub-despiece')
     # ==========================================================================
-    def abrir_dialogo_principal(vista_inicial = 'creador')
+    def abrir_dialogo_principal(vista_inicial = 'hub-espacio')
       if @main_dialog && @main_dialog.visible?
         @main_dialog.bring_to_front
-        ejecutar_en_dialogo("window.cambiarPestana && window.cambiarPestana('#{vista_inicial}')")
+        ejecutar_en_dialogo("window.cambiarHub && window.cambiarHub('#{vista_inicial}')")
         return
       end
 
-      # Configuración de propiedades de la ventana HtmlDialog
       dialog_options = {
-        dialog_title: 'JPQMelaminaPro - Suite de Carpintería',
+        dialog_title: 'JPQMelaminaPro - Suite Industrial de Carpintería',
         preferences_key: 'com.jpq.melaminapro.maindialog',
         scrollable: true,
         resizable: true,
-        width: 520,
-        height: 780,
-        min_width: 440,
-        min_height: 600,
+        width: 560,
+        height: 820,
+        min_width: 480,
+        min_height: 640,
         style: UI::HtmlDialog::STYLE_DIALOG
       }
 
@@ -63,12 +70,12 @@ module JPQMelaminaPro
       html_file = File.join(__dir__, 'web', 'index.html')
       @main_dialog.set_file(html_file)
 
-      # Conectar el controlador central de acciones
+      # Conectar el controlador central
       Controller.registrar_callbacks(@main_dialog)
 
-      # Cuando el DOM esté listo, seleccionar la vista solicitada
+      # Al cargar el DOM, activar el hub solicitado
       @main_dialog.add_action_callback('domListo') do |_context, _params|
-        ejecutar_en_dialogo("window.cambiarPestana && window.cambiarPestana('#{vista_inicial}')")
+        ejecutar_en_dialogo("window.cambiarHub && window.cambiarHub('#{vista_inicial}')")
       end
 
       @main_dialog.show
@@ -77,8 +84,6 @@ module JPQMelaminaPro
     # ==========================================================================
     # Método: ejecutar_en_dialogo
     # Descripción: Ejecuta una instrucción JavaScript dentro de la ventana activa.
-    # Parámetros:
-    #   - script_js (String): Cadena de código JavaScript a ejecutar.
     # ==========================================================================
     def ejecutar_en_dialogo(script_js)
       return unless @main_dialog && @main_dialog.visible?
@@ -87,116 +92,73 @@ module JPQMelaminaPro
 
     # ==========================================================================
     # Método: crear_barra_herramientas
-    # Descripción: Construye la barra de herramientas flotante con los 12 iconos
-    #              del flujo de trabajo de carpintería y despiece.
+    # Descripción: Construye la barra de herramientas organizada por flujos de trabajo.
     # ==========================================================================
     def crear_barra_herramientas
       toolbar = UI::Toolbar.new('JPQMelaminaPro')
       icons_dir = File.join(__dir__, 'icons')
 
-      # 1. Generador de Módulos Base
-      cmd_base = UI::Command.new('Crear Módulo') { abrir_dialogo_principal('creador') }
-      cmd_base.tooltip = 'Crear Módulo Base Paramétrico'
-      cmd_base.status_bar_text = 'Diseña un módulo con cotas milimétricas (bajo, aéreo, torre, librero)'
+      # 1. Estudio Espacial & Grilla Modular
+      cmd_base = UI::Command.new('Estudio Espacial') { abrir_dialogo_principal('hub-espacio') }
+      cmd_base.tooltip = 'Estudio Espacial y Grilla Modular (W, H, D)'
+      cmd_base.status_bar_text = 'Diseña muebles modulares y matrices en 3 zonas verticales'
       cmd_base.small_icon = File.join(icons_dir, 'mod_base_16.png')
       cmd_base.large_icon = File.join(icons_dir, 'mod_base_24.png')
       toolbar.add_item(cmd_base)
 
       # 2. Modificar Módulo Seleccionado
       cmd_edit = UI::Command.new('Editar Módulo') { Controller.editar_modulo_seleccionado }
-      cmd_edit.tooltip = 'Editar Módulo Paramétrico'
-      cmd_edit.status_bar_text = 'Modifica dimensiones del módulo seleccionado sin redibujarlo'
+      cmd_edit.tooltip = 'Editar Módulo Paramétrico en Tiempo Real'
+      cmd_edit.status_bar_text = 'Ajusta cotas milimétricas del mueble seleccionado'
       cmd_edit.small_icon = File.join(icons_dir, 'mod_edit_16.png')
       cmd_edit.large_icon = File.join(icons_dir, 'mod_edit_24.png')
       toolbar.add_item(cmd_edit)
 
       toolbar.add_separator
 
-      # 3. División Interior / Repisas
-      cmd_repisas = UI::Command.new('Repisas y Parantes') { abrir_dialogo_principal('repisas') }
-      cmd_repisas.tooltip = 'División Interior (Repisas y Parantes)'
-      cmd_repisas.status_bar_text = 'Agrega repisas fijas, móviles o parantes equidistantes'
-      cmd_repisas.small_icon = File.join(icons_dir, 'repisas_16.png')
-      cmd_repisas.large_icon = File.join(icons_dir, 'repisas_24.png')
-      toolbar.add_item(cmd_repisas)
+      # 3. Ingeniería de Frentes, Mecanismos y Fondos
+      cmd_frentes = UI::Command.new('Frentes y Fondos') { abrir_dialogo_principal('hub-frentes') }
+      cmd_frentes.tooltip = 'Frentes, Cajoneras, Fondos y Luces'
+      cmd_frentes.status_bar_text = 'Montaje exterior/medio/interior, correderas y amarres traseros a 18mm'
+      cmd_frentes.small_icon = File.join(icons_dir, 'cajones_16.png')
+      cmd_frentes.large_icon = File.join(icons_dir, 'cajones_24.png')
+      toolbar.add_item(cmd_frentes)
 
-      # 4. Cajoneras y Correderas
-      cmd_cajones = UI::Command.new('Cajonera') { abrir_dialogo_principal('cajones') }
-      cmd_cajones.tooltip = 'Insertar Cajonera'
-      cmd_cajones.status_bar_text = 'Inserta cajones con holguras de correderas (26mm) ya calculadas'
-      cmd_cajones.small_icon = File.join(icons_dir, 'cajones_16.png')
-      cmd_cajones.large_icon = File.join(icons_dir, 'cajones_24.png')
-      toolbar.add_item(cmd_cajones)
+      # 4. Inspección Técnica y Cinemática 3D
+      cmd_cinematica = UI::Command.new('Cinemática 3D') { abrir_dialogo_principal('hub-inspeccion') }
+      cmd_cinematica.tooltip = 'Simulación de Apertura y Cotas 3D'
+      cmd_cinematica.status_bar_text = 'Abrir puertas y cajones al 80% y validar cotas internas'
+      cmd_cinematica.small_icon = File.join(icons_dir, 'puertas_16.png')
+      cmd_cinematica.large_icon = File.join(icons_dir, 'puertas_24.png')
+      toolbar.add_item(cmd_cinematica)
 
       toolbar.add_separator
 
-      # 5. Ranuras y Fondo MDF
-      cmd_ranura = UI::Command.new('Fondo y Ranurado') { abrir_dialogo_principal('ranura') }
-      cmd_ranura.tooltip = 'Configurar Fondo MDF y Ranurado'
-      cmd_ranura.status_bar_text = 'Configura fondo enranurado (4x8mm a 18mm) o clavado'
-      cmd_ranura.small_icon = File.join(icons_dir, 'ranuras_16.png')
-      cmd_ranura.large_icon = File.join(icons_dir, 'ranuras_24.png')
-      toolbar.add_item(cmd_ranura)
-
-      # 6. Asignador de Tapacantos
-      cmd_cantos = UI::Command.new('Tapacantos') { abrir_dialogo_principal('cantos') }
-      cmd_cantos.tooltip = 'Asignar Tapacantos y Descuentos'
-      cmd_cantos.status_bar_text = 'Aplica canto delgado (0.45mm) o grueso (1/2/3mm) con descuento a corte neto'
-      cmd_cantos.small_icon = File.join(icons_dir, 'tapacantos_16.png')
-      cmd_cantos.large_icon = File.join(icons_dir, 'tapacantos_24.png')
-      toolbar.add_item(cmd_cantos)
-
-      # 7. Mecanizado y Perforaciones
-      cmd_perforaciones = UI::Command.new('Mecanizados') { abrir_dialogo_principal('mecanizados') }
-      cmd_perforaciones.tooltip = 'Mecanizado (Minifix, Tarugos, Soberbios)'
-      cmd_perforaciones.status_bar_text = 'Aplica perforaciones para ensamble Minifix (15mm), tarugos y tornillos'
-      cmd_perforaciones.small_icon = File.join(icons_dir, 'perforaciones_16.png')
-      cmd_perforaciones.large_icon = File.join(icons_dir, 'perforaciones_24.png')
-      toolbar.add_item(cmd_perforaciones)
-
-      # 8. Gestor de Materiales y Vetas
-      cmd_material = UI::Command.new('Materiales y Veta') { abrir_dialogo_principal('materiales') }
-      cmd_material.tooltip = 'Gestor de Melaminas y Orientación de Veta'
-      cmd_material.status_bar_text = 'Define color y restringe sentido de la veta para el optimizador'
+      # 5. Catálogo de Melaminas, RH y Tapacantos
+      cmd_material = UI::Command.new('Materiales y Cantos') { abrir_dialogo_principal('hub-materiales') }
+      cmd_material.tooltip = 'Catálogo Pelíkano, Vesto, Melamina RH y Cantos'
+      cmd_material.status_bar_text = 'Gestión de tableros estándar vs RH y propuesta automática de tapacantos'
       cmd_material.small_icon = File.join(icons_dir, 'materiales_16.png')
       cmd_material.large_icon = File.join(icons_dir, 'materiales_24.png')
       toolbar.add_item(cmd_material)
 
-      toolbar.add_separator
-
-      # 9. Puertas y Tapas de Cajón
-      cmd_puertas = UI::Command.new('Puertas') { abrir_dialogo_principal('puertas') }
-      cmd_puertas.tooltip = 'Generar Puertas y Frentes'
-      cmd_puertas.status_bar_text = 'Puertas batientes con holguras de 2-3mm y cazoletas de 35mm'
-      cmd_puertas.small_icon = File.join(icons_dir, 'puertas_16.png')
-      cmd_puertas.large_icon = File.join(icons_dir, 'puertas_24.png')
-      toolbar.add_item(cmd_puertas)
-
-      # 10. Etiquetado de Piezas
-      cmd_etiquetas = UI::Command.new('Etiquetar') { Controller.etiquetar_piezas_seleccionadas }
-      cmd_etiquetas.tooltip = 'Etiquetar Piezas para Armado'
-      cmd_etiquetas.status_bar_text = 'Asigna stickers/identificadores numéricos a cada pieza'
-      cmd_etiquetas.small_icon = File.join(icons_dir, 'etiquetas_16.png')
-      cmd_etiquetas.large_icon = File.join(icons_dir, 'etiquetas_24.png')
-      toolbar.add_item(cmd_etiquetas)
-
-      # 11. Editar Pieza Individual
-      cmd_pieza_edit = UI::Command.new('Editar Pieza') { Controller.editar_pieza_individual }
-      cmd_pieza_edit.tooltip = 'Editar Propiedades de Pieza Individual'
-      cmd_pieza_edit.status_bar_text = 'Aplica sobremedida para refile en obra o gira veta individualmente'
-      cmd_pieza_edit.small_icon = File.join(icons_dir, 'pieza_edit_16.png')
-      cmd_pieza_edit.large_icon = File.join(icons_dir, 'pieza_edit_24.png')
-      toolbar.add_item(cmd_pieza_edit)
-
-      toolbar.add_separator
-
-      # 12. Extracción de Despiece y Optimización
-      cmd_despiece = UI::Command.new('Despiece y Optimización') { abrir_dialogo_principal('despiece') }
-      cmd_despiece.tooltip = 'Extraer Despiece y Optimizar Cortes'
-      cmd_despiece.status_bar_text = 'Genera lista de corte para Pelíkano/Masisa/Sodimac y mapa de corte 2D'
+      # 6. Despiece Industrial, Optimización 2D y Costos
+      cmd_despiece = UI::Command.new('Despiece y Optimización') { abrir_dialogo_principal('hub-despiece') }
+      cmd_despiece.tooltip = 'Despiece Industrial, Optimización 2D y Costos'
+      cmd_despiece.status_bar_text = 'Cálculo de corte neto, peso del mueble, optimizador 2D y exportaciones'
       cmd_despiece.small_icon = File.join(icons_dir, 'despiece_16.png')
       cmd_despiece.large_icon = File.join(icons_dir, 'despiece_24.png')
       toolbar.add_item(cmd_despiece)
+
+      toolbar.add_separator
+
+      # 7. Etiquetado de Piezas para Taller
+      cmd_etiquetas = UI::Command.new('Etiquetar') { Controller.etiquetar_piezas_seleccionadas }
+      cmd_etiquetas.tooltip = 'Etiquetar Piezas para Armado en Taller'
+      cmd_etiquetas.status_bar_text = 'Asigna identificadores y etiquetas de producción a cada pieza'
+      cmd_etiquetas.small_icon = File.join(icons_dir, 'etiquetas_16.png')
+      cmd_etiquetas.large_icon = File.join(icons_dir, 'etiquetas_24.png')
+      toolbar.add_item(cmd_etiquetas)
 
       toolbar.restore if toolbar.get_last_state == TB_VISIBLE
       toolbar
@@ -204,27 +166,36 @@ module JPQMelaminaPro
 
     # ==========================================================================
     # Método: inicializar_menus
-    # Descripción: Añade las opciones al menú superior 'Plugins' de SketchUp.
+    # Descripción: Añade las opciones organizadas al menú superior 'Plugins'.
     # ==========================================================================
     def inicializar_menus
       menu = UI.menu('Plugins').add_submenu('JPQMelaminaPro')
-      menu.add_item('Abrir Panel de Control') { abrir_dialogo_principal('creador') }
-      menu.add_item('Extraer Despiece a Excel / CSV') { abrir_dialogo_principal('despiece') }
-      menu.add_item('Optimizar Cortes 2D (Guillotina)') { abrir_dialogo_principal('optimizador') }
+      menu.add_item('1. Estudio Espacial & Grilla Modular') { abrir_dialogo_principal('hub-espacio') }
+      menu.add_item('2. Frentes, Mecanismos y Fondos') { abrir_dialogo_principal('hub-frentes') }
+      menu.add_item('3. Inspección Técnica y Cinemática 3D') { abrir_dialogo_principal('hub-inspeccion') }
+      menu.add_item('4. Melaminas, RH y Tapacantos') { abrir_dialogo_principal('hub-materiales') }
+      menu.add_item('5. Despiece Oficial y Optimización 2D') { abrir_dialogo_principal('hub-despiece') }
+      menu.add_separator
+      menu.add_item('Simular Apertura (Abrir / Cerrar Todo)') do
+        KinematicsEngine.alternar_apertura('alternar')
+      end
+      menu.add_item('Alternar Cotas Técnicas 3D') do
+        capa = Sketchup.active_model.layers['JPQ_Cotas_Tecnicas']
+        nuevo_val = capa ? !capa.visible? : true
+        KinematicsEngine.alternar_cotas_3d(nuevo_val)
+      end
       menu.add_separator
       menu.add_item('Recargar Código (Hot Reload)') do
         recargar_modulos_en_caliente
-        UI.messagebox("Todos los módulos de JPQMelaminaPro fueron recargados en memoria exitosamente.")
+        UI.messagebox("Todos los módulos de JPQMelaminaPro v#{PLUGIN_VERSION} fueron recargados en memoria exitosamente.")
       end
-      menu.add_separator
       menu.add_item('Acerca de JPQMelaminaPro') do
-        UI.messagebox("JPQMelaminaPro v#{PLUGIN_VERSION}\nSuite paramétrica de carpintería y despiece milimétrico.")
+        UI.messagebox("JPQMelaminaPro v#{PLUGIN_VERSION}\nSuite paramétrica industrial de carpintería y despiece milimétrico.")
       end
     end
 
     # ==========================================================================
     # Método: recargar_modulos_en_caliente
-    # Descripción: Recarga todos los scripts Ruby en memoria activa sin reiniciar SketchUp.
     # ==========================================================================
     def recargar_modulos_en_caliente
       Dir[File.join(__dir__, '{core,optimizer,exporters}', '*.rb')].each do |archivo|
@@ -234,7 +205,6 @@ module JPQMelaminaPro
     end
   end
 
-  # Registro único de la barra y menús al cargar el archivo
   unless file_loaded?(__FILE__)
     crear_barra_herramientas
     inicializar_menus

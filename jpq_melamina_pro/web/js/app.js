@@ -1,635 +1,1168 @@
-/**
- * ==============================================================================
- * JPQMelaminaPro - Lógica de Interfaz y Puente de Comunicación con SketchUp
- * Control de formularios paramétricos, llamadas asíncronas con window.sketchup,
- * gestión de temas y renderizado de tablas de despiece en tiempo real.
- * ==============================================================================
- */
+// ==============================================================================
+// Archivo: jpq_melamina_pro/web/js/app.js
+// Descripción: Controlador Frontend Principal de JPQMelaminaPro.
+//              Implementa el flujo interactivo solicitado por el usuario:
+//              - Lado Izquierdo (1/3): Ingreso del detalle, melamina y pestañas modulares.
+//              - Lado Derecho (2/3): Dibujo en vivo en 3 estados:
+//                1. Vacío al inicio.
+//                2. Rectángulo delineado al ingresar dimensiones generales (W x H x D).
+//                3. Módulos armados al ingresar espesor de melamina y cantidad de módulos.
+//              - Pestañas dinámicas con recálculo automático de anchos para sumar el total.
+//              - Alturas y profundidades individuales por módulo (menores o iguales al total).
+//              - Zócalos por módulo con altura y cantidad de listones.
+//              - Validación estricta de medidas mínimas, máximas y reglas de pandeo.
+// ==============================================================================
 
-// Estado global de la aplicación
+// Estado global de la aplicación (Store Central)
 const AppState = {
-  despieceActual: null,
+  // Estado del flujo visualizador: 'vacio' | 'delineado' | 'modulos'
+  estadoVisualizador: 'vacio',
+
+  // 1. Dimensiones Generales del Mueble (W, H, D en mm)
+  anchoTotal: 0,
+  altoTotal: 0,
+  profTotal: 0,
+
+  // 2. Configuración Base de Melamina y Fabricación
+  espesorMelamina: 18, // 15, 18, 36 mm
+  materialEstructura: 'Pelikano Bellota 18mm',
+  materialFrentes: 'Pelikano Rovere 18mm',
+  resistencia: 'Normal', // 'Normal' o 'RH'
+  cantidadModulos: 0,
+
+  // 3. Colección de Módulos Paramétricos
+  moduloActivoIndex: 0,
+  modulos: [],
+
+  // 4. Parámetros de Visualización Técnica
+  vistaActual: 'iso',       // 'iso' | 'front' | 'top' | 'side'
+  modoRender: 'solido',     // 'solido' | 'alambre'
+  mostrarCotas: true,
+
+  // 5. Tema Activo (Claro, Oscuro, Taller Madera)
   temaActual: 'claro',
-  moduloSeleccionado: null
+
+  // 6. Despiece y Optimización
+  despieceActual: [],
+  materialesBandeja: []
 };
 
 // ==============================================================================
-// 1. Inicialización y Gestión de Temas
+// 1. INICIALIZACIÓN DE LA APLICACIÓN
 // ==============================================================================
+
 document.addEventListener('DOMContentLoaded', () => {
-  inicializarTemas();
-  inicializarEventos();
-  inicializarPrevisualizador3D();
-
-  // Notificar a SketchUp que el DOM está completamente listo
-  if (window.sketchup && window.sketchup.domListo) {
-    window.sketchup.domListo();
-  }
-});
-
-/**
- * Configura el sistema de temas (Claro, Oscuro, Taller Madera) persistente en localStorage.
- */
-function inicializarTemas() {
-  const temaGuardado = localStorage.getItem('jpqmelaminapro_theme') || 'claro';
+  // Cargar tema guardado
+  const temaGuardado = localStorage.getItem('jpq_tema') || 'claro';
   cambiarTema(temaGuardado);
 
-  const themeSelector = document.getElementById('themeSelector');
-  if (themeSelector) {
-    themeSelector.value = temaGuardado;
-    themeSelector.addEventListener('change', (e) => {
-      cambiarTema(e.target.value);
-      if (window.Preview3D) Preview3D.render();
-    });
-  }
-}
-
-/**
- * Aplica la clase correspondiente de tema al <body>.
- * @param {string} tema - 'claro' | 'oscuro' | 'taller'
- */
-function cambiarTema(tema) {
-  document.body.classList.remove('theme-dark', 'theme-taller');
-  if (tema === 'oscuro') {
-    document.body.classList.add('theme-dark');
-  } else if (tema === 'taller') {
-    document.body.classList.add('theme-taller');
-  }
-  AppState.temaActual = tema;
-  localStorage.setItem('jpqmelaminapro_theme', tema);
-}
-
-// ==============================================================================
-// 2. Navegación por Pestañas y Eventos de Interfaz
-// ==============================================================================
-function inicializarEventos() {
-  const tabButtons = document.querySelectorAll('.nav-tab');
-  tabButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const targetPane = btn.getAttribute('data-tab');
-      cambiarPestana(targetPane);
-    });
-  });
-
-  // Escuchar cambios en los selectores de tapacantos para actualizar medida neta
-  const selectoresCantos = ['cantoL1', 'cantoL2', 'cantoA1', 'cantoA2'];
-  selectoresCantos.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('change', actualizarPrevisualizacionCorteNeto);
-  });
-}
-
-/**
- * Inicializa el motor de previsualización 3D y conecta los inputs del formulario
- * para redibujar en vivo por cada característica modificada.
- */
-function inicializarPrevisualizador3D() {
+  // Inicializar el motor Canvas 3D con callback de selección de módulo
   if (window.Preview3D) {
-    Preview3D.init('preview3DCanvas');
+    Preview3D.init('preview3DCanvas', (indexClickeado) => {
+      seleccionarPestanaModulo(indexClickeado);
+    });
   }
 
-  // Lista de campos del formulario generador que disparan actualización inmediata
-  const camposGenerador = [
-    'modTipo', 'modAlto', 'modAncho', 'modProfundidad', 'modEspesor',
-    'modMaterial', 'modAltoZocalo', 'modVuelo', 'modFondo',
-    'modProfRanura', 'modDistRanura', 'modRepisasCheck', 'modCantRepisas', 'modAmarresCheck'
-  ];
-
-  camposGenerador.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.addEventListener('input', actualizarPrevisualizacionDesdeFormulario);
-      el.addEventListener('change', actualizarPrevisualizacionDesdeFormulario);
+  // Escuchar redimensionamiento para refrescar el canvas
+  window.addEventListener('resize', () => {
+    if (window.Preview3D && window.Preview3D.resize) {
+      window.Preview3D.resize();
     }
   });
 
-  alCambiarTipoMueble();
+  // Mostrar notificación inicial
+  mostrarNotificacion("JPQMelaminaPro iniciado. Ingrese las dimensiones generales para trazar el mueble.", "info");
+});
+
+// ==============================================================================
+// 2. GESTIÓN DE TEMAS (Claro / Oscuro / Taller Madera)
+// ==============================================================================
+
+/**
+ * Conmuta el tema visual de toda la suite.
+ * @param {string} tema - 'claro', 'oscuro' o 'taller'
+ */
+function cambiarTema(tema) {
+  document.body.className = `theme-${tema}`;
+  AppState.temaActual = tema;
+  localStorage.setItem('jpq_tema', tema);
+
+  // Actualizar selector visual en el header si existe
+  const selectTema = document.getElementById('selectTemaApp');
+  if (selectTema) selectTema.value = tema;
+
+  // Re-renderizar visor con los colores correspondientes al tema
+  actualizarCanvas();
+}
+
+// ==============================================================================
+// 3. PASO 1: DIMENSIONES GENERALES DEL MUEBLE (Ancho, Alto, Profundidad)
+// ==============================================================================
+
+/**
+ * Procesa las dimensiones generales ingresadas en el panel izquierdo.
+ * Si las 3 dimensiones son válidas (> 0), pasa a estado 'delineado'
+ * (o mantiene 'modulos' si ya se habían configurado módulos).
+ */
+function onDimensionesGeneralesChange() {
+  const w = parseFloat(document.getElementById('dimAnchoTotal').value) || 0;
+  const h = parseFloat(document.getElementById('dimAltoTotal').value) || 0;
+  const d = parseFloat(document.getElementById('dimProfTotal').value) || 0;
+
+  AppState.anchoTotal = w;
+  AppState.altoTotal = h;
+  AppState.profTotal = d;
+
+  // Si no hay dimensiones completas, vuelve a estado 'vacio'
+  if (w <= 0 || h <= 0 || d <= 0) {
+    AppState.estadoVisualizador = 'vacio';
+    actualizarCanvas();
+    actualizarBadgeEstado();
+    return;
+  }
+
+  // Si no hay módulos configurados aún, pasa a 'delineado'
+  if (AppState.cantidadModulos <= 0 || AppState.modulos.length === 0) {
+    AppState.estadoVisualizador = 'delineado';
+    mostrarNotificacion(`Marco delineado generado: ${w} x ${h} x ${d} mm`, "info");
+  } else {
+    // Si ya existían módulos, redistribuir el nuevo ancho total proporcionalmente
+    distribuirAnchoTotalEnModulos();
+    AppState.estadoVisualizador = 'modulos';
+  }
+
+  actualizarBadgeEstado();
+  actualizarCanvas();
 }
 
 /**
- * Cambia los valores predeterminados y muestra u oculta campos según el mueble seleccionado.
+ * Aplica un preset antropométrico rápido de mobiliario estandarizado.
+ * @param {string} tipo - 'bajo_cocina', 'aereo_cocina', 'ropero', 'librero'
  */
-function alCambiarTipoMueble() {
-  const selectTipo = document.getElementById('modTipo');
-  if (!selectTipo) return;
-  const tipo = selectTipo.value;
-
-  const elNombre = document.getElementById('modNombre');
-  const elAlto = document.getElementById('modAlto');
-  const elAncho = document.getElementById('modAncho');
-  const elProf = document.getElementById('modProfundidad');
-  const elZocalo = document.getElementById('modAltoZocalo');
-  const elVuelo = document.getElementById('modVuelo');
-  const elRepisasCheck = document.getElementById('modRepisasCheck');
-  const elCantRepisas = document.getElementById('modCantRepisas');
-  const elAmarresCheck = document.getElementById('modAmarresCheck');
-  const elFondo = document.getElementById('modFondo');
-
-  const grupoZocalo = document.getElementById('grupoZocalo');
-  const grupoVuelo = document.getElementById('grupoVuelo');
-  const seccionRepisas = document.getElementById('seccionRepisasModulo');
-  const filaAmarres = document.getElementById('filaAmarresCheck');
-  const filaFondo = document.getElementById('filaFondoCheck');
-  const filaRanura = document.getElementById('filaRanuraConfig');
+function aplicarPresetMobiliario(tipo) {
+  let w = 2400, h = 2100, d = 600;
 
   switch (tipo) {
-    case 'escritorio':
-      if (elNombre) elNombre.value = 'Escritorio Profesional';
-      if (elAlto) elAlto.value = 750;
-      if (elAncho) elAncho.value = 1200;
-      if (elProf) elProf.value = 600;
-      if (elVuelo) elVuelo.value = 20;
-      if (grupoZocalo) grupoZocalo.style.display = 'none';
-      if (grupoVuelo) grupoVuelo.style.display = 'block';
-      if (seccionRepisas) seccionRepisas.style.display = 'none';
-      if (filaAmarres) filaAmarres.style.display = 'none';
-      if (filaFondo) filaFondo.style.display = 'none';
-      if (filaRanura) filaRanura.style.display = 'none';
+    case 'bajo_cocina':
+      w = 1800; h = 850; d = 600;
       break;
-
-    case 'comoda':
-      if (elNombre) elNombre.value = 'Cómoda 4 Cajones';
-      if (elAlto) elAlto.value = 950;
-      if (elAncho) elAncho.value = 800;
-      if (elProf) elProf.value = 450;
-      if (elZocalo) elZocalo.value = 80;
-      if (grupoZocalo) grupoZocalo.style.display = 'block';
-      if (grupoVuelo) grupoVuelo.style.display = 'none';
-      if (seccionRepisas) seccionRepisas.style.display = 'none';
-      if (filaAmarres) filaAmarres.style.display = 'none';
-      if (filaFondo) filaFondo.style.display = 'flex';
-      if (filaRanura) filaRanura.style.display = 'grid';
+    case 'aereo_cocina':
+      w = 1800; h = 700; d = 320;
       break;
-
     case 'ropero':
-      if (elNombre) elNombre.value = 'Ropero Clóset 2 Cuerpos';
-      if (elAlto) elAlto.value = 2100;
-      if (elAncho) elAncho.value = 1400;
-      if (elProf) elProf.value = 550;
-      if (elZocalo) elZocalo.value = 80;
-      if (grupoZocalo) grupoZocalo.style.display = 'block';
-      if (grupoVuelo) grupoVuelo.style.display = 'none';
-      if (seccionRepisas) seccionRepisas.style.display = 'none';
-      if (filaAmarres) filaAmarres.style.display = 'none';
-      if (filaFondo) filaFondo.style.display = 'flex';
-      if (filaRanura) filaRanura.style.display = 'grid';
+      w = 2400; h = 2200; d = 600;
       break;
-
-    case 'bajo':
-      if (elNombre) elNombre.value = 'Módulo Bajo Cocina';
-      if (elAlto) elAlto.value = 850;
-      if (elAncho) elAncho.value = 800;
-      if (elProf) elProf.value = 600;
-      if (elZocalo) elZocalo.value = 100;
-      if (elRepisasCheck) elRepisasCheck.checked = true;
-      if (elCantRepisas) elCantRepisas.value = 1;
-      if (elAmarresCheck) elAmarresCheck.checked = true;
-      if (grupoZocalo) grupoZocalo.style.display = 'block';
-      if (grupoVuelo) grupoVuelo.style.display = 'none';
-      if (seccionRepisas) seccionRepisas.style.display = 'block';
-      if (filaAmarres) filaAmarres.style.display = 'flex';
-      if (filaFondo) filaFondo.style.display = 'flex';
-      if (filaRanura) filaRanura.style.display = 'grid';
-      break;
-
-    case 'aereo':
-      if (elNombre) elNombre.value = 'Alacena Aérea Cocina';
-      if (elAlto) elAlto.value = 700;
-      if (elAncho) elAncho.value = 800;
-      if (elProf) elProf.value = 320;
-      if (elRepisasCheck) elRepisasCheck.checked = true;
-      if (elCantRepisas) elCantRepisas.value = 1;
-      if (grupoZocalo) grupoZocalo.style.display = 'none';
-      if (grupoVuelo) grupoVuelo.style.display = 'none';
-      if (seccionRepisas) seccionRepisas.style.display = 'block';
-      if (filaAmarres) filaAmarres.style.display = 'none';
-      if (filaFondo) filaFondo.style.display = 'flex';
-      if (filaRanura) filaRanura.style.display = 'grid';
-      break;
-
     case 'librero':
-    default:
-      if (elNombre) elNombre.value = 'Librero con Zócalo';
-      if (elAlto) elAlto.value = 1800;
-      if (elAncho) elAncho.value = 800;
-      if (elProf) elProf.value = 300;
-      if (elZocalo) elZocalo.value = 70;
-      if (elRepisasCheck) elRepisasCheck.checked = true;
-      if (elCantRepisas) elCantRepisas.value = 3;
-      if (grupoZocalo) grupoZocalo.style.display = 'block';
-      if (grupoVuelo) grupoVuelo.style.display = 'none';
-      if (seccionRepisas) seccionRepisas.style.display = 'block';
-      if (filaAmarres) filaAmarres.style.display = 'none';
-      if (filaFondo) filaFondo.style.display = 'flex';
-      if (filaRanura) filaRanura.style.display = 'grid';
+      w = 1200; h = 1800; d = 300;
       break;
   }
 
-  actualizarPrevisualizacionDesdeFormulario();
+  document.getElementById('dimAnchoTotal').value = w;
+  document.getElementById('dimAltoTotal').value = h;
+  document.getElementById('dimProfTotal').value = d;
+
+  onDimensionesGeneralesChange();
 }
 
 /**
- * Lee todos los valores del formulario y actualiza la escena 3D en tiempo real.
+ * Limpia los campos y regresa al estado inicial vacío.
  */
-function actualizarPrevisualizacionDesdeFormulario() {
+function reiniciarAEstadoVacio() {
+  document.getElementById('dimAnchoTotal').value = '';
+  document.getElementById('dimAltoTotal').value = '';
+  document.getElementById('dimProfTotal').value = '';
+  document.getElementById('inputCantModulos').value = '0';
+
+  AppState.anchoTotal = 0;
+  AppState.altoTotal = 0;
+  AppState.profTotal = 0;
+  AppState.cantidadModulos = 0;
+  AppState.modulos = [];
+  AppState.estadoVisualizador = 'vacio';
+
+  renderizarPestanasModulos();
+  actualizarBadgeEstado();
+  actualizarCanvas();
+  mostrarNotificacion("Espacio reiniciado a estado vacío.", "info");
+}
+
+// ==============================================================================
+// 4. PASO 2: CONFIGURACIÓN DE MELAMINA Y CANTIDAD DE MÓDULOS
+// ==============================================================================
+
+/**
+ * Actualiza el espesor de la melamina (15mm o 18mm estándar).
+ */
+function onEspesorMelaminaChange() {
+  const selEspesor = document.getElementById('dimEspesorMelamina');
+  AppState.espesorMelamina = parseFloat(selEspesor.value) || 18;
+  actualizarCanvas();
+  validarTodosLosModulos();
+}
+
+/**
+ * Modifica la cantidad de módulos con los botones [+] y [-] o input directo.
+ * @param {number} delta - +1 o -1
+ */
+function modificarCantidadModulos(delta) {
+  let actual = parseInt(document.getElementById('inputCantModulos').value) || 0;
+  let nueva = Math.max(0, Math.min(8, actual + delta));
+  document.getElementById('inputCantModulos').value = nueva;
+  onCantidadModulosChange();
+}
+
+/**
+ * Se ejecuta al cambiar la cantidad de módulos.
+ * Inicializa o redimensiona el array de módulos y reparte el ancho total.
+ */
+function onCantidadModulosChange() {
+  const numModulos = parseInt(document.getElementById('inputCantModulos').value) || 0;
+
+  // Validación: Se requieren dimensiones generales previas
+  if (AppState.anchoTotal <= 0 || AppState.altoTotal <= 0 || AppState.profTotal <= 0) {
+    if (numModulos > 0) {
+      mostrarNotificacion("Primero ingrese Ancho, Alto y Profundidad en el Paso 1.", "warning");
+    }
+    return;
+  }
+
+  if (numModulos <= 0) {
+    AppState.cantidadModulos = 0;
+    AppState.modulos = [];
+    AppState.estadoVisualizador = 'delineado';
+    renderizarPestanasModulos();
+    actualizarBadgeEstado();
+    actualizarCanvas();
+    return;
+  }
+
+  AppState.cantidadModulos = numModulos;
+
+  // Generar o ajustar array de módulos
+  const nuevosModulos = [];
+  const anchoBase = Math.floor(AppState.anchoTotal / numModulos);
+  const remanente = AppState.anchoTotal - (anchoBase * numModulos);
+
+  for (let i = 0; i < numModulos; i++) {
+    const anchoEste = (i === numModulos - 1) ? (anchoBase + remanente) : anchoBase;
+
+    // Si ya existía el módulo, conservar sus preferencias
+    const modPrevio = AppState.modulos[i];
+
+    nuevosModulos.push({
+      id: i + 1,
+      nombre: `Módulo ${i + 1}`,
+      ancho: anchoEste,
+      alto: modPrevio ? modPrevio.alto : AppState.altoTotal,
+      profundidad: modPrevio ? modPrevio.profundidad : AppState.profTotal,
+      tiene_zocalo: modPrevio ? modPrevio.tiene_zocalo : true,
+      alto_zocalo: modPrevio ? modPrevio.alto_zocalo : 100,
+      cant_listones: modPrevio ? modPrevio.cant_listones : 2,
+      tiene_liston_amarre: modPrevio ? modPrevio.tiene_liston_amarre : false,
+      cant_listones_amarre: modPrevio ? modPrevio.cant_listones_amarre : 2,
+      alto_liston_amarre: modPrevio ? modPrevio.alto_liston_amarre : 80,
+      posicion_liston_amarre: modPrevio ? modPrevio.posicion_liston_amarre : 'posterior',
+      techo_sobre_liston: modPrevio ? modPrevio.techo_sobre_liston : false,
+      tiene_fondo_mdf: modPrevio ? (modPrevio.tiene_fondo_mdf !== false) : true,
+      posicion_fondo_mdf: modPrevio ? modPrevio.posicion_fondo_mdf : 'delante_liston',
+      tipo_interior: modPrevio ? modPrevio.tipo_interior : 'repisas',
+      cant_repisas: modPrevio ? modPrevio.cant_repisas : 2,
+      cant_cajones: modPrevio ? modPrevio.cant_cajones : 3,
+      material_frentes: AppState.materialFrentes
+    });
+  }
+
+  AppState.modulos = nuevosModulos;
+  AppState.moduloActivoIndex = Math.min(AppState.moduloActivoIndex, numModulos - 1);
+  AppState.estadoVisualizador = 'modulos';
+
+  renderizarPestanasModulos();
+  actualizarFormularioModuloActivo();
+  actualizarBadgeEstado();
+  actualizarCanvas();
+  mostrarNotificacion(`Composición armada: ${numModulos} módulos configurados.`, "success");
+}
+
+/**
+ * Divide el Ancho Total exactamente en partes iguales entre los módulos activos.
+ */
+function equilibrarAnchosModulos() {
+  const numModulos = AppState.modulos.length;
+  if (numModulos <= 0) return;
+
+  const anchoBase = Math.floor(AppState.anchoTotal / numModulos);
+  const remanente = AppState.anchoTotal - (anchoBase * numModulos);
+
+  AppState.modulos.forEach((m, idx) => {
+    m.ancho = (idx === numModulos - 1) ? (anchoBase + remanente) : anchoBase;
+  });
+
+  renderizarPestanasModulos();
+  actualizarFormularioModuloActivo();
+  actualizarCanvas();
+  mostrarNotificacion("Anchos equilibrados equitativamente.", "info");
+}
+
+/**
+ * Redistribuye el ancho total cuando cambia la cota global del mueble.
+ */
+function distribuirAnchoTotalEnModulos() {
+  const numModulos = AppState.modulos.length;
+  if (numModulos <= 0) return;
+
+  const sumaActual = AppState.modulos.reduce((acc, m) => acc + m.ancho, 0);
+  if (sumaActual <= 0) {
+    equilibrarAnchosModulos();
+    return;
+  }
+
+  let acumulado = 0;
+  for (let i = 0; i < numModulos; i++) {
+    if (i === numModulos - 1) {
+      AppState.modulos[i].ancho = Math.max(150, AppState.anchoTotal - acumulado);
+    } else {
+      const fraccion = AppState.modulos[i].ancho / sumaActual;
+      const nuevoW = Math.max(150, Math.round(AppState.anchoTotal * fraccion));
+      AppState.modulos[i].ancho = nuevoW;
+      acumulado += nuevoW;
+    }
+  }
+
+  renderizarPestanasModulos();
+  actualizarFormularioModuloActivo();
+}
+
+// ==============================================================================
+// 5. PASO 3: PESTAÑAS DE MÓDULOS & RECÁLCULO DINÁMICO DE ANCHOS
+// ==============================================================================
+
+/**
+ * Renderiza la barra de pestañas horizontales [ Módulo 1 ] [ Módulo 2 ] ...
+ */
+function renderizarPestanasModulos() {
+  const container = document.getElementById('moduleTabsHeader');
+  const cardConfig = document.getElementById('cardConfigModulo');
+  if (!container) return;
+
+  if (AppState.modulos.length === 0) {
+    container.innerHTML = `<span class="text-muted" style="font-size: 11px;">Configure cantidad de módulos en el Paso 2 para habilitar las pestañas.</span>`;
+    if (cardConfig) cardConfig.style.display = 'none';
+    return;
+  }
+
+  if (cardConfig) cardConfig.style.display = 'block';
+
+  let html = '';
+  AppState.modulos.forEach((m, idx) => {
+    const esActivo = (idx === AppState.moduloActivoIndex);
+    html += `
+      <button type="button" class="module-tab-btn ${esActivo ? 'active' : ''}" onclick="seleccionarPestanaModulo(${idx})">
+        <span>Módulo ${idx + 1}</span>
+        <span class="module-tab-badge">${m.ancho} mm</span>
+      </button>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+/**
+ * Cambia la pestaña del módulo activo.
+ * @param {number} index - Índice del módulo a seleccionar (0-based)
+ */
+function seleccionarPestanaModulo(index) {
+  if (index < 0 || index >= AppState.modulos.length) return;
+  AppState.moduloActivoIndex = index;
+
+  renderizarPestanasModulos();
+  actualizarFormularioModuloActivo();
+  actualizarCanvas();
+}
+
+/**
+ * Carga los valores del módulo activo en los inputs del panel izquierdo.
+ */
+function actualizarFormularioModuloActivo() {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m) return;
+
+  // Título e indicador
+  const lblTitulo = document.getElementById('lblTituloModuloActivo');
+  if (lblTitulo) lblTitulo.innerText = `Configuración de Módulo ${idx + 1}`;
+
+  // Inputs dimensionales
+  const inpAncho = document.getElementById('modAncho');
+  const inpAlto = document.getElementById('modAlto');
+  const inpProf = document.getElementById('modProf');
+
+  if (inpAncho) inpAncho.value = m.ancho;
+  if (inpAlto) {
+    inpAlto.value = m.alto;
+    inpAlto.max = AppState.altoTotal;
+  }
+  if (inpProf) {
+    inpProf.value = m.profundidad;
+    inpProf.max = AppState.profTotal;
+  }
+
+  // Zócalo
+  const chkZocalo = document.getElementById('modTieneZocalo');
+  const inpAltoZocalo = document.getElementById('modAltoZocalo');
+  const selListones = document.getElementById('modCantListones');
+  const grpZocalo = document.getElementById('grpDetalleZocalo');
+
+  if (chkZocalo) chkZocalo.checked = m.tiene_zocalo;
+  if (inpAltoZocalo) inpAltoZocalo.value = m.alto_zocalo;
+  if (selListones) selListones.value = m.cant_listones;
+  if (grpZocalo) grpZocalo.style.display = m.tiene_zocalo ? 'grid' : 'none';
+
+  // Listón Posterior / Amarres de Techo
+  const chkAmarre = document.getElementById('modTieneListonAmarre');
+  const inpCantAmarre = document.getElementById('modCantListonesAmarre');
+  const inpAltAmarre = document.getElementById('modAltoListonAmarre');
+  const selPosAmarre = document.getElementById('modPosicionListonAmarre');
+  const chkTechoSobre = document.getElementById('modTechoSobreListon');
+  const grpAmarre = document.getElementById('grpDetalleListonAmarre');
+  const grpTechoSobre = document.getElementById('grpTechoSobreListon');
+
+  if (chkAmarre) chkAmarre.checked = !!m.tiene_liston_amarre;
+  if (inpCantAmarre) inpCantAmarre.value = m.cant_listones_amarre || 2;
+  if (inpAltAmarre) inpAltAmarre.value = m.alto_liston_amarre || 80;
+  if (selPosAmarre) selPosAmarre.value = m.posicion_liston_amarre || 'posterior';
+  if (chkTechoSobre) chkTechoSobre.checked = !!m.techo_sobre_liston;
+
+  if (grpAmarre) grpAmarre.style.display = m.tiene_liston_amarre ? 'block' : 'none';
+  if (grpTechoSobre) {
+    const muestraTechoSobre = m.tiene_liston_amarre && (m.posicion_liston_amarre === 'techo' || m.posicion_liston_amarre === 'ambos');
+    grpTechoSobre.style.display = muestraTechoSobre ? 'block' : 'none';
+  }
+
+  // Fondo Posterior de MDF
+  const chkFondo = document.getElementById('modTieneFondoMdf');
+  const selPosFondo = document.getElementById('modPosicionFondoMdf');
+  const grpFondo = document.getElementById('grpDetalleFondoMdf');
+
+  if (chkFondo) chkFondo.checked = (m.tiene_fondo_mdf !== false);
+  if (selPosFondo) selPosFondo.value = m.posicion_fondo_mdf || 'delante_liston';
+  if (grpFondo) grpFondo.style.display = (m.tiene_fondo_mdf !== false) ? 'block' : 'none';
+
+  // Interior
+  const selInterior = document.getElementById('modTipoInterior');
+  if (selInterior) selInterior.value = m.tipo_interior;
+
+  const grpRepisas = document.getElementById('grpDetalleRepisas');
+  const grpCajones = document.getElementById('grpDetalleCajonera');
+  const inpRep = document.getElementById('modCantRepisas');
+  const inpCaj = document.getElementById('modCantCajones');
+
+  if (grpRepisas) grpRepisas.style.display = (m.tipo_interior === 'repisas') ? 'block' : 'none';
+  if (grpCajones) grpCajones.style.display = (m.tipo_interior === 'cajonera') ? 'block' : 'none';
+  if (inpRep) inpRep.value = m.cant_repisas;
+  if (inpCaj) inpCaj.value = m.cant_cajones;
+
+  // Validación de límites técnicos en vivo
+  validarLimitesTecnicosModulo(m, idx);
+}
+
+// ==============================================================================
+// 6. ALGORITMO DE RECÁLCULO DINÁMICO DE ANCHOS (Suma Total Invariable)
+// ==============================================================================
+
+/**
+ * Se ejecuta al editar el ancho de un módulo particular.
+ * Recalcula y redistribuye la diferencia entre los demás módulos
+ * para que la suma exacta de todos los anchos sea igual al Ancho Total.
+ * @param {number} nuevoAncho - Valor en mm ingresado por el usuario.
+ */
+function onEditarAnchoModulo(nuevoAncho) {
+  const idx = AppState.moduloActivoIndex;
+  const numModulos = AppState.modulos.length;
+  if (numModulos <= 0) return;
+
+  const minAncho = 150; // Mínimo técnico para atornillador
+  const maxAncho = 1000; // Máximo recomendado sin división vertical
+
+  // Si hay un solo módulo, su ancho es siempre el Ancho Total
+  if (numModulos === 1) {
+    AppState.modulos[0].ancho = AppState.anchoTotal;
+    actualizarFormularioModuloActivo();
+    actualizarCanvas();
+    return;
+  }
+
+  // Límite superior estricto: dejar al menos 150 mm para cada uno de los demás módulos
+  const maxPermisible = AppState.anchoTotal - ((numModulos - 1) * minAncho);
+  nuevoAncho = Math.max(minAncho, Math.min(maxPermisible, Math.round(nuevoAncho)));
+
+  const anchoPrevio = AppState.modulos[idx].ancho;
+  const delta = nuevoAncho - anchoPrevio;
+  AppState.modulos[idx].ancho = nuevoAncho;
+
+  // Índices de los otros módulos que deben absorber el delta inverso (-delta)
+  const otrosIndices = AppState.modulos.map((_, i) => i).filter(i => i !== idx);
+  let sumaOtros = otrosIndices.reduce((acc, i) => acc + AppState.modulos[i].ancho, 0);
+
+  let remanentePorRepartir = -delta;
+
+  // Distribuir proporcionalmente o equitativamente
+  for (let k = 0; k < otrosIndices.length; k++) {
+    const oIdx = otrosIndices[k];
+    if (k === otrosIndices.length - 1) {
+      // El último absorbe el remanente exacto para evitar errores de coma flotante
+      AppState.modulos[oIdx].ancho = Math.max(minAncho, Math.round(AppState.modulos[oIdx].ancho + remanentePorRepartir));
+    } else {
+      const fraccion = (sumaOtros > 0) ? (AppState.modulos[oIdx].ancho / sumaOtros) : (1 / otrosIndices.length);
+      const ajuste = Math.round(remanentePorRepartir * fraccion);
+      AppState.modulos[oIdx].ancho = Math.max(minAncho, AppState.modulos[oIdx].ancho + ajuste);
+      remanentePorRepartir -= ajuste;
+      sumaOtros -= AppState.modulos[oIdx].ancho;
+    }
+  }
+
+  // Ajuste fino para garantizar milimétricamente la suma total
+  const sumaReal = AppState.modulos.reduce((acc, m) => acc + m.ancho, 0);
+  const residuo = AppState.anchoTotal - sumaReal;
+  if (residuo !== 0 && otrosIndices.length > 0) {
+    AppState.modulos[otrosIndices[0]].ancho += residuo;
+  }
+
+  // Actualizar UI
+  renderizarPestanasModulos();
+  actualizarCanvas();
+  validarLimitesTecnicosModulo(AppState.modulos[idx], idx);
+}
+
+/**
+ * Se ejecuta al editar la altura particular del módulo activo.
+ * (Puede ser menor o igual a la dimensión total).
+ */
+function onEditarAltoModulo(nuevoAlto) {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m) return;
+
+  const hClamped = Math.max(150, Math.min(AppState.altoTotal, Math.round(nuevoAlto)));
+  m.alto = hClamped;
+
+  actualizarCanvas();
+  validarLimitesTecnicosModulo(m, idx);
+}
+
+/**
+ * Se ejecuta al editar la profundidad particular del módulo activo.
+ * (Puede ser menor o igual a la dimensión total).
+ */
+function onEditarProfModulo(nuevaProf) {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m) return;
+
+  const pClamped = Math.max(150, Math.min(AppState.profTotal, Math.round(nuevaProf)));
+  m.profundidad = pClamped;
+
+  actualizarCanvas();
+  validarLimitesTecnicosModulo(m, idx);
+}
+
+/**
+ * Conmuta si el módulo activo lleva o no zócalo.
+ */
+function onToggleZocaloModulo(tieneZocalo) {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m) return;
+
+  m.tiene_zocalo = tieneZocalo;
+  const grpZocalo = document.getElementById('grpDetalleZocalo');
+  if (grpZocalo) grpZocalo.style.display = tieneZocalo ? 'grid' : 'none';
+
+  actualizarCanvas();
+}
+
+/**
+ * Cambia la altura del zócalo del módulo activo.
+ */
+function onEditarAltoZocalo(alto) {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m) return;
+
+  m.alto_zocalo = Math.max(40, Math.min(250, parseFloat(alto) || 100));
+  actualizarCanvas();
+}
+
+/**
+ * Cambia la cantidad de listones del zócalo (2, 3 o 4 listones).
+ */
+function onEditarCantListones(cant) {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m) return;
+
+  m.cant_listones = parseInt(cant) || 2;
+  actualizarCanvas();
+}
+
+/**
+ * Conmuta si el módulo activo lleva listones de amarre / fijación.
+ */
+function onToggleListonAmarre(tieneAmarre) {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m) return;
+
+  m.tiene_liston_amarre = tieneAmarre;
+  const grpAmarre = document.getElementById('grpDetalleListonAmarre');
+  if (grpAmarre) grpAmarre.style.display = tieneAmarre ? 'block' : 'none';
+
+  const grpTechoSobre = document.getElementById('grpTechoSobreListon');
+  if (grpTechoSobre) {
+    const muestraTechoSobre = tieneAmarre && (m.posicion_liston_amarre === 'techo' || m.posicion_liston_amarre === 'ambos');
+    grpTechoSobre.style.display = muestraTechoSobre ? 'block' : 'none';
+  }
+
+  actualizarCanvas();
+  validarLimitesTecnicosModulo(m, idx);
+}
+
+/**
+ * Cambia la cantidad de listones de amarre (1 a 4).
+ */
+function onEditarCantListonesAmarre(cant) {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m) return;
+
+  m.cant_listones_amarre = Math.max(1, Math.min(4, parseInt(cant) || 2));
+  actualizarCanvas();
+}
+
+/**
+ * Cambia la altura / ancho del listón de amarre (respetando mín 50mm, máx 150mm estándar).
+ */
+function onEditarAltoListonAmarre(alto) {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m) return;
+
+  // Respetar medidas mínimas (50 mm) y máximas (150 mm)
+  m.alto_liston_amarre = Math.max(50, Math.min(150, parseFloat(alto) || 80));
+  actualizarCanvas();
+  validarLimitesTecnicosModulo(m, idx);
+}
+
+/**
+ * Cambia la ubicación del listón de amarre: posterior, techo o ambos.
+ */
+function onCambiarPosicionListonAmarre(pos) {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m) return;
+
+  m.posicion_liston_amarre = pos;
+
+  const grpTechoSobre = document.getElementById('grpTechoSobreListon');
+  if (grpTechoSobre) {
+    const muestraTechoSobre = (pos === 'techo' || pos === 'ambos');
+    grpTechoSobre.style.display = muestraTechoSobre ? 'block' : 'none';
+    if (!muestraTechoSobre && m.techo_sobre_liston) {
+      // Revertir recálculo de altura si se desactiva opción techo
+      m.techo_sobre_liston = false;
+      m.alto = Math.max(150, m.alto - AppState.espesorMelamina);
+      const inpAlto = document.getElementById('modAlto');
+      if (inpAlto) inpAlto.value = m.alto;
+    }
+  }
+
+  actualizarCanvas();
+  validarLimitesTecnicosModulo(m, idx);
+}
+
+/**
+ * Conmuta si sobre el listón de techo va un techo/tapa sobrepuesta.
+ * Recalcula automáticamente la altura del módulo sumando/restando el espesor de la melamina.
+ */
+function onToggleTechoSobreListon(tieneTechoSobre) {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m) return;
+
+  const t = AppState.espesorMelamina;
+  const estadoAnterior = !!m.techo_sobre_liston;
+  m.techo_sobre_liston = tieneTechoSobre;
+
+  if (tieneTechoSobre && !estadoAnterior) {
+    // Suma el espesor de la tapa sobrepuesta a la altura del módulo
+    m.alto = Math.min(2400, m.alto + t);
+    mostrarNotificacion(`Altura recalculada a ${m.alto} mm (+${t}mm de tapa sobre listón).`, "info");
+  } else if (!tieneTechoSobre && estadoAnterior) {
+    // Resta el espesor al remover la tapa
+    m.alto = Math.max(150, m.alto - t);
+    mostrarNotificacion(`Altura recalculada a ${m.alto} mm (-${t}mm al retirar tapa sobre listón).`, "info");
+  }
+
+  // Refrescar campo de altura en formulario
+  const inpAlto = document.getElementById('modAlto');
+  if (inpAlto) inpAlto.value = m.alto;
+
+  actualizarCanvas();
+  validarLimitesTecnicosModulo(m, idx);
+}
+
+/**
+ * Conmuta si el módulo lleva fondo posterior de MDF.
+ */
+function onToggleFondoMdf(tieneFondo) {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m) return;
+
+  m.tiene_fondo_mdf = tieneFondo;
+  const grpFondo = document.getElementById('grpDetalleFondoMdf');
+  if (grpFondo) grpFondo.style.display = tieneFondo ? 'block' : 'none';
+
+  actualizarCanvas();
+  validarLimitesTecnicosModulo(m, idx);
+}
+
+/**
+ * Cambia la posición del fondo MDF: 'delante_liston' (enranurado) o 'detras_liston' (sobrepuesto).
+ */
+function onCambiarPosicionFondoMdf(pos) {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m) return;
+
+  m.posicion_fondo_mdf = pos;
+  if (pos === 'delante_liston') {
+    mostrarNotificacion("Fondo enranurado activado: se generan ranuras estándar de 4x8mm a 18mm en laterales, piso y techo.", "info");
+  } else {
+    mostrarNotificacion("Fondo sobrepuesto activado: clavado/atornillado por detrás del listón.", "info");
+  }
+
+  actualizarCanvas();
+  validarLimitesTecnicosModulo(m, idx);
+}
+
+/**
+ * Cambia el equipamiento interior del módulo (repisas, cajonera, puertas, carcasa).
+ */
+function onCambiarTipoInterior(tipo) {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m) return;
+
+  m.tipo_interior = tipo;
+
+  const grpRepisas = document.getElementById('grpDetalleRepisas');
+  const grpCajones = document.getElementById('grpDetalleCajonera');
+
+  if (grpRepisas) grpRepisas.style.display = (tipo === 'repisas') ? 'block' : 'none';
+  if (grpCajones) grpCajones.style.display = (tipo === 'cajonera') ? 'block' : 'none';
+
+  actualizarCanvas();
+  validarLimitesTecnicosModulo(m, idx);
+}
+
+/**
+ * Modifica la cantidad de repisas del módulo activo.
+ */
+function onEditarCantRepisas(cant) {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m) return;
+
+  m.cant_repisas = Math.max(1, Math.min(8, parseInt(cant) || 2));
+  actualizarCanvas();
+  validarLimitesTecnicosModulo(m, idx);
+}
+
+/**
+ * Modifica la cantidad de cajones del módulo activo.
+ */
+function onEditarCantCajones(cant) {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m) return;
+
+  m.cant_cajones = Math.max(2, Math.min(5, parseInt(cant) || 3));
+  actualizarCanvas();
+  validarLimitesTecnicosModulo(m, idx);
+}
+
+// ==============================================================================
+// 7. MOTOR DE VALIDACIONES TÉCNICAS & REGLAS DE PANDEO INDUSTRIALES
+// ==============================================================================
+
+/**
+ * Valida todas las normas técnicas de carpintería y pandeo para el módulo especificado
+ * según la especificación exacta de fabricación en 15mm y 18mm:
+ *   - Carcasa: 150mm a 1000mm ancho, 150mm a 2400mm alto, 150mm a 650mm prof.
+ *   - Repisas: Pandeo máx 600-700mm en 15mm; máx 800mm en 18mm. Parante obligatorio si > 800mm.
+ *   - Cajoneras: Mín 300-350mm, máx 900-1000mm. Refuerzo si > 700mm. Prof 250-550mm.
+ *   - Puertas: Mín 250mm, máx 600mm bisagras cazoleta 35mm. Alto máx 2200mm.
+ * @param {Object} m - Datos del módulo
+ * @param {number} idx - Índice del módulo
+ */
+function validarLimitesTecnicosModulo(m, idx) {
+  const container = document.getElementById('alertasTecnicasModulo');
+  if (!container) return;
+
+  const t = AppState.espesorMelamina;
+  const w = m.ancho;
+  const h = m.alto;
+  const p = m.profundidad;
+  const vanoInterior = w - (2 * t);
+
+  const alertas = [];
+
+  // 1. CARCASA Y ESTRUCTURA GENERAL
+  if (w < 150) {
+    alertas.push({ tipo: 'danger', msg: `Ancho crítico (${w} mm): Menos de 150 mm no permite maniobrar un atornillador.` });
+  } else if (w > 1000) {
+    alertas.push({ tipo: 'warning', msg: `Ancho excesivo (${w} mm): Más de 1000 mm sin división vertical ocasiona pandeo del techo y piso por gravedad y carga.` });
+  }
+
+  if (h > 2400) {
+    alertas.push({ tipo: 'warning', msg: `Altura límite excedida (${h} mm): La plancha comercial permite un largo útil máximo de 2400 mm para laterales continuos de una pieza.` });
+  }
+
+  if (p < 150) {
+    alertas.push({ tipo: 'danger', msg: `Profundidad deficiente (${p} mm): Menos de 150 mm carece de estabilidad estructural.` });
+  } else if (p > 650) {
+    alertas.push({ tipo: 'warning', msg: `Profundidad amplia (${p} mm): Más de 650 mm dificulta el alcance de objetos al fondo y genera desperdicio en el seccionado del tablero comercial.` });
+  }
+
+  // 2. REPISAS Y ESTANTES (REGLA DE PANDEO)
+  if (m.tipo_interior === 'repisas') {
+    const limitePandeo = (t === 15) ? 700 : 800;
+    if (vanoInterior > limitePandeo) {
+      alertas.push({
+        tipo: 'warning',
+        msg: `⚠️ ALERTA DE PANDEO: El vano de repisa (${vanoInterior} mm) supera los ${limitePandeo} mm en melamina de ${t}mm. Es OBLIGATORIO colocar un soporte vertical (parante o tabique central) o un listón de amarre horizontal de refuerzo para evitar curvatura.`
+      });
+    } else {
+      alertas.push({
+        tipo: 'success',
+        msg: `✓ Repisas estructuralmente seguras: Vano de ${vanoInterior} mm dentro del límite de rigidez frente al pandeo (${limitePandeo} mm).`
+      });
+    }
+  }
+
+  // 3. CAJONERAS Y GAVETAS
+  if (m.tipo_interior === 'cajonera') {
+    if (w < 300) {
+      alertas.push({ tipo: 'danger', msg: `Cajón muy estrecho (${w} mm): Deja un espacio interior minúsculo tras descontar los laterales y 26 mm de las correderas telescópicas.` });
+    } else if (w > 700) {
+      alertas.push({ tipo: 'warning', msg: `Cajonera ancha (${w} mm): Se debe colocar un listón de amarre de refuerzo bajo el fondo y correderas Heavy Duty, o dividir en 2 columnas.` });
+    }
+
+    if (p < 250 || p > 550) {
+      alertas.push({ tipo: 'warning', msg: `Profundidad de corredera: Medidas comerciales estándar disponibles son 25, 30, 35, 40, 45, 50 y 55 cm. Profundidad actual: ${p} mm.` });
+    }
+  }
+
+  // 4. PUERTAS BATIENTES
+  if (m.tipo_interior === 'puertas') {
+    if (w > 600) {
+      alertas.push({ tipo: 'info', msg: `Módulo ancho (${w} mm): Se divide automáticamente en 2 puertas batientes para evitar palanca excesiva en bisagras de cazoleta de 35 mm.` });
+    } else if (w < 250) {
+      alertas.push({ tipo: 'warning', msg: `Puerta angosta (${w} mm): Menos de 250 mm fuerza el brazo de palanca de las bisagras.` });
+    }
+
+    if (h > 2100) {
+      alertas.push({ tipo: 'warning', msg: `Puerta alta (${h} mm): Supera 2100 mm. Requiere de 4 a 5 bisagras distribuidas para evitar alabeo o arqueo del tablero.` });
+    }
+  }
+
+  // Renderizar alertas
+  let html = '';
+  alertas.forEach(a => {
+    html += `
+      <div class="alert-technical ${a.tipo}">
+        <span>${a.msg}</span>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+/**
+ * Valida todos los módulos del mueble.
+ */
+function validarTodosLosModulos() {
+  if (AppState.modulos[AppState.moduloActivoIndex]) {
+    validarLimitesTecnicosModulo(AppState.modulos[AppState.moduloActivoIndex], AppState.moduloActivoIndex);
+  }
+}
+
+// ==============================================================================
+// 8. SINCRONIZACIÓN CON EL MOTOR DE PREVISUALIZACIÓN CANVAS
+// ==============================================================================
+
+/**
+ * Envía el paquete unificado de datos al motor Canvas Preview3D.
+ */
+function actualizarCanvas() {
   if (!window.Preview3D) return;
 
-  const tipo = document.getElementById('modTipo') ? document.getElementById('modTipo').value : 'librero';
-  const alto = parseFloat(document.getElementById('modAlto') ? document.getElementById('modAlto').value : 750) || 750;
-  const ancho = parseFloat(document.getElementById('modAncho') ? document.getElementById('modAncho').value : 600) || 600;
-  const profundidad = parseFloat(document.getElementById('modProfundidad') ? document.getElementById('modProfundidad').value : 500) || 500;
-  const espesor = parseFloat(document.getElementById('modEspesor') ? document.getElementById('modEspesor').value : 18) || 18;
-  const material = document.getElementById('modMaterial') ? document.getElementById('modMaterial').value : 'Melamina Blanca 18mm';
-  const altoZocalo = parseFloat(document.getElementById('modAltoZocalo') ? document.getElementById('modAltoZocalo').value : 70) || 70;
-  const vuelo = parseFloat(document.getElementById('modVuelo') ? document.getElementById('modVuelo').value : 20) || 20;
-  const tieneFondo = document.getElementById('modFondo') ? document.getElementById('modFondo').checked : true;
-  const cantidadRepisas = parseInt(document.getElementById('modCantRepisas') ? document.getElementById('modCantRepisas').value : 1, 10) || 1;
-  const usarAmarres = document.getElementById('modAmarresCheck') ? document.getElementById('modAmarresCheck').checked : false;
-
   Preview3D.update({
-    tipo,
-    alto,
-    ancho,
-    profundidad,
-    espesor,
-    material,
-    alto_zocalo: altoZocalo,
-    vuelo,
-    tiene_fondo: tieneFondo,
-    cantidad_repisas: cantidadRepisas,
-    usar_amarres: usarAmarres
+    estado: AppState.estadoVisualizador,
+    ancho_total: AppState.anchoTotal,
+    alto_total: AppState.altoTotal,
+    prof_total: AppState.profTotal,
+    espesor: AppState.espesorMelamina,
+    material: AppState.materialEstructura,
+    modulo_activo: AppState.moduloActivoIndex,
+    modulos: AppState.modulos
   });
 }
 
-// Exportar globalmente para eventos inline HTML
-window.alCambiarTipoMueble = alCambiarTipoMueble;
-window.actualizarPrevisualizacionDesdeFormulario = actualizarPrevisualizacionDesdeFormulario;
+/**
+ * Actualiza el indicador textual en el header superior.
+ */
+function actualizarBadgeEstado() {
+  const lbl = document.getElementById('activeModuleDims');
+  if (!lbl) return;
+
+  if (AppState.estadoVisualizador === 'vacio') {
+    lbl.innerText = "Esperando dimensiones generales...";
+  } else if (AppState.estadoVisualizador === 'delineado') {
+    lbl.innerText = `Marco Delineado: ${AppState.anchoTotal} x ${AppState.altoTotal} x ${AppState.profTotal} mm`;
+  } else {
+    lbl.innerText = `${AppState.anchoTotal} x ${AppState.altoTotal} x ${AppState.profTotal} mm (${AppState.modulos.length} Módulos | Melamina ${AppState.espesorMelamina}mm)`;
+  }
+}
+
+// ==============================================================================
+// 9. CONSTRUCCIÓN EN SKETCHUP 3D Y COMUNICACIÓN BIDIRECCIONAL
+// ==============================================================================
 
 /**
- * Cambia la pestaña activa mostrada en la interfaz.
- * @param {string} paneId - Identificador de la pestaña a mostrar.
+ * Envía el paquete paramétrico completo a Ruby para modelar en SketchUp 3D.
  */
-window.cambiarPestana = function(paneId) {
-  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-
-  const activeBtn = document.querySelector(`.nav-tab[data-tab="${paneId}"]`);
-  const activePane = document.getElementById(`tab-${paneId}`);
-
-  if (activeBtn) activeBtn.classList.add('active');
-  if (activePane) activePane.classList.add('active');
-
-  // Si se vuelve al creador, re-renderizar el canvas 3D
-  if (paneId === 'creador' && window.Preview3D) {
-    setTimeout(() => Preview3D.render(), 50);
+function construirEnSketchup() {
+  if (AppState.estadoVisualizador === 'vacio') {
+    mostrarNotificacion("Debe ingresar las dimensiones generales en el Paso 1 antes de construir.", "warning");
+    return;
   }
 
-  // Si se entra a la pestaña de despiece, actualizar automáticamente
-  if (paneId === 'despiece') {
+  if (AppState.modulos.length === 0) {
+    mostrarNotificacion("Configure al menos 1 módulo en el Paso 2 antes de modelar.", "warning");
+    return;
+  }
+
+  const payload = {
+    ancho_total: AppState.anchoTotal,
+    alto_total: AppState.altoTotal,
+    prof_total: AppState.profTotal,
+    espesor: AppState.espesorMelamina,
+    material_estructura: AppState.materialEstructura,
+    material_frentes: AppState.materialFrentes,
+    resistencia: AppState.resistencia,
+    modulos: AppState.modulos
+  };
+
+  mostrarNotificacion("Construyendo composición de módulos en SketchUp 3D...", "info");
+
+  if (window.sketchup && typeof window.sketchup.construirComposicionModular === 'function') {
+    window.sketchup.construirComposicionModular(JSON.stringify(payload));
+  } else {
+    // Modo simulación en navegador web independiente
+    console.log("[JPQMelaminaPro Bridge] Payload enviado a SketchUp:", payload);
+    setTimeout(() => {
+      mostrarNotificacion(`[Simulación] Mueble de ${AppState.modulos.length} módulos construido exitosamente en SketchUp.`, "success");
+    }, 600);
+  }
+}
+
+/**
+ * Callback ejecutado cuando Ruby termina la construcción en SketchUp.
+ */
+function onComposicionModularCreada(resp) {
+  if (resp && resp.ok) {
+    mostrarNotificacion(resp.mensaje || "Módulos creados exitosamente en SketchUp.", "success");
+  } else {
+    mostrarNotificacion(resp ? resp.error : "Error al construir en SketchUp.", "error");
+  }
+}
+
+// ==============================================================================
+// 10. MODAL DE DESPIECE OFICIAL & OPTIMIZADOR 2D GUILLOTINA
+// ==============================================================================
+
+/**
+ * Abre el modal integrado con la tabla de despiece y corte guillotina 2D.
+ */
+function abrirModalDespiece() {
+  const modal = document.getElementById('modalDespiece');
+  if (modal) {
+    modal.style.display = 'flex';
     solicitarDespiece();
   }
-};
-
-// ==============================================================================
-// 3. Acciones de Envío a SketchUp (Bridge de Ruby)
-// ==============================================================================
-
-/**
- * 1. Envía los parámetros para crear un nuevo módulo paramétrico 3D.
- */
-function enviarCrearModulo() {
-  const payload = {
-    nombre: document.getElementById('modNombre').value,
-    tipo: document.getElementById('modTipo').value,
-    alto: parseFloat(document.getElementById('modAlto').value),
-    ancho: parseFloat(document.getElementById('modAncho').value),
-    profundidad: parseFloat(document.getElementById('modProfundidad').value),
-    espesor: parseFloat(document.getElementById('modEspesor').value),
-    alto_zocalo: parseFloat(document.getElementById('modAltoZocalo') ? document.getElementById('modAltoZocalo').value : 70),
-    vuelo: parseFloat(document.getElementById('modVuelo') ? document.getElementById('modVuelo').value : 20),
-    tiene_fondo: document.getElementById('modFondo') ? document.getElementById('modFondo').checked : true,
-    prof_ranura: parseFloat(document.getElementById('modProfRanura') ? document.getElementById('modProfRanura').value : 8),
-    dist_ranura: parseFloat(document.getElementById('modDistRanura') ? document.getElementById('modDistRanura').value : 18),
-    tiene_repisa: document.getElementById('modRepisasCheck') ? document.getElementById('modRepisasCheck').checked : false,
-    cantidad_repisas: parseInt(document.getElementById('modCantRepisas') ? document.getElementById('modCantRepisas').value : 1, 10),
-    usar_amarres: document.getElementById('modAmarresCheck') ? document.getElementById('modAmarresCheck').checked : false,
-    material: document.getElementById('modMaterial').value
-  };
-
-  invocarBridge('crearModulo', payload);
 }
 
 /**
- * 2. Solicita a SketchUp leer el módulo actualmente seleccionado.
+ * Cierra el modal de despiece.
  */
-function cargarModuloSeleccionado() {
-  invocarBridge('obtenerModuloSeleccionado', {});
+function cerrarModalDespiece() {
+  const modal = document.getElementById('modalDespiece');
+  if (modal) modal.style.display = 'none';
 }
 
 /**
- * 3. Aplica cambios paramétricos no destructivos al módulo seleccionado.
- */
-function enviarActualizarModulo() {
-  const payload = {
-    nombre: document.getElementById('editNombre').value,
-    alto: parseFloat(document.getElementById('editAlto').value),
-    ancho: parseFloat(document.getElementById('editAncho').value),
-    profundidad: parseFloat(document.getElementById('editProfundidad').value),
-    espesor: parseFloat(document.getElementById('editEspesor').value),
-    material: document.getElementById('editMaterial').value
-  };
-
-  invocarBridge('actualizarModulo', payload);
-}
-
-/**
- * 4. Inserta repisas o parantes.
- */
-function enviarRepisas() {
-  const payload = {
-    tipo: document.getElementById('repisaTipo').value,
-    cantidad: parseInt(document.getElementById('repisaCantidad').value, 10),
-    altura_fija: parseFloat(document.getElementById('repisaAlturaFija').value || 0),
-    retroceso_frente: parseFloat(document.getElementById('repisaRetroceso').value || 10)
-  };
-
-  invocarBridge('aplicarRepisas', payload);
-}
-
-/**
- * 5. Inserta cajones con holguras de correderas.
- */
-function enviarCajonera() {
-  const payload = {
-    cantidad_cajones: parseInt(document.getElementById('cajonesCantidad').value, 10),
-    largo_corredera: parseFloat(document.getElementById('cajonesCorredera').value),
-    luz_entre_tapas: parseFloat(document.getElementById('cajonesLuz').value),
-    espesor_caja: parseFloat(document.getElementById('cajonesEspesorCaja').value),
-    tipo_frente: document.getElementById('cajonesTipoFrente').value
-  };
-
-  invocarBridge('insertarCajonera', payload);
-}
-
-/**
- * 6. Configura el fondo y las ranuras.
- */
-function enviarFondo() {
-  const payload = {
-    tipo: document.getElementById('fondoTipo').value,
-    prof_ranura: parseFloat(document.getElementById('fondoProfRanura').value),
-    dist_ranura: parseFloat(document.getElementById('fondoDistRanura').value),
-    espesor_fondo: parseFloat(document.getElementById('fondoEspesor').value)
-  };
-
-  invocarBridge('configurarFondo', payload);
-}
-
-/**
- * 7. Aplica tapacantos con cálculo automático de medida neta.
- */
-function enviarTapacantos() {
-  const payload = {
-    canto_L1: parseFloat(document.getElementById('cantoL1').value),
-    canto_L2: parseFloat(document.getElementById('cantoL2').value),
-    canto_A1: parseFloat(document.getElementById('cantoA1').value),
-    canto_A2: parseFloat(document.getElementById('cantoA2').value),
-    aplicar_a: document.getElementById('cantoAplicarA').value
-  };
-
-  invocarBridge('aplicarTapacantos', payload);
-}
-
-/**
- * 8. Aplica mecanizados Minifix / Tarugos / Soberbios.
- */
-function enviarMecanizados() {
-  const payload = {
-    sistema: document.getElementById('mecanizadoSistema').value,
-    distancia_borde: parseFloat(document.getElementById('mecanizadoDistBorde').value)
-  };
-
-  invocarBridge('aplicarMecanizados', payload);
-}
-
-/**
- * 9. Asigna material y veta.
- */
-function enviarMaterial() {
-  const payload = {
-    material_nombre: document.getElementById('matNombre').value,
-    veta: document.getElementById('matVeta').value,
-    color_hex: document.getElementById('matColor').value
-  };
-
-  invocarBridge('aplicarMaterial', payload);
-}
-
-/**
- * 10. Genera puertas batientes con luces.
- */
-function enviarPuertas() {
-  const payload = {
-    tipo: document.getElementById('puertaTipo').value,
-    cantidad_hojas: parseInt(document.getElementById('puertaHojas').value, 10),
-    luz_perimetral: parseFloat(document.getElementById('puertaLuz').value),
-    espesor: parseFloat(document.getElementById('puertaEspesor').value)
-  };
-
-  invocarBridge('generarPuertas', payload);
-}
-
-/**
- * 11. Solicita la extracción completa de despiece.
+ * Solicita a SketchUp la extracción oficial de piezas o genera lista estimada.
  */
 function solicitarDespiece() {
-  const soloSel = document.getElementById('chkSoloSeleccion') ? document.getElementById('chkSoloSeleccion').checked : false;
-  invocarBridge('extraerDespiece', { solo_seleccion: soloSel });
+  if (window.sketchup && typeof window.sketchup.extraerDespiece === 'function') {
+    window.sketchup.extraerDespiece(JSON.stringify({ solo_seleccion: false }));
+  } else {
+    // Generar despiece paramétrico estimado a partir del estado de los módulos
+    generarDespieceEstimadoLocal();
+  }
 }
 
 /**
- * 12. Ejecuta la optimización 2D de cortes de guillotina.
+ * Genera la lista de corte local basada en los módulos activos cuando no corre en SketchUp.
  */
-function ejecutarOptimizacion2D() {
-  const payload = {
-    tablero_largo: parseFloat(document.getElementById('optTabLargo').value || 2440),
-    tablero_ancho: parseFloat(document.getElementById('optTabAncho').value || 2140),
-    refilado: parseFloat(document.getElementById('optRefilado').value || 10),
-    kerf: parseFloat(document.getElementById('optKerf').value || 4),
-    estrategia_corte: document.getElementById('optEstrategia').value || 'longitudinal'
-  };
+function generarDespieceEstimadoLocal() {
+  const t = AppState.espesorMelamina;
+  const piezas = [];
+  let itemNum = 1;
 
-  invocarBridge('optimizarCorte', payload);
-}
+  AppState.modulos.forEach((m, idx) => {
+    const modId = `M${idx + 1}`;
+    const zH = m.tiene_zocalo ? m.alto_zocalo : 0;
+    const hCarcasa = m.alto - zH;
+    const anchoInt = m.ancho - (2 * t);
 
-/**
- * 13. Exporta la lista a formato CSV / Excel.
- * @param {string} formato - 'estandar' | 'pelikano' | 'masisa' | 'sodimac'
- */
-function exportarDespiece(formato) {
-  invocarBridge('exportarArchivo', {
-    formato: formato,
-    separador: document.getElementById('exportSeparador').value || ';'
+    // Laterales
+    piezas.push({
+      item: itemNum++, modulo: modId, pieza: "Costado Izquierdo",
+      material: AppState.materialEstructura, cant: 1,
+      largo_bruto: hCarcasa, ancho_bruto: m.profundidad, espesor: t,
+      largo_neto: hCarcasa - 2.5, ancho_neto: m.profundidad - 1.0,
+      canto_L1: '2.0', canto_L2: '0.5', canto_A1: '0.5', canto_A2: '0.5', ranura: 'Ninguna'
+    });
+    piezas.push({
+      item: itemNum++, modulo: modId, pieza: "Costado Derecho",
+      material: AppState.materialEstructura, cant: 1,
+      largo_bruto: hCarcasa, ancho_bruto: m.profundidad, espesor: t,
+      largo_neto: hCarcasa - 2.5, ancho_neto: m.profundidad - 1.0,
+      canto_L1: '2.0', canto_L2: '0.5', canto_A1: '0.5', canto_A2: '0.5', ranura: 'Ninguna'
+    });
+
+    // Piso y Techo
+    piezas.push({
+      item: itemNum++, modulo: modId, pieza: "Piso Carcasa",
+      material: AppState.materialEstructura, cant: 1,
+      largo_bruto: anchoInt, ancho_bruto: m.profundidad, espesor: t,
+      largo_neto: anchoInt - 1.0, ancho_neto: m.profundidad - 1.0,
+      canto_L1: '2.0', canto_L2: '0.0', canto_A1: '0.5', canto_A2: '0.5', ranura: 'Ninguna'
+    });
+    piezas.push({
+      item: itemNum++, modulo: modId, pieza: "Techo Carcasa",
+      material: AppState.materialEstructura, cant: 1,
+      largo_bruto: anchoInt, ancho_bruto: m.profundidad, espesor: t,
+      largo_neto: anchoInt - 1.0, ancho_neto: m.profundidad - 1.0,
+      canto_L1: '2.0', canto_L2: '0.0', canto_A1: '0.5', canto_A2: '0.5', ranura: 'Ninguna'
+    });
+
+    // Zócalo
+    if (m.tiene_zocalo && zH > 0) {
+      piezas.push({
+        item: itemNum++, modulo: modId, pieza: "Zócalo Frontal",
+        material: AppState.materialEstructura, cant: 1,
+        largo_bruto: m.ancho, ancho_bruto: zH, espesor: t,
+        largo_neto: m.ancho - 1.0, ancho_neto: zH - 1.0,
+        canto_L1: '0.5', canto_L2: '0.0', canto_A1: '0.5', canto_A2: '0.5', ranura: 'Ninguna'
+      });
+      piezas.push({
+        item: itemNum++, modulo: modId, pieza: "Zócalo Posterior",
+        material: AppState.materialEstructura, cant: 1,
+        largo_bruto: m.ancho, ancho_bruto: zH, espesor: t,
+        largo_neto: m.ancho, ancho_neto: zH,
+        canto_L1: '0.0', canto_L2: '0.0', canto_A1: '0.0', canto_A2: '0.0', ranura: 'Ninguna'
+      });
+    }
+
+    // Repisas
+    if (m.tipo_interior === 'repisas' && m.cant_repisas > 0) {
+      piezas.push({
+        item: itemNum++, modulo: modId, pieza: `Repisas Interiores (x${m.cant_repisas})`,
+        material: AppState.materialEstructura, cant: m.cant_repisas,
+        largo_bruto: anchoInt, ancho_bruto: m.profundidad - 20, espesor: t,
+        largo_neto: anchoInt - 1.0, ancho_neto: m.profundidad - 21.0,
+        canto_L1: '2.0', canto_L2: '0.0', canto_A1: '0.5', canto_A2: '0.5', ranura: 'Ninguna'
+      });
+    }
   });
+
+  AppState.despieceActual = piezas;
+  renderizarTablaDespiece(piezas);
 }
 
 /**
- * Invoca de forma segura un callback expuesto en window.sketchup.
+ * Renderiza la tabla HTML de despiece con medidas brutas, netas y tapacantos.
  */
-function invocarBridge(accion, payload) {
-  if (window.sketchup && typeof window.sketchup[accion] === 'function') {
-    window.sketchup[accion](JSON.stringify(payload));
-  } else {
-    console.warn(`[Bridge] Acción '${accion}' invocada fuera de SketchUp con payload:`, payload);
-    mostrarNotificacion(`Acción '${accion}' simulada en modo navegador.`, 'success');
-  }
-}
-
-// ==============================================================================
-// 4. Respuestas recibidas desde Ruby (Callbacks de Retorno)
-// ==============================================================================
-
-window.onModuloCreado = function(resultado) {
-  if (resultado.ok) {
-    mostrarNotificacion(resultado.mensaje || 'Módulo creado exitosamente.', 'success');
-  } else {
-    mostrarNotificacion(resultado.error || 'Error al crear el módulo.', 'error');
-  }
-};
-
-window.onModuloSeleccionado = function(datos) {
-  if (!datos) {
-    mostrarNotificacion('No se detectó ningún módulo JPQMelaminaPro en la selección.', 'error');
-    return;
-  }
-  AppState.moduloSeleccionado = datos;
-  document.getElementById('editNombre').value = datos.nombre || '';
-  document.getElementById('editAlto').value = datos.alto_mm || 0;
-  document.getElementById('editAncho').value = datos.ancho_mm || 0;
-  document.getElementById('editProfundidad').value = datos.prof_mm || 0;
-  document.getElementById('editEspesor').value = datos.espesor_mm || 18;
-  document.getElementById('editMaterial').value = datos.material || 'Melamina 18mm';
-
-  document.getElementById('lblModuloActivo').textContent = `Módulo: ${datos.nombre} [${datos.modulo_id}]`;
-  mostrarNotificacion(`Datos cargados del módulo: ${datos.nombre}`, 'success');
-};
-
-window.onDespieceExtraido = function(data) {
-  AppState.despieceActual = data;
-  renderizarTablaDespiece(data);
-};
-
-window.onCorteOptimizado = function(resultado) {
-  if (!resultado.ok) {
-    mostrarNotificacion(resultado.error || 'No se pudo optimizar el corte.', 'error');
-    return;
-  }
-
-  // Actualizar indicadores numéricos
-  document.getElementById('statTablerosUsados').textContent = resultado.total_tableros;
-  document.getElementById('statAprovechamiento').textContent = `${(100.0 - resultado.desperdicio_total_pct).toFixed(1)}%`;
-  document.getElementById('statMerma').textContent = `${resultado.desperdicio_total_pct}%`;
-
-  // Pasar datos al renderizador Canvas 2D
-  if (window.optimizerRenderer) {
-    window.optimizerRenderer.cargarTableros(resultado.tableros);
-  }
-  mostrarNotificacion(`Optimización completada: ${resultado.total_tableros} tablero(s) generados.`, 'success');
-};
-
-window.onRepisasAplicadas = function(r) { mostrarNotificacion(r.mensaje, r.ok ? 'success' : 'error'); };
-window.onCajoneraCreada = function(r) { mostrarNotificacion(r.mensaje, r.ok ? 'success' : 'error'); };
-window.onFondoConfigurado = function(r) { mostrarNotificacion(r.mensaje, r.ok ? 'success' : 'error'); };
-window.onTapacantosAplicados = function(r) { mostrarNotificacion(r.mensaje, r.ok ? 'success' : 'error'); };
-window.onMecanizadosAplicados = function(r) { mostrarNotificacion(r.mensaje, r.ok ? 'success' : 'error'); };
-window.onMaterialAplicado = function(r) { mostrarNotificacion(r.mensaje, r.ok ? 'success' : 'error'); };
-window.onPuertasGeneradas = function(r) { mostrarNotificacion(r.mensaje, r.ok ? 'success' : 'error'); };
-window.onModuloActualizado = function(r) { mostrarNotificacion(r.mensaje, r.ok ? 'success' : 'error'); };
-window.onArchivoExportado = function(r) {
-  if (r && r.ruta) {
-    mostrarNotificacion(`Archivo exportado con éxito en:\n${r.ruta}`, 'success');
-  } else {
-    mostrarNotificacion('Operación de exportación completada.', 'success');
-  }
-};
-
-// ==============================================================================
-// 5. Utilidades y Renderizado de Tablas
-// ==============================================================================
-
-/**
- * Renderiza la lista completa de despiece y actualiza las tarjetas de resumen.
- */
-function renderizarTablaDespiece(data) {
-  const tbody = document.getElementById('despieceTableBody');
+function renderizarTablaDespiece(piezas) {
+  const tbody = document.getElementById('tablaDespieceBody');
   if (!tbody) return;
 
-  tbody.innerHTML = '';
-  const piezas = data.piezas || [];
-
-  if (piezas.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding: 20px; color: var(--text-muted);">No se encontraron piezas en el modelo. Diseña un módulo primero.</td></tr>';
+  if (!piezas || piezas.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; padding: 20px;">No hay piezas registradas en el despiece.</td></tr>`;
     return;
   }
 
+  let html = '';
   piezas.forEach(p => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td style="text-align:center; font-weight: 700;">${p.item_numero}</td>
-      <td><strong>${p.nombre}</strong><br><small style="color:var(--text-muted);">${p.detalle_piezas || ''}</small></td>
-      <td style="text-align:center; font-weight: 700; color: ${p.espesor === 3 ? 'var(--warning)' : 'var(--primary)'};">${p.espesor} mm</td>
-      <td style="text-align:center;"><span class="badge badge-blue">${p.cantidad}</span></td>
-      <td style="text-align:right;">${p.largo_bruto}</td>
-      <td style="text-align:right;">${p.ancho_bruto}</td>
-      <td style="text-align:right; font-weight:700; color:var(--primary);">${p.largo_neto}</td>
-      <td style="text-align:right; font-weight:700; color:var(--primary);">${p.ancho_neto}</td>
-      <td>${p.material}</td>
-      <td style="font-size:11px;">L:[${p.canto_L1}|${p.canto_L2}] A:[${p.canto_A1}|${p.canto_A2}]</td>
-      <td><small>${p.ranura}</small></td>
+    html += `
+      <tr>
+        <td><strong>${p.item}</strong></td>
+        <td><span class="badge badge-info">${p.modulo}</span></td>
+        <td>${p.pieza}</td>
+        <td>${p.material}</td>
+        <td><strong>${p.cant}</strong></td>
+        <td>${p.largo_bruto} x ${p.ancho_bruto}</td>
+        <td style="color: var(--primary); font-weight: bold;">${p.largo_neto} x ${p.ancho_neto}</td>
+        <td>${p.espesor} mm</td>
+        <td>${p.canto_L1}/${p.canto_L2}/${p.canto_A1}/${p.canto_A2}</td>
+        <td>${p.ranura || 'Ninguna'}</td>
+      </tr>
     `;
-    tbody.appendChild(tr);
   });
 
-  // Métricas del pie
-  const m = data.metricas || {};
-  document.getElementById('metricTotalPiezas').textContent = m.total_piezas || 0;
-  document.getElementById('metricTotalM2').textContent = `${m.area_total_m2 || 0} m²`;
-  document.getElementById('metricCantoDelgado').textContent = `${m.canto_delgado_metros || 0} m`;
-  document.getElementById('metricCantoGrueso').textContent = `${m.canto_grueso_metros || 0} m`;
+  tbody.innerHTML = html;
 }
 
-/**
- * Actualiza la etiqueta de cota neta en el previsualizador de tapacantos.
- */
-function actualizarPrevisualizacionCorteNeto() {
-  const l1 = parseFloat(document.getElementById('cantoL1').value || 0);
-  const l2 = parseFloat(document.getElementById('cantoL2').value || 0);
-  const a1 = parseFloat(document.getElementById('cantoA1').value || 0);
-  const a2 = parseFloat(document.getElementById('cantoA2').value || 0);
-
-  const descL = l1 + l2;
-  const descA = a1 + a2;
-
-  const lbl = document.getElementById('lblDescuentoCantos');
-  if (lbl) {
-    lbl.textContent = `Descuento Largo: -${descL}mm | Descuento Ancho: -${descA}mm`;
-  }
-}
+// ==============================================================================
+// 11. SISTEMA DE NOTIFICACIONES TOAST (PrimeNG UI)
+// ==============================================================================
 
 /**
- * Muestra un banner flotante de notificación temporal.
+ * Muestra una notificación emergente tipo PrimeNG Toast.
+ * @param {string} mensaje - Texto del mensaje.
+ * @param {string} tipo - 'info', 'success', 'warning', 'error'
  */
-function mostrarNotificacion(mensaje, tipo = 'success') {
-  const contenedor = document.getElementById('notificationArea');
-  if (!contenedor) return;
+function mostrarNotificacion(mensaje, tipo = 'info') {
+  const container = document.getElementById('notificationArea');
+  if (!container) return;
 
-  const div = document.createElement('div');
-  div.className = `notification notification-${tipo}`;
-  div.textContent = mensaje;
-  contenedor.innerHTML = '';
-  contenedor.appendChild(div);
+  const toast = document.createElement('div');
+  toast.className = `p-toast p-toast-${tipo}`;
+  toast.innerHTML = `
+    <span class="p-toast-icon">${tipo === 'success' ? '✓' : tipo === 'warning' ? '⚠' : tipo === 'error' ? '✕' : 'ℹ'}</span>
+    <span class="p-toast-message">${mensaje}</span>
+  `;
+
+  container.appendChild(toast);
 
   setTimeout(() => {
-    if (div.parentNode) div.parentNode.removeChild(div);
-  }, 4000);
+    toast.classList.add('p-toast-fadeout');
+    setTimeout(() => {
+      if (toast.parentNode) toast.parentNode.removeChild(toast);
+    }, 300);
+  }, 3500);
 }
