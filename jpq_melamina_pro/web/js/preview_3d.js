@@ -137,15 +137,34 @@ const Preview3D = (function() {
   }
 
   /**
-   * Ajusta la resolución del canvas según DPI de pantalla para nitidez milimétrica.
+   * Sincroniza dinámicamente el búfer interno del canvas con el tamaño real CSS del contenedor.
+   * Evita distorsiones, bordes borrosos y desajustes de resolución en cualquier pantalla o DPI.
+   * @returns {{w: number, h: number}} Dimensiones en píxeles CSS para el cálculo de proyección.
    */
-  function ajustarTamano() {
-    if (!canvas) return;
+  function sincronizarCanvas() {
+    if (!canvas || !ctx) return { w: 800, h: 600 };
     const rect = canvas.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
-    canvas.width = Math.max(300, rect.width * dpr);
-    canvas.height = Math.max(300, rect.height * dpr);
+    const w = Math.max(200, Math.floor(rect.width));
+    const h = Math.max(200, Math.floor(rect.height));
+
+    const pixelW = Math.floor(w * dpr);
+    const pixelH = Math.floor(h * dpr);
+
+    if (canvas.width !== pixelW || canvas.height !== pixelH) {
+      canvas.width = pixelW;
+      canvas.height = pixelH;
+    }
+
+    // Restablecer matriz identidad y escalar únicamente por el ratio de píxeles del dispositivo (DPR)
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.scale(dpr, dpr);
+
+    return { w, h };
+  }
+
+  function ajustarTamano() {
+    sincronizarCanvas();
   }
 
   /**
@@ -477,9 +496,8 @@ const Preview3D = (function() {
   function render() {
     if (!canvas || !ctx) return;
 
-    const rect = canvas.getBoundingClientRect();
-    const w = rect.width;
-    const h = rect.height;
+    // Sincronización continua de resolución milimétrica y escala DPR
+    const { w, h } = sincronizarCanvas();
 
     const isDark = document.body.classList.contains('theme-oscuro') || document.body.classList.contains('theme-taller');
 
@@ -588,7 +606,10 @@ const Preview3D = (function() {
         const vCamZ = sinE;
         const dotCam = (fc.norm.x * vCamX) + (fc.norm.y * vCamY) + (fc.norm.z * vCamZ);
 
-        if (dotCam <= 0) {
+        // La cara apunta al observador si dotCam > 0. En modo alambre se admiten todas.
+        const caraVisible = (renderOptions.modoRender === 'alambre') || (dotCam > 0.001);
+
+        if (caraVisible) {
           caras.push({
             puntos: fc.pts.map(p => proyectar(p[0], p[1], p[2])),
             profundidadVista: projCentro.profundidadVista,
@@ -1022,7 +1043,7 @@ const Preview3D = (function() {
   }
 
   // API Pública del Motor Preview3D
-  return {
+  const api = {
     init,
     update,
     setView,
@@ -1031,4 +1052,19 @@ const Preview3D = (function() {
     resize: ajustarTamano,
     render
   };
+
+  if (typeof window !== 'undefined') {
+    window.Preview3D = api;
+  }
+
+  return api;
 })();
+
+// Asegurar disponibilidad en el objeto global window
+if (typeof window !== 'undefined') {
+  window.Preview3D = Preview3D;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = Preview3D;
+}
+

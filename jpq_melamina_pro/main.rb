@@ -49,24 +49,29 @@ module JPQMelaminaPro
     # ==========================================================================
     def abrir_dialogo_principal(vista_inicial = 'hub-espacio')
       if @main_dialog && @main_dialog.visible?
+        @main_dialog.set_size(1360, 860)
         @main_dialog.bring_to_front
         ejecutar_en_dialogo("window.cambiarHub && window.cambiarHub('#{vista_inicial}')")
         return
       end
 
+      # Configuración de ventana amplia profesional para vista dividida (1/3 configuración, 2/3 visor 3D CAD)
       dialog_options = {
-        dialog_title: 'JPQMelaminaPro - Suite Industrial de Carpintería',
-        preferences_key: 'com.jpq.melaminapro.maindialog',
-        scrollable: true,
+        dialog_title: 'JPQMelaminaPro - Suite Industrial de Carpintería y Despiece',
+        preferences_key: 'com.jpq.melaminapro.workspace_dialog_v3',
+        scrollable: false,
         resizable: true,
-        width: 560,
-        height: 820,
-        min_width: 480,
+        width: 1360,
+        height: 860,
+        min_width: 980,
         min_height: 640,
         style: UI::HtmlDialog::STYLE_DIALOG
       }
 
       @main_dialog = UI::HtmlDialog.new(dialog_options)
+      @main_dialog.set_size(1360, 860)
+      @main_dialog.center
+
       html_file = File.join(__dir__, 'web', 'index.html')
       @main_dialog.set_file(html_file)
 
@@ -79,6 +84,7 @@ module JPQMelaminaPro
       end
 
       @main_dialog.show
+      @main_dialog.bring_to_front
     end
 
     # ==========================================================================

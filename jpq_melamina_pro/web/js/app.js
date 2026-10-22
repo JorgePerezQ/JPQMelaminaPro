@@ -105,9 +105,25 @@ function cambiarTema(tema) {
  * (o mantiene 'modulos' si ya se habían configurado módulos).
  */
 function onDimensionesGeneralesChange() {
-  const w = parseFloat(document.getElementById('dimAnchoTotal').value) || 0;
-  const h = parseFloat(document.getElementById('dimAltoTotal').value) || 0;
-  const d = parseFloat(document.getElementById('dimProfTotal').value) || 0;
+  const elW = document.getElementById('dimAnchoTotal');
+  const elH = document.getElementById('dimAltoTotal');
+  const elD = document.getElementById('dimProfTotal');
+
+  let w = parseFloat(elW.value) || 0;
+  let h = parseFloat(elH.value) || 0;
+  let d = parseFloat(elD.value) || 0;
+
+  // Si el usuario ingresa el ancho pero alto o profundidad están aún vacíos, auto-completar con estándares para trazar el marco de inmediato
+  if (w >= 150) {
+    if (h <= 0 && (!elH.value || elH.value === '')) {
+      h = 2100;
+      elH.value = h;
+    }
+    if (d <= 0 && (!elD.value || elD.value === '')) {
+      d = 600;
+      elD.value = d;
+    }
+  }
 
   AppState.anchoTotal = w;
   AppState.altoTotal = h;
@@ -218,12 +234,19 @@ function modificarCantidadModulos(delta) {
 function onCantidadModulosChange() {
   const numModulos = parseInt(document.getElementById('inputCantModulos').value) || 0;
 
-  // Validación: Se requieren dimensiones generales previas
+  // Si no había dimensiones previas y el usuario pulsa [+] para armar módulos, asignar plantilla estándar 2400x2100x600mm
   if (AppState.anchoTotal <= 0 || AppState.altoTotal <= 0 || AppState.profTotal <= 0) {
     if (numModulos > 0) {
-      mostrarNotificacion("Primero ingrese Ancho, Alto y Profundidad en el Paso 1.", "warning");
+      document.getElementById('dimAnchoTotal').value = 2400;
+      document.getElementById('dimAltoTotal').value = 2100;
+      document.getElementById('dimProfTotal').value = 600;
+      AppState.anchoTotal = 2400;
+      AppState.altoTotal = 2100;
+      AppState.profTotal = 600;
+      mostrarNotificacion("Dimensiones estándar asignadas automáticamente: 2400 x 2100 x 600 mm", "info");
+    } else {
+      return;
     }
-    return;
   }
 
   if (numModulos <= 0) {
