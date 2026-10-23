@@ -491,12 +491,12 @@ const Preview3D = (function() {
         }
       }
 
-      // Fondo Posterior de MDF (3mm)
-      const tieneFondo = (m.tiene_fondo_mdf === true || m.tiene_fondo_mdf === 'true');
-      const posFondo = m.posicion_fondo_mdf || 'delante_liston'; // 'delante_liston' o 'detras_liston'
+      // Fondo Posterior (MDF, Melamina o Ninguno)
+      const tipoFondo = m.tipo_fondo || (m.tiene_fondo_mdf !== false ? 'mdf' : 'ninguno');
+      const posFondo = m.posicion_fondo_mdf || 'delante_liston';
       const matMdf = 'MDF Fondo Blanco 3mm';
 
-      if (tieneFondo) {
+      if (tipoFondo === 'mdf') {
         if (posFondo === 'delante_liston') {
           // Fondo incrustado en ranura delante del listón
           prismas.push({
@@ -514,6 +514,25 @@ const Preview3D = (function() {
             moduloIndex: idx
           });
         }
+      } else if (tipoFondo === 'melamina') {
+        const posMel = m.posicion_fondo_melamina || 'embutido';
+        const usaListonPost = (m.tiene_liston_posterior || m.tiene_liston_post || (m.tiene_liston_amarre && (m.posicion_liston_amarre === 'posterior' || m.posicion_liston_amarre === 'ambos')));
+        if (posMel === 'embutido') {
+          const yMel = profMod - t - (usaListonPost ? t : 0);
+          prismas.push({
+            x: xMod + t, y: yMel, z: zBase + t,
+            dx: anchoInt, dy: t, dz: hCarcasa - (2 * t),
+            mat, name: `M${idx + 1} Fondo Melamina Embutido ${t}mm`,
+            moduloIndex: idx
+          });
+        } else {
+          prismas.push({
+            x: xMod, y: profMod, z: zBase,
+            dx: wMod, dy: t, dz: hCarcasa,
+            mat, name: `M${idx + 1} Fondo Melamina Sobrepuesto ${t}mm`,
+            moduloIndex: idx
+          });
+        }
       }
 
       // 3. COMPONENTES INTERIORES
@@ -526,15 +545,18 @@ const Preview3D = (function() {
           : null;
 
         if (geo) {
+          const yStart = (geo.profInfo && geo.profInfo.yStart) ? geo.profInfo.yStart : 20;
+          const dyRep = (geo.profInfo && geo.profInfo.profUtil) ? geo.profInfo.profUtil : (profMod - 20);
+
           // A. Parantes (Verticales u Horizontales)
           geo.parantes.forEach((p, pIdx) => {
             if (geo.limites.tipo === 'vertical') {
               prismas.push({
                 x: xMod + t + p.posicion,
-                y: 20,
+                y: yStart,
                 z: zBase + t,
                 dx: p.dx,
-                dy: p.dy,
+                dy: dyRep,
                 dz: p.dz,
                 mat,
                 name: `M${idx + 1} Parante Vertical ${pIdx + 1}`,
@@ -543,10 +565,10 @@ const Preview3D = (function() {
             } else if (geo.limites.tipo === 'horizontal') {
               prismas.push({
                 x: xMod + t,
-                y: 20,
+                y: yStart,
                 z: zBase + t + p.posicion,
                 dx: p.dx,
-                dy: p.dy,
+                dy: dyRep,
                 dz: p.dz,
                 mat,
                 name: `M${idx + 1} Parante Horizontal ${pIdx + 1}`,
@@ -560,10 +582,10 @@ const Preview3D = (function() {
             esp.repisas.forEach((rep) => {
               prismas.push({
                 x: xMod + t + rep.xStart,
-                y: 20,
+                y: yStart,
                 z: zBase + t + rep.zStart + rep.zRel,
                 dx: rep.ancho,
-                dy: rep.prof,
+                dy: dyRep,
                 dz: rep.espesor,
                 mat,
                 name: `M${idx + 1} ${esp.nombre} Repisa ${rep.index + 1}`,

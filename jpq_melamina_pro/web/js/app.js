@@ -307,6 +307,10 @@ function onCantidadModulosChange() {
       cant_cajones: modPrevio ? modPrevio.cant_cajones : 3,
       material_frentes: AppState.materialFrentes,
 
+      // Configuración de fondo posterior y descuentos
+      tipo_fondo: modPrevio ? (modPrevio.tipo_fondo || (modPrevio.tiene_fondo_mdf !== false ? 'mdf' : 'ninguno')) : 'mdf',
+      posicion_fondo_melamina: modPrevio ? (modPrevio.posicion_fondo_melamina || 'embutido') : 'embutido',
+
       // Parantes y división de espacios interiores
       parantes_tipo: modPrevio ? (modPrevio.parantes_tipo || 'ninguno') : 'ninguno',
       parantes: modPrevio && Array.isArray(modPrevio.parantes) ? JSON.parse(JSON.stringify(modPrevio.parantes)) : [],
@@ -500,14 +504,31 @@ function actualizarFormularioModuloActivo() {
     lblEspesorDesc.textContent = m.techo_doble_melamina ? (2 * t) : t;
   }
 
-  // Fondo Posterior de MDF
-  const chkFondo = document.getElementById('modTieneFondoMdf');
-  const selPosFondo = document.getElementById('modPosicionFondoMdf');
-  const grpFondo = document.getElementById('grpDetalleFondoMdf');
+  // Fondo Posterior (MDF, Melamina o Ninguno) y Descuento de Profundidad
+  const tipoFondo = m.tipo_fondo || (m.tiene_fondo_mdf !== false ? 'mdf' : 'ninguno');
+  m.tipo_fondo = tipoFondo;
 
-  if (chkFondo) chkFondo.checked = (m.tiene_fondo_mdf !== false);
+  const selTipoFondo = document.getElementById('modTipoFondo');
+  const selPosFondo = document.getElementById('modPosicionFondoMdf');
+  const selPosMel = document.getElementById('modPosicionFondoMelamina');
+  const grpFondoMdf = document.getElementById('grpDetalleFondoMdf');
+  const grpFondoMel = document.getElementById('grpDetalleFondoMelamina');
+  const lblDescuento = document.getElementById('lblDescuentoProfDetalle');
+
+  if (selTipoFondo) selTipoFondo.value = tipoFondo;
   if (selPosFondo) selPosFondo.value = m.posicion_fondo_mdf || 'delante_liston';
-  if (grpFondo) grpFondo.style.display = (m.tiene_fondo_mdf !== false) ? 'block' : 'none';
+  if (selPosMel) selPosMel.value = m.posicion_fondo_melamina || 'embutido';
+
+  if (grpFondoMdf) grpFondoMdf.style.display = (tipoFondo === 'mdf') ? 'block' : 'none';
+  if (grpFondoMel) grpFondoMel.style.display = (tipoFondo === 'melamina') ? 'block' : 'none';
+
+  const profInfo = calcularProfundidadUtilInterior(m, AppState.espesorMelamina);
+  if (lblDescuento) {
+    lblDescuento.innerHTML = `
+      <strong>${profInfo.profMod} mm (nominal)</strong> → <span style="font-size: 11px; font-weight: 700; color: var(--accent);">${profInfo.profUtil} mm (útil)</span><br>
+      <span style="color: var(--text-muted); font-size: 9px;">Descuentos: ${profInfo.detallesTexto}</span>
+    `;
+  }
 
   // Interior
   const selInterior = document.getElementById('modTipoInterior');
@@ -855,23 +876,126 @@ function onCambiarPosicionListonAmarre(pos) {
 }
 
 /**
- * Conmuta si el módulo lleva fondo posterior de MDF.
+ * Calcula la profundidad útil neta y el desglose de descuentos para parantes y repisas.
+ * Descuenta según la presencia de listones posteriores, fondo MDF (enranurado/sobrepuesto)
+ * o fondo de melamina, más el retranqueo frontal estándar de seguridad (20mm).
+ * @param {Object} m - Módulo actual.
+ * @param {number} [t] - Espesor de la melamina (18 o 15 mm).
+ * @returns {Object} Desglose detallado con profUtil, descuentoFrontal, descuentoPosterior, y texto explicativo.
  */
-function onToggleFondoMdf(tieneFondo) {
+function calcularProfundidadUtilInterior(m, t) {
+  t = t || AppState.espesorMelamina || 18;
+  const profMod = m.profundidad;
+  const descuentoFrontal = 20; // 20mm de retranqueo frontal estándar
+
+  // 1. Verificar listones posteriores
+  const tieneListonPost = !!(
+    m.tiene_liston_posterior ||
+    m.tiene_liston_post ||
+    (m.tiene_liston_amarre && (m.posicion_liston_amarre === 'posterior' || m.posicion_liston_amarre === 'ambos'))
+  );
+
+  // 2. Determinar tipo y posición del fondo
+  let tipoFondo = m.tipo_fondo;
+  if (!tipoFondo) {
+    tipoFondo = (m.tiene_fondo_mdf !== false) ? 'mdf' : 'ninguno';
+  }
+
+  let descuentoPosterior = 0;
+  let detallesDescuento = [];
+
+  detallesDescuento.push(`-${descuentoFrontal} mm (retranqueo frontal)`);
+
+  if (tipoFondo === 'mdf') {
+    const posMdf = m.posicion_fondo_mdf || 'delante_liston';
+    if (posMdf === 'delante_liston') {
+      // El MDF va enranurado delante del listón posterior
+      descuentoPosterior = t + 3;
+      detallesDescuento.push(`-${t} mm (listón posterior)`);
+      detallesDescuento.push(`-3 mm (fondo MDF enranurado)`);
+    } else {
+      // MDF sobrepuesto por fuera del módulo
+      if (tieneListonPost) {
+        descuentoPosterior = t;
+        detallesDescuento.push(`-${t} mm (listón posterior de amarre)`);
+      }
+    }
+  } else if (tipoFondo === 'melamina') {
+    const posMel = m.posicion_fondo_melamina || 'embutido';
+    if (posMel === 'embutido') {
+      if (tieneListonPost) {
+        descuentoPosterior = t + t;
+        detallesDescuento.push(`-${t} mm (listón posterior)`);
+        detallesDescuento.push(`-${t} mm (fondo melamina interior)`);
+      } else {
+        descuentoPosterior = t;
+        detallesDescuento.push(`-${t} mm (fondo melamina interior)`);
+      }
+    } else {
+      // Melamina sobrepuesta por fuera
+      if (tieneListonPost) {
+        descuentoPosterior = t;
+        detallesDescuento.push(`-${t} mm (listón posterior de amarre)`);
+      }
+    }
+  } else {
+    // Sin tablero de fondo
+    if (tieneListonPost) {
+      descuentoPosterior = t;
+      detallesDescuento.push(`-${t} mm (listón posterior de amarre)`);
+    }
+  }
+
+  const profUtil = Math.max(100, profMod - descuentoFrontal - descuentoPosterior);
+  const yStart = descuentoFrontal;
+  const yEnd = yStart + profUtil;
+
+  return {
+    profMod,
+    descuentoFrontal,
+    descuentoPosterior,
+    descuentoTotal: descuentoFrontal + descuentoPosterior,
+    profUtil,
+    yStart,
+    yEnd,
+    tieneListonPost,
+    tipoFondo,
+    detallesTexto: detallesDescuento.join(' ')
+  };
+}
+if (typeof window !== 'undefined') {
+  window.calcularProfundidadUtilInterior = calcularProfundidadUtilInterior;
+}
+
+/**
+ * Cambia el tipo de fondo posterior: 'mdf', 'melamina' o 'ninguno'.
+ * @param {string} tipo - 'mdf' | 'melamina' | 'ninguno'
+ */
+function onCambiarTipoFondo(tipo) {
   const idx = AppState.moduloActivoIndex;
   const m = AppState.modulos[idx];
   if (!m) return;
 
-  m.tiene_fondo_mdf = tieneFondo;
-  const grpFondo = document.getElementById('grpDetalleFondoMdf');
-  if (grpFondo) grpFondo.style.display = tieneFondo ? 'block' : 'none';
+  m.tipo_fondo = tipo;
+  m.tiene_fondo_mdf = (tipo === 'mdf');
 
+  const grpFondoMdf = document.getElementById('grpDetalleFondoMdf');
+  const grpFondoMel = document.getElementById('grpDetalleFondoMelamina');
+
+  if (grpFondoMdf) grpFondoMdf.style.display = (tipo === 'mdf') ? 'block' : 'none';
+  if (grpFondoMel) grpFondoMel.style.display = (tipo === 'melamina') ? 'block' : 'none';
+
+  actualizarFormularioModuloActivo();
   actualizarCanvas();
   validarLimitesTecnicosModulo(m, idx);
+
+  const profInfo = calcularProfundidadUtilInterior(m, AppState.espesorMelamina);
+  mostrarNotificacion(`Fondo configurado como ${tipo.toUpperCase()}: repisas y parantes ajustados a ${profInfo.profUtil} mm de profundidad.`, "info");
 }
 
 /**
  * Cambia la posición del fondo MDF: 'delante_liston' (enranurado) o 'detras_liston' (sobrepuesto).
+ * @param {string} pos - 'delante_liston' | 'detras_liston'
  */
 function onCambiarPosicionFondoMdf(pos) {
   const idx = AppState.moduloActivoIndex;
@@ -879,14 +1003,38 @@ function onCambiarPosicionFondoMdf(pos) {
   if (!m) return;
 
   m.posicion_fondo_mdf = pos;
-  if (pos === 'delante_liston') {
-    mostrarNotificacion("Fondo enranurado activado: se generan ranuras estándar de 4x8mm a 18mm en laterales, piso y techo.", "info");
-  } else {
-    mostrarNotificacion("Fondo sobrepuesto activado: clavado/atornillado por detrás del listón.", "info");
-  }
-
+  actualizarFormularioModuloActivo();
   actualizarCanvas();
   validarLimitesTecnicosModulo(m, idx);
+
+  const profInfo = calcularProfundidadUtilInterior(m, AppState.espesorMelamina);
+  mostrarNotificacion(`MDF ${pos === 'delante_liston' ? 'enranurado' : 'sobrepuesto'}: profundidad útil de repisas/parantes recalculada a ${profInfo.profUtil} mm.`, "info");
+}
+
+/**
+ * Cambia la posición del fondo de melamina: 'embutido' o 'sobrepuesto'.
+ * @param {string} pos - 'embutido' | 'sobrepuesto'
+ */
+function onCambiarPosicionFondoMelamina(pos) {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m) return;
+
+  m.posicion_fondo_melamina = pos;
+  actualizarFormularioModuloActivo();
+  actualizarCanvas();
+  validarLimitesTecnicosModulo(m, idx);
+
+  const profInfo = calcularProfundidadUtilInterior(m, AppState.espesorMelamina);
+  mostrarNotificacion(`Fondo melamina ${pos}: profundidad útil de repisas/parantes recalculada a ${profInfo.profUtil} mm.`, "info");
+}
+
+/**
+ * Conmuta si el módulo lleva fondo posterior de MDF (compatibilidad hacia atrás).
+ * @param {boolean} tieneFondo - Estado del switch
+ */
+function onToggleFondoMdf(tieneFondo) {
+  onCambiarTipoFondo(tieneFondo ? 'mdf' : 'ninguno');
 }
 
 /**
@@ -941,7 +1089,10 @@ function calcularDivisionesYEspaciosModulo(m, t) {
 
   const anchoInt = Math.max(0, wMod - (2 * t));
   const hVanoUtil = Math.max(0, hCarcasa - (2 * t));
-  const profInt = Math.max(0, profMod - 20);
+
+  // Cálculo exacto de profundidad útil descontando listones posteriores, fondo MDF o melamina
+  const profInfo = calcularProfundidadUtilInterior(m, t);
+  const profInt = profInfo.profUtil;
 
   const tipo = m.parantes_tipo || 'ninguno';
   const parantesRaw = Array.isArray(m.parantes) ? m.parantes : [];
@@ -1132,6 +1283,7 @@ function calcularDivisionesYEspaciosModulo(m, t) {
     anchoInt,
     hVanoUtil,
     profInt,
+    profInfo,
     limites,
     parantes: parantesResueltos,
     espacios
@@ -1167,6 +1319,12 @@ function renderizarControlesParantesYEspacios(m) {
       badgeInfo.textContent = `${geo.parantes.length} / ${geo.limites.maxParantesPermitidos} Máx.`;
       badgeInfo.className = geo.limites.puedeAgregar ? 'cota-badge' : 'cota-badge cota-badge-muted';
     }
+  }
+
+  const badgeProf = document.getElementById('badgeProfundidadRepisas');
+  if (badgeProf && geo.profInfo) {
+    badgeProf.textContent = `Prof. útil: ${geo.profInfo.profUtil} mm`;
+    badgeProf.title = `Profundidad nominal ${geo.profInfo.profMod}mm con ${geo.profInfo.descuentoTotal}mm de descuento (${geo.profInfo.detallesTexto})`;
   }
 
   const btnAgregar = document.getElementById('btnAgregarParante');
@@ -1925,6 +2083,52 @@ function generarDespieceEstimadoLocal() {
         largo_neto: m.ancho, ancho_neto: zH,
         canto_L1: '0.0', canto_L2: '0.0', canto_A1: '0.0', canto_A2: '0.0', ranura: 'Ninguna'
       });
+    }
+
+    // Fondo Posterior (MDF 3mm, Melamina 18mm/15mm o Ninguno)
+    const tipoFondo = m.tipo_fondo || (m.tiene_fondo_mdf !== false ? 'mdf' : 'ninguno');
+    if (tipoFondo === 'mdf') {
+      const posMdf = m.posicion_fondo_mdf || 'delante_liston';
+      if (posMdf === 'delante_liston') {
+        const wMdf = anchoInt + 14;
+        const hMdf = hCarcasa - (2 * t) + 14;
+        piezas.push({
+          item: itemNum++, modulo: modId, pieza: "Fondo Posterior MDF 3mm Ranurado",
+          material: "MDF Fondo Blanco 3mm", cant: 1,
+          largo_bruto: hMdf, ancho_bruto: wMdf, espesor: 3,
+          largo_neto: hMdf, ancho_neto: wMdf,
+          canto_L1: '0.0', canto_L2: '0.0', canto_A1: '0.0', canto_A2: '0.0', ranura: "Incrustado ranura 4x8mm"
+        });
+      } else {
+        piezas.push({
+          item: itemNum++, modulo: modId, pieza: "Fondo Posterior MDF 3mm Sobrepuesto",
+          material: "MDF Fondo Blanco 3mm", cant: 1,
+          largo_bruto: hCarcasa, ancho_bruto: m.ancho, espesor: 3,
+          largo_neto: hCarcasa, ancho_neto: m.ancho,
+          canto_L1: '0.0', canto_L2: '0.0', canto_A1: '0.0', canto_A2: '0.0', ranura: "Sobrepuesto clavado"
+        });
+      }
+    } else if (tipoFondo === 'melamina') {
+      const posMel = m.posicion_fondo_melamina || 'embutido';
+      if (posMel === 'embutido') {
+        const wMel = anchoInt + 14;
+        const hMel = hCarcasa - (2 * t) + 14;
+        piezas.push({
+          item: itemNum++, modulo: modId, pieza: "Fondo Posterior Melamina Embutido",
+          material: AppState.materialEstructura, cant: 1,
+          largo_bruto: hMel, ancho_bruto: wMel, espesor: t,
+          largo_neto: hMel, ancho_neto: wMel,
+          canto_L1: '0.0', canto_L2: '0.0', canto_A1: '0.0', canto_A2: '0.0', ranura: "Embutido ranura"
+        });
+      } else {
+        piezas.push({
+          item: itemNum++, modulo: modId, pieza: "Fondo Posterior Melamina Sobrepuesto",
+          material: AppState.materialEstructura, cant: 1,
+          largo_bruto: hCarcasa, ancho_bruto: m.ancho, espesor: t,
+          largo_neto: hCarcasa, ancho_neto: m.ancho,
+          canto_L1: '0.0', canto_L2: '0.0', canto_A1: '0.0', canto_A2: '0.0', ranura: "Sobrepuesto posterior"
+        });
+      }
     }
 
     // Parantes y Repisas Interiores por Espacio

@@ -312,25 +312,49 @@
           </div>
         </div>
 
-        <!-- CONFIGURACIÓN DE FONDO POSTERIOR DE MDF -->
+        <!-- CONFIGURACIÓN DE FONDO POSTERIOR Y DESCUENTO DE PROFUNDIDAD -->
         <div style="background: var(--bg-hover); padding: 10px; border-radius: var(--radius-sm); margin-top: 8px;">
-          <label class="switch-container">
-            <input type="checkbox" id="modTieneFondoMdf" class="switch-input" checked onchange="onToggleFondoMdf(this.checked)">
-            <span class="switch-slider"></span>
-            <span>¿Llevará Fondo Posterior de MDF (3mm)?</span>
-          </label>
+          <div class="form-group" style="margin-bottom: 6px;">
+            <label for="modTipoFondo" style="font-weight: 600;">Tipo de Fondo Posterior:</label>
+            <select id="modTipoFondo" onchange="onCambiarTipoFondo(this.value)">
+              <option value="mdf" selected>Fondo de MDF 3mm</option>
+              <option value="melamina">Fondo Rígido de Melamina (18mm / 15mm)</option>
+              <option value="ninguno">Sin Tablero de Fondo (Carcasa Abierta / Solo Listones)</option>
+            </select>
+          </div>
 
-          <div id="grpDetalleFondoMdf" style="margin-top: 8px;">
+          <!-- Opciones para Fondo de MDF -->
+          <div id="grpDetalleFondoMdf" style="margin-top: 6px;">
             <div class="form-group">
-              <label for="modPosicionFondoMdf">Ubicación del MDF respecto al listón:</label>
+              <label for="modPosicionFondoMdf" style="font-size: 11px;">Ubicación del MDF respecto al listón:</label>
               <select id="modPosicionFondoMdf" onchange="onCambiarPosicionFondoMdf(this.value)">
                 <option value="delante_liston" selected>Delante del listón (Enranurado 4x8mm en laterales, piso y techo)</option>
                 <option value="detras_liston">Detrás del listón (Sobrepuesto / clavado)</option>
               </select>
               <span style="font-size: 9.5px; color: var(--text-muted); display: block; margin-top: 2px;">
-                Si va delante, se perforan ranuras normalizadas a 18mm para embutir el tablero de 3mm.
+                Si va delante, se descuenta el listón (18mm) + MDF (3mm) de repisas y parantes.
               </span>
             </div>
+          </div>
+
+          <!-- Opciones para Fondo de Melamina -->
+          <div id="grpDetalleFondoMelamina" style="display: none; margin-top: 6px;">
+            <div class="form-group">
+              <label for="modPosicionFondoMelamina" style="font-size: 11px;">Montaje del Fondo de Melamina:</label>
+              <select id="modPosicionFondoMelamina" onchange="onCambiarPosicionFondoMelamina(this.value)">
+                <option value="embutido" selected>Embutido interior / Enranurado (Rígido)</option>
+                <option value="sobrepuesto">Sobrepuesto por detrás (Atornillado exterior)</option>
+              </select>
+              <span style="font-size: 9.5px; color: var(--text-muted); display: block; margin-top: 2px;">
+                Si va embutido, se descuenta el espesor de la melamina (18mm) de repisas y parantes.
+              </span>
+            </div>
+          </div>
+
+          <!-- Badge interactivo de Descuento de Profundidad en Vivo -->
+          <div id="badgeDescuentoProfundidad" style="font-size: 10px; color: var(--primary); background: rgba(59, 130, 246, 0.1); border-left: 3px solid var(--primary); padding: 5px 8px; border-radius: var(--radius-sm); margin-top: 6px; line-height: 1.4;">
+            ★ <strong>Descuento de Profundidad en Repisas y Parantes:</strong>
+            <div id="lblDescuentoProfDetalle" style="margin-top: 2px;">Calculando...</div>
           </div>
         </div>
 
@@ -354,7 +378,10 @@
               <svg class="svg-icon" style="width: 14px; height: 14px;"><use href="#icon-cubo"></use></svg>
               <span>Parantes (Divisiones)</span>
             </div>
-            <span id="badgeInfoParantesPermitidos" class="cota-badge">0 Parantes</span>
+            <div style="display: flex; gap: 4px;">
+              <span id="badgeProfundidadRepisas" class="cota-badge">Prof. útil: 459 mm</span>
+              <span id="badgeInfoParantesPermitidos" class="cota-badge">0 Parantes</span>
+            </div>
           </div>
 
           <div class="form-group" style="margin-bottom: 8px;">

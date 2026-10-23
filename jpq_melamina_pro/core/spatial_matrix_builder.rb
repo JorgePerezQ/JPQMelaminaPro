@@ -1030,15 +1030,14 @@ module JPQMelaminaPro
               end
             end
 
-            # D. Fondo Posterior de MDF (3mm) y Ranurado Perimetral Estándar
-            tiene_fondo = m_data['tiene_fondo_mdf'] == true || m_data['tiene_fondo_mdf'] == 'true'
+            # D. Fondo Posterior (MDF 3mm, Melamina 18mm/15mm o Ninguno)
+            tipo_fondo = m_data['tipo_fondo'] || ((m_data['tiene_fondo_mdf'] == true || m_data['tiene_fondo_mdf'] == 'true' || m_data['tiene_fondo_mdf'].nil?) ? 'mdf' : 'ninguno')
             pos_fondo = m_data['posicion_fondo_mdf'] || 'delante_liston' # 'delante_liston' o 'detras_liston'
             mat_fondos = params['material_fondos'] || 'MDF Fondo Blanco 3mm'
 
-            if tiene_fondo
+            if tipo_fondo == 'mdf'
               if pos_fondo == 'delante_liston'
                 # Ranura estándar: 4mm de ancho, 8mm de profundidad, a t mm del borde posterior
-                # Medida neta del fondo MDF: vano interior + 14mm (7mm de penetración por lado)
                 ancho_mdf_num = ancho_int_num + 14.0
                 alto_mdf_num  = h_carcasa_num - (2 * t_num) + 14.0
                 CabinetBuilder.crear_panel(
@@ -1074,6 +1073,44 @@ module JPQMelaminaPro
                   }
                 )
               end
+            elsif tipo_fondo == 'melamina'
+              pos_mel = m_data['posicion_fondo_melamina'] || 'embutido'
+              if pos_mel == 'embutido'
+                ancho_mel_num = ancho_int_num + 14.0
+                alto_mel_num  = h_carcasa_num - (2 * t_num) + 14.0
+                y_mel_pos = d_mod - t - (usa_amarres_post ? t : 0.mm)
+                CabinetBuilder.crear_panel(
+                  grupo_mod, "M#{idx + 1} Fondo Melamina Embutido #{t_num.to_i}mm",
+                  x_pos + t - 7.0.mm, y_mel_pos, z_base + t - 7.0.mm,
+                  ancho_mel_num.mm, t, alto_mel_num.mm,
+                  {
+                    'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-FONDO-MEL-EMB",
+                    'pieza_nombre' => "M#{idx + 1} Fondo Melamina Embutido", 'material' => mat_estructura,
+                    'resistencia' => resistencia,
+                    'largo_bruto_mm' => alto_mel_num, 'ancho_bruto_mm' => ancho_mel_num, 'espesor_mm' => t_num,
+                    'largo_neto_mm' => alto_mel_num, 'ancho_neto_mm' => ancho_mel_num,
+                    'cantidad' => 1, 'veta' => 'longitudinal',
+                    'canto_L1' => 0.0, 'canto_L2' => 0.0, 'canto_A1' => 0.0, 'canto_A2' => 0.0,
+                    'ranura' => "Embutido ranura #{t_num.to_i}mm"
+                  }
+                )
+              else
+                CabinetBuilder.crear_panel(
+                  grupo_mod, "M#{idx + 1} Fondo Melamina Sobrepuesto #{t_num.to_i}mm",
+                  x_pos, d_mod, z_base,
+                  w_mod, t, h_carcasa,
+                  {
+                    'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-FONDO-MEL-SOBRE",
+                    'pieza_nombre' => "M#{idx + 1} Fondo Melamina Sobrepuesto", 'material' => mat_estructura,
+                    'resistencia' => resistencia,
+                    'largo_bruto_mm' => h_carcasa_num, 'ancho_bruto_mm' => w_mod_num, 'espesor_mm' => t_num,
+                    'largo_neto_mm' => h_carcasa_num, 'ancho_neto_mm' => w_mod_num,
+                    'cantidad' => 1, 'veta' => 'longitudinal',
+                    'canto_L1' => 0.0, 'canto_L2' => 0.0, 'canto_A1' => 0.0, 'canto_A2' => 0.0,
+                    'ranura' => 'Sobrepuesto posterior'
+                  }
+                )
+              end
             end
 
             # C. Componentes Interiores (Repisas, Cajones o Puertas)
@@ -1087,7 +1124,30 @@ module JPQMelaminaPro
               parantes_tipo = m_data['parantes_tipo'] || 'ninguno'
               parantes_raw = m_data['parantes'] || []
               espacios_cfg = m_data['espacios_repisas'] || []
-              prof_rep_num = d_mod_num - 20.0
+
+              # Cálculo exacto de descuento de profundidad para parantes y repisas:
+              descuento_frontal_num = 20.0
+              descuento_post_num = 0.0
+
+              if tipo_fondo == 'mdf'
+                if pos_fondo == 'delante_liston'
+                  descuento_post_num = t_num + 3.0 # Listón (t) + MDF (3mm)
+                else
+                  descuento_post_num = usa_amarres_post ? t_num : 0.0
+                end
+              elsif tipo_fondo == 'melamina'
+                pos_mel = m_data['posicion_fondo_melamina'] || 'embutido'
+                if pos_mel == 'embutido'
+                  descuento_post_num = usa_amarres_post ? (2 * t_num) : t_num
+                else
+                  descuento_post_num = usa_amarres_post ? t_num : 0.0
+                end
+              else
+                descuento_post_num = usa_amarres_post ? t_num : 0.0
+              end
+
+              prof_rep_num = [d_mod_num - descuento_frontal_num - descuento_post_num, 50.0].max
+              y_rep_start = descuento_frontal_num.mm
 
               # 1. Resolver y construir Parantes (Verticales u Horizontales)
               parantes_resueltos = []
@@ -1111,7 +1171,7 @@ module JPQMelaminaPro
 
                   CabinetBuilder.crear_panel(
                     grupo_mod, "M#{idx + 1} Parante Vertical #{p_idx + 1}",
-                    x_pos + t + pos_final.mm, 20.0.mm, z_base + t,
+                    x_pos + t + pos_final.mm, y_rep_start, z_base + t,
                     t, prof_rep_num.mm, h_vano_util,
                     {
                       'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-PAR-V#{p_idx + 1}",
@@ -1142,7 +1202,7 @@ module JPQMelaminaPro
 
                   CabinetBuilder.crear_panel(
                     grupo_mod, "M#{idx + 1} Parante Horizontal #{p_idx + 1}",
-                    x_pos + t, 20.0.mm, z_base + t + pos_final.mm,
+                    x_pos + t, y_rep_start, z_base + t + pos_final.mm,
                     ancho_int, prof_rep_num.mm, t,
                     {
                       'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-PAR-H#{p_idx + 1}",
@@ -1211,7 +1271,7 @@ module JPQMelaminaPro
 
                     CabinetBuilder.crear_panel(
                       grupo_mod, "M#{idx + 1} Repisa E#{s_idx + 1}-#{r_idx + 1}",
-                      x_rep_panel, 20.0.mm, z_rep_panel,
+                      x_rep_panel, y_rep_start, z_rep_panel,
                       w_esp_num.mm, prof_rep_num.mm, t,
                       {
                         'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-E#{s_idx + 1}-REP-#{r_idx + 1}",
