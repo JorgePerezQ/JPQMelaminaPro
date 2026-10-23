@@ -2111,14 +2111,14 @@ function generarDespieceEstimadoLocal() {
     } else if (tipoFondo === 'melamina') {
       const posMel = m.posicion_fondo_melamina || 'embutido';
       if (posMel === 'embutido') {
-        const wMel = anchoInt + 14;
-        const hMel = hCarcasa - (2 * t) + 14;
+        const wMel = anchoInt;
+        const hMel = hCarcasa - (2 * t);
         piezas.push({
           item: itemNum++, modulo: modId, pieza: "Fondo Posterior Melamina Embutido",
           material: AppState.materialEstructura, cant: 1,
           largo_bruto: hMel, ancho_bruto: wMel, espesor: t,
           largo_neto: hMel, ancho_neto: wMel,
-          canto_L1: '0.0', canto_L2: '0.0', canto_A1: '0.0', canto_A2: '0.0', ranura: "Embutido ranura"
+          canto_L1: '0.0', canto_L2: '0.0', canto_A1: '0.0', canto_A2: '0.0', ranura: "Embutido a tope interior"
         });
       } else {
         piezas.push({

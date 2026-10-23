@@ -266,9 +266,10 @@ const Preview3D = (function() {
 
   /**
    * Genera los prismas geométricos [x, y, z, dx, dy, dz] para todos los módulos.
+   * @param {Object} [dataOverride] - Datos opcionales para generación sin pasar por currentData.
    */
-  function generarPrismasModulos() {
-    const d = currentData;
+  function generarPrismasModulos(dataOverride) {
+    const d = dataOverride || currentData;
     const t = d.espesor || 18;
     const mat = d.material || 'Pelikano Blanco Nieve 18mm';
     const modulos = d.modulos || [];
@@ -305,15 +306,17 @@ const Preview3D = (function() {
           moduloIndex: idx
         });
 
-        // Listón transversal central (si cant_listones >= 3)
+        // Listón transversal central de refuerzo (si cant_listones >= 3 y hay espacio útil suficiente)
         if (cantListones >= 3) {
           const profTrans = profMod - (2 * retransZocalo) - (2 * t);
-          prismas.push({
-            x: xMod + (wMod / 2) - (t / 2), y: retransZocalo + t, z: 0,
-            dx: t, dy: profTrans, dz: zocaloH,
-            mat, name: `M${idx + 1} Listón Transversal`,
-            moduloIndex: idx
-          });
+          if (profTrans > 0) {
+            prismas.push({
+              x: xMod + (wMod / 2) - (t / 2), y: retransZocalo + t, z: 0,
+              dx: t, dy: profTrans, dz: zocaloH,
+              mat, name: `M${idx + 1} Listón Transversal`,
+              moduloIndex: idx
+            });
+          }
         }
       }
 
@@ -355,51 +358,38 @@ const Preview3D = (function() {
         moduloIndex: idx
       });
 
-      // Techo de la Carcasa / Amarres de Techo
+      // Techo de la Carcasa / Amarres de Techo con distribución milimétrica exacta sin solapamientos
       if (usaAmarresTecho) {
-        const cantTecho = m.cant_listones_techo || m.cant_listones_amarre || 2;
-        const wListonTecho = m.medida_liston_techo || m.alto_liston_amarre || 80;
+        const cantTecho = Math.max(1, parseInt(m.cant_listones_techo || m.cant_listones_amarre || 2));
+        const wNominal = Math.max(40, parseFloat(m.medida_liston_techo || m.alto_liston_amarre || 80));
+        // Evitar que el ancho del listón exceda el espacio físico disponible
+        const wListonTecho = Math.min(wNominal, Math.floor(profMod / cantTecho));
 
-        // Amarre Frontal de Techo (siempre que cant >= 1)
-        prismas.push({
-          x: xMod + t, y: 0, z: zBase + hCarcasa - t,
-          dx: anchoInt, dy: wListonTecho, dz: t,
-          mat, name: `M${idx + 1} Amarre Techo Frontal`,
-          moduloIndex: idx
-        });
+        if (cantTecho === 1) {
+          prismas.push({
+            x: xMod + t, y: 0, z: zBase + hCarcasa - t,
+            dx: anchoInt, dy: wListonTecho, dz: t,
+            mat, name: `M${idx + 1} Amarre Techo Frontal`,
+            moduloIndex: idx
+          });
+        } else {
+          const espacioGaps = Math.max(0, profMod - (cantTecho * wListonTecho));
+          const pasoGap = espacioGaps / (cantTecho - 1);
 
-        // Amarre Posterior de Techo (si cant >= 2)
-        if (cantTecho >= 2) {
-          prismas.push({
-            x: xMod + t, y: profMod - wListonTecho, z: zBase + hCarcasa - t,
-            dx: anchoInt, dy: wListonTecho, dz: t,
-            mat, name: `M${idx + 1} Amarre Techo Posterior`,
-            moduloIndex: idx
-          });
-        }
+          for (let k = 0; k < cantTecho; k++) {
+            const yPos = Math.round(k * (wListonTecho + pasoGap));
+            let nom = `M${idx + 1} Amarre Techo `;
+            if (k === 0) nom += 'Frontal';
+            else if (k === cantTecho - 1) nom += 'Posterior';
+            else nom += `Intermedio ${k}`;
 
-        // Amarre Central de Techo (si cant == 3)
-        if (cantTecho === 3) {
-          prismas.push({
-            x: xMod + t, y: (profMod - wListonTecho) / 2, z: zBase + hCarcasa - t,
-            dx: anchoInt, dy: wListonTecho, dz: t,
-            mat, name: `M${idx + 1} Amarre Techo Central`,
-            moduloIndex: idx
-          });
-        } else if (cantTecho >= 4) {
-          const paso = (profMod - wListonTecho) / 3;
-          prismas.push({
-            x: xMod + t, y: paso, z: zBase + hCarcasa - t,
-            dx: anchoInt, dy: wListonTecho, dz: t,
-            mat, name: `M${idx + 1} Amarre Techo Intermedio 1`,
-            moduloIndex: idx
-          });
-          prismas.push({
-            x: xMod + t, y: paso * 2, z: zBase + hCarcasa - t,
-            dx: anchoInt, dy: wListonTecho, dz: t,
-            mat, name: `M${idx + 1} Amarre Techo Intermedio 2`,
-            moduloIndex: idx
-          });
+            prismas.push({
+              x: xMod + t, y: yPos, z: zBase + hCarcasa - t,
+              dx: anchoInt, dy: wListonTecho, dz: t,
+              mat, name: nom,
+              moduloIndex: idx
+            });
+          }
         }
 
         // Techo / Tapa sobrepuesta sobre los listones de amarre
@@ -438,56 +428,41 @@ const Preview3D = (function() {
         });
       }
 
-      // Listones Posteriores de Amarre / Fijación a Pared
+      // Listones Posteriores de Amarre / Fijación a Pared con distribución milimétrica exacta
       const usaAmarresPost = (m.tiene_liston_post === true || m.tiene_liston_post === 'true') ||
         ((m.tiene_liston_amarre === true || m.tiene_liston_amarre === 'true') && (m.posicion_liston_amarre === 'posterior' || m.posicion_liston_amarre === 'ambos'));
 
       if (usaAmarresPost) {
-        const cantPost = m.cant_listones_post || m.cant_listones_amarre || 2;
-        const hListonPost = m.medida_liston_post || m.alto_liston_amarre || 80;
+        const cantPost = Math.max(1, parseInt(m.cant_listones_post || m.cant_listones_amarre || 2));
+        const hNominal = Math.max(40, parseFloat(m.medida_liston_post || m.alto_liston_amarre || 80));
+        const hVanoUtilPost = hCarcasa - (2 * t);
+        const hListonPost = Math.min(hNominal, Math.floor(hVanoUtilPost / cantPost));
 
-        // Listón Superior Posterior (siempre presente)
-        prismas.push({
-          x: xMod + t, y: profMod - t, z: zBase + hCarcasa - t - hListonPost,
-          dx: anchoInt, dy: t, dz: hListonPost,
-          mat, name: `M${idx + 1} Listón Posterior Superior`,
-          moduloIndex: idx
-        });
+        if (cantPost === 1) {
+          prismas.push({
+            x: xMod + t, y: profMod - t, z: zBase + hCarcasa - t - hListonPost,
+            dx: anchoInt, dy: t, dz: hListonPost,
+            mat, name: `M${idx + 1} Listón Posterior Superior`,
+            moduloIndex: idx
+          });
+        } else {
+          const espacioGaps = Math.max(0, hVanoUtilPost - (cantPost * hListonPost));
+          const pasoGap = espacioGaps / (cantPost - 1);
 
-        // Listón Inferior Posterior (si cantPost >= 2)
-        if (cantPost >= 2) {
-          prismas.push({
-            x: xMod + t, y: profMod - t, z: zBase + t,
-            dx: anchoInt, dy: t, dz: hListonPost,
-            mat, name: `M${idx + 1} Listón Posterior Inferior`,
-            moduloIndex: idx
-          });
-        }
+          for (let k = 0; k < cantPost; k++) {
+            const zPos = zBase + t + Math.round(k * (hListonPost + pasoGap));
+            let nom = `M${idx + 1} Listón Posterior `;
+            if (k === 0) nom += 'Inferior';
+            else if (k === cantPost - 1) nom += 'Superior';
+            else nom += `Intermedio ${k}`;
 
-        // Listón Central Posterior (si cantPost == 3)
-        if (cantPost === 3) {
-          const zCentro = zBase + t + ((hCarcasa - (2 * t) - hListonPost) / 2);
-          prismas.push({
-            x: xMod + t, y: profMod - t, z: zCentro,
-            dx: anchoInt, dy: t, dz: hListonPost,
-            mat, name: `M${idx + 1} Listón Posterior Central`,
-            moduloIndex: idx
-          });
-        } else if (cantPost >= 4) {
-          const espacioLibre = hCarcasa - (2 * t) - (2 * hListonPost);
-          const paso = espacioLibre / 3;
-          prismas.push({
-            x: xMod + t, y: profMod - t, z: zBase + t + hListonPost + paso,
-            dx: anchoInt, dy: t, dz: hListonPost,
-            mat, name: `M${idx + 1} Listón Posterior Intermedio 1`,
-            moduloIndex: idx
-          });
-          prismas.push({
-            x: xMod + t, y: profMod - t, z: zBase + t + hListonPost + (paso * 2),
-            dx: anchoInt, dy: t, dz: hListonPost,
-            mat, name: `M${idx + 1} Listón Posterior Intermedio 2`,
-            moduloIndex: idx
-          });
+            prismas.push({
+              x: xMod + t, y: profMod - t, z: zPos,
+              dx: anchoInt, dy: t, dz: hListonPost,
+              mat, name: nom,
+              moduloIndex: idx
+            });
+          }
         }
       }
 
@@ -498,10 +473,10 @@ const Preview3D = (function() {
 
       if (tipoFondo === 'mdf') {
         if (posFondo === 'delante_liston') {
-          // Fondo incrustado en ranura delante del listón
+          // Fondo incrustado en ranura delante del listón (7mm de profundidad de ranura por lado)
           prismas.push({
-            x: xMod + t - 6, y: profMod - t - 3, z: zBase + t - 6,
-            dx: anchoInt + 12, dy: 3, dz: (hCarcasa - 2 * t) + 12,
+            x: xMod + t - 7, y: profMod - t - 3, z: zBase + t - 7,
+            dx: anchoInt + 14, dy: 3, dz: (hCarcasa - 2 * t) + 14,
             mat: matMdf, name: `M${idx + 1} Fondo MDF Ranurado 3mm`,
             moduloIndex: idx
           });
@@ -598,12 +573,16 @@ const Preview3D = (function() {
           const cantRep = (m.cant_repisas !== undefined) ? m.cant_repisas : 0;
           if (cantRep > 0) {
             const pasoRep = hVanoUtil / (cantRep + 1);
-            const profRep = profMod - 20;
+            const profInfoFallback = (typeof window.calcularProfundidadUtilInterior === 'function')
+              ? window.calcularProfundidadUtilInterior(m, t)
+              : { profUtil: Math.max(100, profMod - 20), yStart: 20 };
+            const yRep = profInfoFallback.yStart;
+            const profRep = profInfoFallback.profUtil;
 
             for (let r = 1; r <= cantRep; r++) {
               const zRep = zBase + t + (r * pasoRep);
               prismas.push({
-                x: xMod + t, y: 20, z: zRep,
+                x: xMod + t, y: yRep, z: zRep,
                 dx: anchoInt, dy: profRep, dz: t,
                 mat, name: `M${idx + 1} Repisa ${r}`,
                 moduloIndex: idx
@@ -1207,7 +1186,8 @@ const Preview3D = (function() {
     setRenderMode,
     toggleCotas,
     resize: ajustarTamano,
-    render
+    render,
+    generarPrismas: generarPrismasModulos
   };
 
   if (typeof window !== 'undefined') {
