@@ -38,34 +38,38 @@ def build_rbz():
     print(f"¡Extensión empaquetada con éxito! Archivo: {output_rbz}")
     print(f"Tamaño: {os.path.getsize(output_rbz)} bytes")
 
-    # 3. Sincronizar en vivo a Windows SketchUp 2026 Plugins si existe la ruta WSL2
-    win_plugins_dir = "/mnt/c/Users/jorge/AppData/Roaming/SketchUp/SketchUp 2026/SketchUp/Plugins"
-    if os.path.exists(win_plugins_dir):
-        print(f"\nSincronizando de forma segura a SketchUp 2026: {win_plugins_dir}")
-        dst_loader = os.path.join(win_plugins_dir, 'jpq_melamina_pro.rb')
-        try:
-            shutil.copy2(main_loader, dst_loader)
-            print(" -> jpq_melamina_pro.rb sincronizado.")
-        except Exception as e:
-            print(f"Aviso al copiar loader: {e}")
+    # 3. Sincronizar en vivo a todas las versiones instaladas de SketchUp en Windows (WSL2)
+    sketchup_base = "/mnt/c/Users/jorge/AppData/Roaming/SketchUp"
+    if os.path.exists(sketchup_base):
+        for entry in sorted(os.listdir(sketchup_base), reverse=True):
+            if entry.startswith("SketchUp 20"):
+                win_plugins_dir = os.path.join(sketchup_base, entry, "SketchUp", "Plugins")
+                if os.path.exists(win_plugins_dir):
+                    print(f"\nSincronizando de forma segura a {entry}: {win_plugins_dir}")
+                    dst_loader = os.path.join(win_plugins_dir, 'jpq_melamina_pro.rb')
+                    try:
+                        shutil.copy2(main_loader, dst_loader)
+                        print(f" -> jpq_melamina_pro.rb sincronizado en {entry}.")
+                    except Exception as e:
+                        print(f"Aviso al copiar loader en {entry}: {e}")
 
-        dst_sub_dir = os.path.join(win_plugins_dir, 'jpq_melamina_pro')
-        os.makedirs(dst_sub_dir, exist_ok=True)
-        for root, dirs, files in os.walk(sub_dir):
-            for file in files:
-                if file.endswith(('.py', '.pyc', '.git', '.DS_Store', 'Thumbs.db', 'Zone.Identifier')):
-                    continue
-                src_file = os.path.join(root, file)
-                rel = os.path.relpath(src_file, sub_dir)
-                dst_file = os.path.join(dst_sub_dir, rel)
-                os.makedirs(os.path.dirname(dst_file), exist_ok=True)
-                try:
-                    shutil.copy2(src_file, dst_file)
-                except Exception as e:
-                    pass
-        print(" -> Carpeta jpq_melamina_pro y texturas sincronizadas con éxito.")
+                    dst_sub_dir = os.path.join(win_plugins_dir, 'jpq_melamina_pro')
+                    os.makedirs(dst_sub_dir, exist_ok=True)
+                    for root, dirs, files in os.walk(sub_dir):
+                        for file in files:
+                            if file.endswith(('.py', '.pyc', '.git', '.DS_Store', 'Thumbs.db', 'Zone.Identifier')):
+                                continue
+                            src_file = os.path.join(root, file)
+                            rel = os.path.relpath(src_file, sub_dir)
+                            dst_file = os.path.join(dst_sub_dir, rel)
+                            os.makedirs(os.path.dirname(dst_file), exist_ok=True)
+                            try:
+                                shutil.copy2(src_file, dst_file)
+                            except Exception as e:
+                                pass
+                    print(f" -> Carpeta jpq_melamina_pro sincronizada con éxito en {entry}.")
     else:
-        print(f"\nRuta de SketchUp en Windows no encontrada en {win_plugins_dir}. Usar jpq_melamina_pro.rbz.")
+        print(f"\nRuta base de SketchUp no encontrada en {sketchup_base}. Usar jpq_melamina_pro.rbz.")
 
 if __name__ == '__main__':
     build_rbz()
