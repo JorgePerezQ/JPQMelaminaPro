@@ -222,9 +222,13 @@
           <div id="grpDetalleZocalo" class="form-grid-2" style="margin-top: 8px;">
             <div class="form-group">
               <label for="modAltoZocalo">Altura de Zócalo (mm)</label>
-              <input type="number" id="modAltoZocalo" value="100" min="40" max="250" step="5" oninput="onEditarAltoZocalo(this.value)">
+              <input type="number" id="modAltoZocalo" value="100" min="10" step="1" oninput="onEditarAltoZocalo(this.value)">
             </div>
             <div class="form-group">
+              <label for="modRetransZocalo">Retranqueo Frontal Zócalo (mm)</label>
+              <input type="number" id="modRetransZocalo" value="35" min="0" step="1" oninput="onEditarRetransZocalo(this.value)">
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
               <label for="modCantListones">Cantidad de Listones</label>
               <select id="modCantListones" onchange="onEditarCantListones(this.value)">
                 <option value="2" selected>2 listones (Frontal + Posterior)</option>
@@ -255,8 +259,8 @@
                 </select>
               </div>
               <div class="form-group">
-                <label for="modMedidaListonPost">Medida / Altura Listón Posterior (mm)</label>
-                <input type="number" id="modMedidaListonPost" value="80" min="40" max="250" step="5" oninput="onEditarMedidaListonPost(this.value)">
+                <label for="modMedidaListonPost">Ancho / Medida Listón Posterior (mm)</label>
+                <input type="number" id="modMedidaListonPost" value="80" min="10" step="1" oninput="onEditarMedidaListonPost(this.value)">
               </div>
             </div>
           </div>
@@ -285,8 +289,8 @@
                 </select>
               </div>
               <div class="form-group">
-                <label for="modMedidaListonTecho">Medida / Ancho Listón Techo (mm)</label>
-                <input type="number" id="modMedidaListonTecho" value="80" min="40" max="250" step="5" oninput="onEditarMedidaListonTecho(this.value)">
+                <label for="modMedidaListonTecho">Ancho / Medida Listón Techo (mm)</label>
+                <input type="number" id="modMedidaListonTecho" value="80" min="10" step="1" oninput="onEditarMedidaListonTecho(this.value)">
               </div>
             </div>
 
@@ -384,13 +388,19 @@
             </div>
           </div>
 
-          <div class="form-group" style="margin-bottom: 8px;">
-            <label for="modParantesTipo" style="font-size: 11px;">Orientación de Parantes:</label>
-            <select id="modParantesTipo" onchange="onCambiarOrientacionParantes(this.value)">
-              <option value="ninguno">Ninguno (Vano Libre)</option>
-              <option value="vertical">Verticales (Columnas)</option>
-              <option value="horizontal">Horizontales (Niveles)</option>
-            </select>
+          <div class="form-grid-2" style="margin-bottom: 8px;">
+            <div class="form-group">
+              <label for="modParantesTipo" style="font-size: 11px;">Orientación de Parantes:</label>
+              <select id="modParantesTipo" onchange="onCambiarOrientacionParantes(this.value)">
+                <option value="ninguno">Ninguno (Vano Libre)</option>
+                <option value="vertical">Verticales (Columnas)</option>
+                <option value="horizontal">Horizontales (Niveles)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="modDescuentoFrontal" style="font-size: 11px;">Retranqueo Frontal (mm):</label>
+              <input type="number" id="modDescuentoFrontal" value="20" min="0" max="150" step="1" oninput="onEditarDescuentoFrontal(this.value)">
+            </div>
           </div>
 
           <div id="contenedorConfigParantes" style="display: none;">

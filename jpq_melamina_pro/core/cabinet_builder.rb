@@ -1088,17 +1088,19 @@ module JPQMelaminaPro
         ]
 
         cara = panel_group.entities.add_face(pts)
+        return panel_group unless cara
         
         # En SketchUp, las caras horizontales creadas sobre Z=0 se orientan automáticamente
         # hacia abajo (0, 0, -1). Si se ejecuta pushpull(dz) directamente, la pieza
         # se extruye hacia el eje Z negativo (debajo del piso / bajo la línea roja).
         # Invertimos la normal si apunta hacia abajo para garantizar que se proyecte en +Z:
         cara.reverse! if cara.normal.z < 0
-        cara.pushpull(dz.abs)
+        cara.pushpull(dz.abs) if dz.abs > 0
 
         # Asignar color y textura fotorrealista de SketchUp (Pelikano, Vesto o Universal)
         mat_nombre = attrs['material'] || 'Pelikano Blanco Nieve 18mm'
-        su_mat = MaterialManager.obtener_o_crear_material_su(parent_group.model, mat_nombre)
+        su_model = (parent_group.respond_to?(:model) && parent_group.model) ? parent_group.model : Sketchup.active_model
+        su_mat = MaterialManager.obtener_o_crear_material_su(su_model, mat_nombre)
         panel_group.material = su_mat if su_mat
 
         dict = panel_group.attribute_dictionary('DespieceMela', true)

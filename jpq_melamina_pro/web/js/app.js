@@ -455,11 +455,13 @@ function actualizarFormularioModuloActivo() {
   // Zócalo
   const chkZocalo = document.getElementById('modTieneZocalo');
   const inpAltoZocalo = document.getElementById('modAltoZocalo');
+  const inpRetransZocalo = document.getElementById('modRetransZocalo');
   const selListones = document.getElementById('modCantListones');
   const grpZocalo = document.getElementById('grpDetalleZocalo');
 
   if (chkZocalo) chkZocalo.checked = m.tiene_zocalo;
-  if (inpAltoZocalo) inpAltoZocalo.value = m.alto_zocalo;
+  if (inpAltoZocalo) inpAltoZocalo.value = (m.alto_zocalo !== undefined) ? m.alto_zocalo : 100;
+  if (inpRetransZocalo) inpRetransZocalo.value = (m.retrans_zocalo !== undefined && m.retrans_zocalo !== '') ? m.retrans_zocalo : 35;
   if (selListones) selListones.value = m.cant_listones;
   if (grpZocalo) grpZocalo.style.display = m.tiene_zocalo ? 'grid' : 'none';
 
@@ -475,7 +477,7 @@ function actualizarFormularioModuloActivo() {
 
   if (chkPost) chkPost.checked = tienePost;
   if (selCantPost) selCantPost.value = m.cant_listones_post || m.cant_listones_amarre || 2;
-  if (inpMedidaPost) inpMedidaPost.value = m.medida_liston_post || m.alto_liston_amarre || 80;
+  if (inpMedidaPost) inpMedidaPost.value = m.ancho_liston_post || m.medida_liston_post || m.alto_liston_amarre || 80;
   if (grpPost) grpPost.style.display = tienePost ? 'block' : 'none';
 
   // Techo y Listones de Techo (Amarres Superiores)
@@ -494,7 +496,7 @@ function actualizarFormularioModuloActivo() {
 
   if (chkTecho) chkTecho.checked = tieneTecho;
   if (selCantTecho) selCantTecho.value = m.cant_listones_techo || m.cant_listones_amarre || 2;
-  if (inpMedidaTecho) inpMedidaTecho.value = m.medida_liston_techo || m.alto_liston_amarre || 80;
+  if (inpMedidaTecho) inpMedidaTecho.value = m.ancho_liston_techo || m.medida_liston_techo || m.alto_liston_amarre || 80;
   if (grpTecho) grpTecho.style.display = tieneTecho ? 'block' : 'none';
   if (chkTechoSobre) chkTechoSobre.checked = !!m.techo_sobre_liston;
   if (grpTechoSobre) grpTechoSobre.style.display = m.techo_sobre_liston ? 'block' : 'none';
@@ -514,10 +516,12 @@ function actualizarFormularioModuloActivo() {
   const grpFondoMdf = document.getElementById('grpDetalleFondoMdf');
   const grpFondoMel = document.getElementById('grpDetalleFondoMelamina');
   const lblDescuento = document.getElementById('lblDescuentoProfDetalle');
+  const inpDescuentoFrontal = document.getElementById('modDescuentoFrontal');
 
   if (selTipoFondo) selTipoFondo.value = tipoFondo;
   if (selPosFondo) selPosFondo.value = m.posicion_fondo_mdf || 'delante_liston';
   if (selPosMel) selPosMel.value = m.posicion_fondo_melamina || 'embutido';
+  if (inpDescuentoFrontal) inpDescuentoFrontal.value = (m.descuento_frontal !== undefined && m.descuento_frontal !== '') ? m.descuento_frontal : 20;
 
   if (grpFondoMdf) grpFondoMdf.style.display = (tipoFondo === 'mdf') ? 'block' : 'none';
   if (grpFondoMel) grpFondoMel.style.display = (tipoFondo === 'melamina') ? 'block' : 'none';
@@ -676,7 +680,19 @@ function onEditarAltoZocalo(alto) {
   const m = AppState.modulos[idx];
   if (!m) return;
 
-  m.alto_zocalo = Math.max(40, Math.min(250, parseFloat(alto) || 100));
+  m.alto_zocalo = Math.max(10, parseFloat(alto) || 100);
+  actualizarCanvas();
+}
+
+/**
+ * Cambia el retranqueo frontal del zócalo (en mm).
+ */
+function onEditarRetransZocalo(retrans) {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m) return;
+
+  m.retrans_zocalo = Math.max(0, parseFloat(retrans) || 0);
   actualizarCanvas();
 }
 
@@ -723,7 +739,7 @@ function onEditarCantListonesPost(cant) {
 }
 
 /**
- * Edita la medida/altura del listón posterior en mm (40 a 250 mm).
+ * Edita el ancho/medida del listón posterior en mm ingresado por el usuario.
  * @param {string|number} medida
  */
 function onEditarMedidaListonPost(medida) {
@@ -731,7 +747,9 @@ function onEditarMedidaListonPost(medida) {
   const m = AppState.modulos[idx];
   if (!m) return;
 
-  m.medida_liston_post = Math.max(40, Math.min(250, parseFloat(medida) || 80));
+  const val = Math.max(10, parseFloat(medida) || 80);
+  m.medida_liston_post = val;
+  m.ancho_liston_post = val;
   actualizarCanvas();
   validarLimitesTecnicosModulo(m, idx);
 }
@@ -776,7 +794,7 @@ function onEditarCantListonesTecho(cant) {
 }
 
 /**
- * Edita la medida/ancho del listón de techo en mm (40 a 250 mm).
+ * Edita la medida/ancho del listón de techo en mm ingresado por el usuario.
  * @param {string|number} medida
  */
 function onEditarMedidaListonTecho(medida) {
@@ -784,9 +802,39 @@ function onEditarMedidaListonTecho(medida) {
   const m = AppState.modulos[idx];
   if (!m) return;
 
-  m.medida_liston_techo = Math.max(40, Math.min(250, parseFloat(medida) || 80));
+  const val = Math.max(10, parseFloat(medida) || 80);
+  m.medida_liston_techo = val;
+  m.ancho_liston_techo = val;
   actualizarCanvas();
   validarLimitesTecnicosModulo(m, idx);
+}
+
+/**
+ * Cambia el retranqueo frontal interior de repisas y parantes en mm ingresado por el usuario.
+ * @param {string|number} desc
+ */
+function onEditarDescuentoFrontal(desc) {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m) return;
+
+  const val = Math.max(0, parseFloat(desc) || 0);
+  m.descuento_frontal = val;
+  m.retrans_repisas = val;
+
+  const lblDescuento = document.getElementById('lblDescuentoProfDetalle');
+  const profInfo = calcularProfundidadUtilInterior(m, AppState.espesorMelamina);
+  if (lblDescuento) {
+    lblDescuento.innerHTML = `
+      <strong>${profInfo.profMod} mm (nominal)</strong> → <span style="font-size: 11px; font-weight: 700; color: var(--accent);">${profInfo.profUtil} mm (útil)</span><br>
+      <span style="color: var(--text-muted); font-size: 9px;">Descuentos: ${profInfo.detallesTexto}</span>
+    `;
+  }
+
+  actualizarCanvas();
+  if (m.tipo_interior === 'repisas') {
+    renderizarControlesParantesYEspacios(m);
+  }
 }
 
 /**
@@ -886,7 +934,9 @@ function onCambiarPosicionListonAmarre(pos) {
 function calcularProfundidadUtilInterior(m, t) {
   t = t || AppState.espesorMelamina || 18;
   const profMod = m.profundidad;
-  const descuentoFrontal = 20; // 20mm de retranqueo frontal estándar
+  const descuentoFrontal = (m.descuento_frontal !== undefined && m.descuento_frontal !== '')
+    ? Math.max(0, parseFloat(m.descuento_frontal))
+    : (m.retrans_repisas !== undefined ? Math.max(0, parseFloat(m.retrans_repisas)) : 20);
 
   // 1. Verificar listones posteriores
   const tieneListonPost = !!(
@@ -1210,16 +1260,99 @@ function calcularDivisionesYEspaciosModulo(m, t) {
     const anchoEspacio = Math.max(0, xEnd - xStart);
     const altoEspacio = Math.max(0, zEnd - zStart);
 
-    // Repisas configuradas para este espacio
+    // Configuración de este espacio
     let eCfg = espaciosCfg[s];
     if (!eCfg) {
       if (s === 0 && m.cant_repisas > 0 && espaciosCfg.length === 0) {
-        eCfg = { cantidad: m.cant_repisas, modo: 'proporcional', posiciones_fijas: [] };
+        eCfg = { cantidad: m.cant_repisas, modo: 'proporcional', posiciones_fijas: [], sub_parantes: [] };
       } else {
-        eCfg = { cantidad: 0, modo: 'proporcional', posiciones_fijas: [] };
+        eCfg = { cantidad: 0, modo: 'proporcional', posiciones_fijas: [], sub_parantes: [] };
       }
     }
 
+    // 2.1 Sub-parantes (subdivisiones secundarias en este espacio)
+    // Permite en módulos con parantes horizontales agregar parante(s) vertical(es) en el espacio inferior (o cualquier espacio)
+    // y viceversa en módulos verticales agregar parante(s) horizontal(es).
+    const esTipoH = (tipo === 'horizontal');
+    const esTipoV = (tipo === 'vertical');
+    const permiteSubP = (esTipoH || esTipoV);
+    const subParantesRaw = Array.isArray(eCfg.sub_parantes) ? eCfg.sub_parantes : [];
+
+    const minDistSubP = esTipoH ? 150 : 120;
+    const maxSubPPermitidos = esTipoH
+      ? Math.max(0, Math.floor((anchoEspacio - 150) / (150 + t)))
+      : (esTipoV ? Math.max(0, Math.floor((altoEspacio - 120) / (120 + t))) : 0);
+
+    const cantSubP = permiteSubP ? Math.min(subParantesRaw.length, maxSubPPermitidos) : 0;
+    const subParantesResueltos = [];
+
+    if (permiteSubP && cantSubP > 0) {
+      if (esTipoH) {
+        // Sub-parantes verticales dentro de un espacio horizontal
+        const pasoSub = (anchoEspacio - (cantSubP * t)) / (cantSubP + 1);
+        for (let sp = 0; sp < cantSubP; sp++) {
+          const rawSp = subParantesRaw[sp] || { modo: 'proporcional' };
+          const posProp = Math.round(((sp + 1) * pasoSub) + (sp * t));
+          const minXRel = (sp === 0) ? 150 : (subParantesResueltos[sp - 1].posicionRel + t + 150);
+          const cantRest = cantSubP - 1 - sp;
+          const maxXRel = Math.max(minXRel, anchoEspacio - t - 150 - (cantRest * (150 + t)));
+
+          let posFinal = posProp;
+          if (rawSp.modo === 'fija' && rawSp.posicion_mm !== undefined && rawSp.posicion_mm > 0) {
+            posFinal = Math.max(minXRel, Math.min(maxXRel, Math.round(rawSp.posicion_mm)));
+          }
+
+          subParantesResueltos.push({
+            index: sp,
+            tipo: 'vertical',
+            nombre: `Sub-parante Vertical ${sp + 1}`,
+            modo: rawSp.modo || 'proporcional',
+            posicionRel: posFinal,
+            min: minXRel,
+            max: maxXRel,
+            x: xStart + posFinal,
+            y: 0,
+            z: zStart,
+            dx: t,
+            dy: profInt,
+            dz: altoEspacio
+          });
+        }
+      } else if (esTipoV) {
+        // Sub-parantes horizontales dentro de un espacio vertical
+        const pasoSub = (altoEspacio - (cantSubP * t)) / (cantSubP + 1);
+        for (let sp = 0; sp < cantSubP; sp++) {
+          const rawSp = subParantesRaw[sp] || { modo: 'proporcional' };
+          const posProp = Math.round(((sp + 1) * pasoSub) + (sp * t));
+          const minZRel = (sp === 0) ? 120 : (subParantesResueltos[sp - 1].posicionRel + t + 120);
+          const cantRest = cantSubP - 1 - sp;
+          const maxZRel = Math.max(minZRel, altoEspacio - t - 120 - (cantRest * (120 + t)));
+
+          let posFinal = posProp;
+          if (rawSp.modo === 'fija' && rawSp.posicion_mm !== undefined && rawSp.posicion_mm > 0) {
+            posFinal = Math.max(minZRel, Math.min(maxZRel, Math.round(rawSp.posicion_mm)));
+          }
+
+          subParantesResueltos.push({
+            index: sp,
+            tipo: 'horizontal',
+            nombre: `Sub-parante Horizontal ${sp + 1}`,
+            modo: rawSp.modo || 'proporcional',
+            posicionRel: posFinal,
+            min: minZRel,
+            max: maxZRel,
+            x: xStart,
+            y: 0,
+            z: zStart + posFinal,
+            dx: anchoEspacio,
+            dy: profInt,
+            dz: t
+          });
+        }
+      }
+    }
+
+    // 2.2 Repisas configuradas para este espacio
     const cantMaxRepisas = Math.max(0, Math.floor((altoEspacio - 80) / (80 + t)));
     const cantRepisas = Math.max(0, Math.min(cantMaxRepisas, parseInt(eCfg.cantidad) || 0));
     const modoRepisas = eCfg.modo || 'proporcional';
@@ -1231,7 +1364,7 @@ function calcularDivisionesYEspaciosModulo(m, t) {
       for (let r = 0; r < cantRepisas; r++) {
         const cotaProp = Math.round(((r + 1) * pasoProp) + (r * t));
 
-        const minZRel = (r === 0) ? 80 : (repisas[r - 1].zRel + t + 80);
+        const minZRel = (r === 0) ? 80 : (repisas.length > 0 ? (repisas[repisas.length - 1].zRel + t + 80) : 80);
         const restantesR = cantRepisas - 1 - r;
         const maxZRel = Math.max(minZRel, altoEspacio - t - 80 - (restantesR * (80 + t)));
 
@@ -1240,18 +1373,42 @@ function calcularDivisionesYEspaciosModulo(m, t) {
           cotaFinal = Math.max(minZRel, Math.min(maxZRel, Math.round(eCfg.posiciones_fijas[r])));
         }
 
-        repisas.push({
-          index: r,
-          zRel: cotaFinal,
-          zProp: cotaProp,
-          min: minZRel,
-          max: maxZRel,
-          xStart,
-          zStart,
-          ancho: anchoEspacio,
-          prof: profInt,
-          espesor: t
-        });
+        if (esTipoH && subParantesResueltos.length > 0) {
+          // Subdividir la repisa horizontal en cada sub-vano para no atravesar el sub-parante vertical
+          const numSubVanos = subParantesResueltos.length + 1;
+          for (let sv = 0; sv < numSubVanos; sv++) {
+            const subXStart = (sv === 0) ? xStart : (subParantesResueltos[sv - 1].x + t);
+            const subXEnd = (sv === subParantesResueltos.length) ? xEnd : subParantesResueltos[sv].x;
+            const subAncho = Math.max(0, subXEnd - subXStart);
+
+            repisas.push({
+              index: r,
+              subVanoIndex: sv,
+              zRel: cotaFinal,
+              zProp: cotaProp,
+              min: minZRel,
+              max: maxZRel,
+              xStart: subXStart,
+              zStart,
+              ancho: subAncho,
+              prof: profInt,
+              espesor: t
+            });
+          }
+        } else {
+          repisas.push({
+            index: r,
+            zRel: cotaFinal,
+            zProp: cotaProp,
+            min: minZRel,
+            max: maxZRel,
+            xStart,
+            zStart,
+            ancho: anchoEspacio,
+            prof: profInt,
+            espesor: t
+          });
+        }
       }
     }
 
@@ -1266,10 +1423,21 @@ function calcularDivisionesYEspaciosModulo(m, t) {
       alto: altoEspacio,
       prof: profInt,
       cantMaxRepisas,
+      permiteSubP,
+      tipoSubP: esTipoH ? 'vertical' : 'horizontal',
+      minDistSubP,
+      maxSubPPermitidos,
+      puedeAgregarSubP: permiteSubP && (subParantesResueltos.length < maxSubPPermitidos),
+      subParantes: subParantesResueltos,
       config: {
         cantidad: cantRepisas,
         modo: modoRepisas,
-        posiciones_fijas: repisas.map(rep => rep.zRel)
+        posiciones_fijas: repisas.filter(rep => rep.subVanoIndex === undefined || rep.subVanoIndex === 0).map(rep => rep.zRel),
+        sub_parantes: subParantesResueltos.map(sp => ({
+          index: sp.index,
+          modo: sp.modo,
+          posicion_mm: sp.posicionRel
+        }))
       },
       repisas
     });
@@ -1445,6 +1613,49 @@ function renderizarControlesParantesYEspacios(m) {
               Sin repisas en este compartimento. (Capacidad máx: ${esp.cantMaxRepisas} repisas con paso mín 80mm).
             </div>
           `}
+
+          <!-- Sub-parantes / Subdivisiones secundarias en este espacio -->
+          ${esp.permiteSubP ? `
+            <div style="margin-top: 8px; padding-top: 6px; border-top: 1px dashed var(--border-color);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <span style="font-size: 10px; font-weight: 600; color: var(--text-primary);">
+                  ${esp.tipoSubP === 'vertical' ? 'Parante Vertical en este espacio:' : 'Parante Horizontal en este espacio:'}
+                </span>
+                <button type="button" class="btn btn-secondary" style="font-size: 9.5px; padding: 2px 6px;"
+                  onclick="onAgregarSubParanteEspacio(${sIdx})" ${esp.puedeAgregarSubP ? '' : 'disabled'}>
+                  + Parante ${esp.tipoSubP === 'vertical' ? 'Vertical' : 'Horizontal'}
+                </button>
+              </div>
+
+              ${esp.subParantes && esp.subParantes.length > 0 ? `
+                <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 4px;">
+                  ${esp.subParantes.map((sp, spIdx) => `
+                    <div style="display: flex; gap: 4px; align-items: center; background: var(--bg-hover); padding: 4px; border-radius: 4px;">
+                      <span style="font-size: 9.5px; font-weight: 600; min-width: 55px;">${sp.nombre}:</span>
+                      <select onchange="onCambiarModoSubParanteEspacio(${sIdx}, ${spIdx}, this.value)" style="font-size: 9.5px; padding: 1px 3px; height: 22px; flex: 1;">
+                        <option value="proporcional" ${sp.modo === 'proporcional' ? 'selected' : ''}>Proporcional</option>
+                        <option value="fija" ${sp.modo === 'fija' ? 'selected' : ''}>Cota Fija (mm)</option>
+                      </select>
+                      ${sp.modo === 'fija' ? `
+                        <input type="number" value="${sp.posicionRel}" min="${sp.min}" max="${sp.max}" step="1"
+                          onchange="onEditarPosicionSubParanteEspacio(${sIdx}, ${spIdx}, this.value)"
+                          style="width: 55px; height: 22px; font-size: 9.5px; padding: 1px 3px; text-align: right;">
+                        <span style="font-size: 9px; color: var(--text-muted);">mm</span>
+                      ` : `
+                        <span class="cota-badge" style="font-size: 9px; padding: 1px 4px;">${sp.posicionRel} mm</span>
+                      `}
+                      <button type="button" class="btn btn-secondary" onclick="onEliminarSubParanteEspacio(${sIdx}, ${spIdx})"
+                        title="Eliminar este sub-parante" style="padding: 0 4px; font-size: 9px; height: 20px; color: var(--danger); border-color: var(--danger);">✕</button>
+                    </div>
+                  `).join('')}
+                </div>
+              ` : `
+                <div style="font-size: 9px; color: var(--text-muted); font-style: italic;">
+                  Sin parantes secundarios en este espacio.
+                </div>
+              `}
+            </div>
+          ` : ''}
         </div>
       `;
     });
@@ -1457,6 +1668,122 @@ function renderizarControlesParantesYEspacios(m) {
 
   // Guardar estado sincronizado en el módulo
   m.cant_repisas = totalRepisas;
+}
+
+/**
+ * Agrega un sub-parante a un espacio específico (por ejemplo, parante vertical en espacio inferior).
+ * @param {number} espIdx - Índice del espacio.
+ */
+function onAgregarSubParanteEspacio(espIdx) {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m) return;
+
+  const t = AppState.espesorMelamina || 18;
+  const geo = calcularDivisionesYEspaciosModulo(m, t);
+  const esp = geo.espacios[espIdx];
+  if (!esp || !esp.puedeAgregarSubP) {
+    mostrarNotificacion(`No se pueden agregar más parantes a este espacio (${esp ? (esp.tipoSubP === 'vertical' ? '150mm' : '120mm') : ''} mínimo por vano).`, "warning");
+    return;
+  }
+
+  if (!Array.isArray(m.espacios_repisas)) m.espacios_repisas = [];
+  while (m.espacios_repisas.length <= espIdx) {
+    m.espacios_repisas.push({ cantidad: 0, modo: 'proporcional', posiciones_fijas: [], sub_parantes: [] });
+  }
+  if (!Array.isArray(m.espacios_repisas[espIdx].sub_parantes)) {
+    m.espacios_repisas[espIdx].sub_parantes = [];
+  }
+
+  m.espacios_repisas[espIdx].sub_parantes.push({
+    id: Date.now(),
+    modo: 'proporcional',
+    posicion_mm: 0
+  });
+
+  renderizarControlesParantesYEspacios(m);
+  actualizarCanvas();
+  validarLimitesTecnicosModulo(m, idx);
+  mostrarNotificacion(`Sub-parante ${esp.tipoSubP} agregado al ${esp.nombre}.`, "info");
+}
+
+/**
+ * Elimina un sub-parante de un espacio específico.
+ * @param {number} espIdx - Índice del espacio.
+ * @param {number} spIdx - Índice del sub-parante.
+ */
+function onEliminarSubParanteEspacio(espIdx, spIdx) {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m || !Array.isArray(m.espacios_repisas) || !m.espacios_repisas[espIdx]) return;
+
+  const arr = m.espacios_repisas[espIdx].sub_parantes;
+  if (Array.isArray(arr)) {
+    arr.splice(spIdx, 1);
+  }
+
+  renderizarControlesParantesYEspacios(m);
+  actualizarCanvas();
+  validarLimitesTecnicosModulo(m, idx);
+  mostrarNotificacion("Sub-parante eliminado.", "info");
+}
+
+/**
+ * Cambia el modo de distribución de un sub-parante ('proporcional' o 'fija').
+ * @param {number} espIdx - Índice del espacio.
+ * @param {number} spIdx - Índice del sub-parante.
+ * @param {string} modo - 'proporcional' | 'fija'
+ */
+function onCambiarModoSubParanteEspacio(espIdx, spIdx, modo) {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m || !Array.isArray(m.espacios_repisas) || !m.espacios_repisas[espIdx]) return;
+
+  const arr = m.espacios_repisas[espIdx].sub_parantes;
+  if (!Array.isArray(arr) || !arr[spIdx]) return;
+
+  const t = AppState.espesorMelamina || 18;
+  const geo = calcularDivisionesYEspaciosModulo(m, t);
+  const esp = geo.espacios[espIdx];
+  const spCalc = esp && esp.subParantes ? esp.subParantes[spIdx] : null;
+
+  arr[spIdx].modo = modo;
+  if (modo === 'fija' && spCalc) {
+    arr[spIdx].posicion_mm = spCalc.posicionRel;
+  }
+
+  renderizarControlesParantesYEspacios(m);
+  actualizarCanvas();
+  validarLimitesTecnicosModulo(m, idx);
+}
+
+/**
+ * Modifica la posición fija de un sub-parante en mm ingresada por el usuario.
+ * @param {number} espIdx - Índice del espacio.
+ * @param {number} spIdx - Índice del sub-parante.
+ * @param {number|string} valor - Cota en mm.
+ */
+function onEditarPosicionSubParanteEspacio(espIdx, spIdx, valor) {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m || !Array.isArray(m.espacios_repisas) || !m.espacios_repisas[espIdx]) return;
+
+  const arr = m.espacios_repisas[espIdx].sub_parantes;
+  if (!Array.isArray(arr) || !arr[spIdx]) return;
+
+  const t = AppState.espesorMelamina || 18;
+  const geo = calcularDivisionesYEspaciosModulo(m, t);
+  const esp = geo.espacios[espIdx];
+  const spCalc = esp && esp.subParantes ? esp.subParantes[spIdx] : null;
+  if (!spCalc) return;
+
+  const numVal = parseFloat(valor) || 0;
+  const cotaValida = Math.max(spCalc.min, Math.min(spCalc.max, Math.round(numVal)));
+  arr[spIdx].posicion_mm = cotaValida;
+
+  renderizarControlesParantesYEspacios(m);
+  actualizarCanvas();
+  validarLimitesTecnicosModulo(m, idx);
 }
 
 /**
@@ -1876,7 +2203,7 @@ function actualizarBadgeEstado() {
  * Envía el paquete paramétrico completo a Ruby para modelar en SketchUp 3D.
  */
 function construirEnSketchup() {
-  if (AppState.estadoVisualizador === 'vacio') {
+  if (AppState.anchoTotal <= 0 || AppState.altoTotal <= 0 || AppState.profTotal <= 0) {
     mostrarNotificacion("Debe ingresar las dimensiones generales en el Paso 1 antes de construir.", "warning");
     return;
   }
@@ -1899,8 +2226,12 @@ function construirEnSketchup() {
 
   mostrarNotificacion("Construyendo composición de módulos en SketchUp 3D...", "info");
 
-  if (window.sketchup && typeof window.sketchup.construirComposicionModular === 'function') {
-    window.sketchup.construirComposicionModular(JSON.stringify(payload));
+  const suBridge = (typeof window !== 'undefined' && window.sketchup)
+    ? window.sketchup
+    : (typeof sketchup !== 'undefined' ? sketchup : null);
+
+  if (suBridge && typeof suBridge.construirComposicionModular === 'function') {
+    suBridge.construirComposicionModular(JSON.stringify(payload));
   } else {
     // Modo simulación en navegador web independiente
     console.log("[JPQMelaminaPro Bridge] Payload enviado a SketchUp:", payload);
@@ -1919,6 +2250,17 @@ function onComposicionModularCreada(resp) {
   } else {
     mostrarNotificacion(resp ? resp.error : "Error al construir en SketchUp.", "error");
   }
+}
+
+if (typeof window !== 'undefined') {
+  window.construirEnSketchup = construirEnSketchup;
+  window.onComposicionModularCreada = onComposicionModularCreada;
+  window.onEditarRetransZocalo = onEditarRetransZocalo;
+  window.onEditarDescuentoFrontal = onEditarDescuentoFrontal;
+  window.onAgregarSubParanteEspacio = onAgregarSubParanteEspacio;
+  window.onEliminarSubParanteEspacio = onEliminarSubParanteEspacio;
+  window.onCambiarModoSubParanteEspacio = onCambiarModoSubParanteEspacio;
+  window.onEditarPosicionSubParanteEspacio = onEditarPosicionSubParanteEspacio;
 }
 
 // ==============================================================================
@@ -2004,7 +2346,7 @@ function generarDespieceEstimadoLocal() {
     // Techo o Amarres de Techo
     if (usaAmarresTecho) {
       const cantTecho = m.cant_listones_techo || m.cant_listones_amarre || 2;
-      const wListonTecho = m.medida_liston_techo || m.alto_liston_amarre || 80;
+      const wListonTecho = parseFloat(m.ancho_liston_techo || m.medida_liston_techo || m.alto_liston_amarre || 80);
       piezas.push({
         item: itemNum++, modulo: modId, pieza: `Amarre Techo Frontal (x${cantTecho > 1 ? '1' : '1'})`,
         material: AppState.materialEstructura, cant: 1,
@@ -2057,7 +2399,7 @@ function generarDespieceEstimadoLocal() {
       ((m.tiene_liston_amarre === true || m.tiene_liston_amarre === 'true') && (m.posicion_liston_amarre === 'posterior' || m.posicion_liston_amarre === 'ambos'));
     if (usaAmarresPost) {
       const cantPost = m.cant_listones_post || m.cant_listones_amarre || 2;
-      const hListonPost = m.medida_liston_post || m.alto_liston_amarre || 80;
+      const hListonPost = parseFloat(m.ancho_liston_post || m.medida_liston_post || m.alto_liston_amarre || 80);
       piezas.push({
         item: itemNum++, modulo: modId, pieza: `Listones Posteriores Pared (x${cantPost})`,
         material: AppState.materialEstructura, cant: cantPost,
@@ -2069,6 +2411,10 @@ function generarDespieceEstimadoLocal() {
 
     // Zócalo
     if (m.tiene_zocalo && zH > 0) {
+      const cantZocalo = m.cant_listones || 2;
+      const retransZocalo = (m.retrans_zocalo !== undefined && m.retrans_zocalo !== '')
+        ? parseFloat(m.retrans_zocalo)
+        : 35;
       piezas.push({
         item: itemNum++, modulo: modId, pieza: "Zócalo Frontal",
         material: AppState.materialEstructura, cant: 1,
@@ -2083,6 +2429,18 @@ function generarDespieceEstimadoLocal() {
         largo_neto: m.ancho, ancho_neto: zH,
         canto_L1: '0.0', canto_L2: '0.0', canto_A1: '0.0', canto_A2: '0.0', ranura: 'Ninguna'
       });
+      if (cantZocalo >= 3) {
+        const largoTrans = m.profundidad - (2 * retransZocalo) - (2 * t);
+        if (largoTrans > 0) {
+          piezas.push({
+            item: itemNum++, modulo: modId, pieza: "Zócalo Refuerzo Transversal",
+            material: AppState.materialEstructura, cant: cantZocalo - 2,
+            largo_bruto: largoTrans, ancho_bruto: zH, espesor: t,
+            largo_neto: largoTrans, ancho_neto: zH,
+            canto_L1: '0.0', canto_L2: '0.0', canto_A1: '0.0', canto_A2: '0.0', ranura: 'Ninguna'
+          });
+        }
+      }
     }
 
     // Fondo Posterior (MDF 3mm, Melamina 18mm/15mm o Ninguno)
@@ -2135,7 +2493,7 @@ function generarDespieceEstimadoLocal() {
     if (m.tipo_interior === 'repisas') {
       const geo = calcularDivisionesYEspaciosModulo(m, t);
 
-      // Piezas de Parantes
+      // Piezas de Parantes Principales
       geo.parantes.forEach((p, pIdx) => {
         const esV = (geo.limites.tipo === 'vertical');
         piezas.push({
@@ -2148,16 +2506,32 @@ function generarDespieceEstimadoLocal() {
         });
       });
 
-      // Piezas de Repisas por cada Espacio
+      // Piezas de Sub-Parantes y Repisas por cada Espacio
       geo.espacios.forEach((esp) => {
+        if (Array.isArray(esp.subParantes) && esp.subParantes.length > 0) {
+          esp.subParantes.forEach((sp, spIdx) => {
+            const esV = (sp.tipo === 'vertical');
+            piezas.push({
+              item: itemNum++, modulo: modId,
+              pieza: `${esp.nombre} Sub-Parante ${esV ? 'Vertical' : 'Horizontal'} ${spIdx + 1}`,
+              material: AppState.materialEstructura, cant: 1,
+              largo_bruto: esV ? sp.dz : sp.dx, ancho_bruto: sp.dy, espesor: t,
+              largo_neto: (esV ? sp.dz : sp.dx) - 1.0, ancho_neto: sp.dy - 1.0,
+              canto_L1: '0.5', canto_L2: '0.5', canto_A1: '0.5', canto_A2: '0.5', ranura: 'Ninguna'
+            });
+          });
+        }
+
         if (esp.repisas.length > 0) {
-          piezas.push({
-            item: itemNum++, modulo: modId,
-            pieza: `Repisas ${esp.nombre} (x${esp.repisas.length})`,
-            material: AppState.materialEstructura, cant: esp.repisas.length,
-            largo_bruto: esp.ancho, ancho_bruto: esp.prof, espesor: t,
-            largo_neto: esp.ancho - 1.0, ancho_neto: esp.prof - 1.0,
-            canto_L1: '2.0', canto_L2: '0.0', canto_A1: '0.5', canto_A2: '0.5', ranura: 'Ninguna'
+          esp.repisas.forEach((rep, rIdx) => {
+            piezas.push({
+              item: itemNum++, modulo: modId,
+              pieza: `Repisa ${esp.nombre} R${rIdx + 1}${rep.subVanoIndex !== undefined ? ` (Sub-vano ${rep.subVanoIndex + 1})` : ''}`,
+              material: AppState.materialEstructura, cant: 1,
+              largo_bruto: rep.ancho, ancho_bruto: rep.prof, espesor: t,
+              largo_neto: rep.ancho - 1.0, ancho_neto: rep.prof - 1.0,
+              canto_L1: '2.0', canto_L2: '0.0', canto_A1: '0.5', canto_A2: '0.5', ranura: 'Ninguna'
+            });
           });
         }
       });

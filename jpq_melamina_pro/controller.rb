@@ -42,22 +42,32 @@ module JPQMelaminaPro
       # Parámetros:
       #   - dialog (UI::HtmlDialog): Instancia del diálogo activo.
       # ========================================================================
+      # Helper para parsear de forma segura parámetros provenientes de UI::HtmlDialog
+      def parsear_json(datos)
+        return {} if datos.nil?
+        return datos if datos.is_a?(Hash) || datos.is_a?(Array)
+        JSON.parse(datos.to_s)
+      rescue => e
+        puts "[JPQMelaminaPro] Error al parsear JSON: #{e.message}"
+        {}
+      end
+
       def registrar_callbacks(dialog)
         # --- HUB 1: ESTUDIO ESPACIAL & MATRIZ MODULAR ---
         dialog.add_action_callback('crearModulo') do |_ctx, params_json|
-          params = JSON.parse(params_json)
+          params = parsear_json(params_json)
           resultado = CabinetBuilder.build(params)
           responder_js(dialog, 'onModuloCreado', resultado)
         end
 
         dialog.add_action_callback('generarMatrizModular') do |_ctx, params_json|
-          params = JSON.parse(params_json)
+          params = parsear_json(params_json)
           resultado = SpatialMatrixBuilder.build_matrix(params)
           responder_js(dialog, 'onMatrizCreada', resultado)
         end
 
         dialog.add_action_callback('construirComposicionModular') do |_ctx, params_json|
-          params = JSON.parse(params_json)
+          params = parsear_json(params_json)
           resultado = SpatialMatrixBuilder.construir_modulos_parametricos(params)
           responder_js(dialog, 'onComposicionModularCreada', resultado)
         end

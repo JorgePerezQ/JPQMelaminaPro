@@ -658,7 +658,8 @@ module JPQMelaminaPro
             zocalo_h_num = tiene_zocalo ? (m_data['alto_zocalo'] || 100.0).to_f : 0.0
             zocalo_h = zocalo_h_num.mm
             cant_listones = (m_data['cant_listones'] || 2).to_i
-            retrans_zocalo = 35.0.mm
+            retrans_zocalo_num = (m_data['retrans_zocalo'] || m_data['retransporte_zocalo'] || 35.0).to_f
+            retrans_zocalo = retrans_zocalo_num.mm
 
             if tiene_zocalo && zocalo_h_num > 0
               # Listón Frontal
@@ -697,7 +698,7 @@ module JPQMelaminaPro
 
               # Listones Transversales de Refuerzo (si cant_listones >= 3)
               if cant_listones >= 3
-                largo_trans_num = d_mod_num - (2 * 35.0) - (2 * t_num)
+                largo_trans_num = d_mod_num - (2 * retrans_zocalo_num) - (2 * t_num)
                 if largo_trans_num > 0
                   largo_trans = largo_trans_num.mm
                   x_trans = x_pos + (w_mod / 2.0) - (t / 2.0)
@@ -795,9 +796,8 @@ module JPQMelaminaPro
             # Techo de la Carcasa / Amarres de Techo con distribución milimétrica exacta sin solapamientos
             if usa_amarres_techo
               cant_techo = [(m_data['cant_listones_techo'] || m_data['cant_listones_amarre'] || 2).to_i, 1].max
-              w_nominal_num = (m_data['medida_liston_techo'] || m_data['alto_liston_amarre'] || 80.0).to_f
-              w_nominal_num = 80.0 if w_nominal_num < 40.0
-              w_liston_techo_num = [w_nominal_num, (d_mod_num / cant_techo).floor].min
+              w_user_techo = (m_data['ancho_liston_techo'] || m_data['medida_liston_techo'] || m_data['alto_liston_amarre'] || m_data['ancho_liston'] || 80.0).to_f
+              w_liston_techo_num = (w_user_techo > 0) ? w_user_techo : 80.0
 
               if cant_techo == 1
                 CabinetBuilder.crear_panel(
@@ -932,10 +932,9 @@ module JPQMelaminaPro
                                (tiene_amarre_ant && (pos_amarre_ant == 'posterior' || pos_amarre_ant == 'ambos'))
             if usa_amarres_post
               cant_post = [(m_data['cant_listones_post'] || m_data['cant_listones_amarre'] || 2).to_i, 1].max
-              h_nominal_post_num = (m_data['medida_liston_post'] || m_data['alto_liston_amarre'] || 80.0).to_f
-              h_nominal_post_num = 80.0 if h_nominal_post_num < 40.0
+              h_user_post = (m_data['ancho_liston_post'] || m_data['medida_liston_post'] || m_data['alto_liston_amarre'] || m_data['ancho_liston'] || 80.0).to_f
+              h_liston_post_num = (h_user_post > 0) ? h_user_post : 80.0
               h_vano_util_post_num = h_carcasa_num - (2 * t_num)
-              h_liston_post_num = [h_nominal_post_num, (h_vano_util_post_num / cant_post).floor].min
 
               if cant_post == 1
                 CabinetBuilder.crear_panel(
@@ -1089,7 +1088,7 @@ module JPQMelaminaPro
               espacios_cfg = m_data['espacios_repisas'] || []
 
               # Cálculo exacto de descuento de profundidad para parantes y repisas:
-              descuento_frontal_num = 20.0
+              descuento_frontal_num = (m_data['descuento_frontal'] || m_data['retrans_repisas'] || 20.0).to_f
               descuento_post_num = 0.0
 
               if tipo_fondo == 'mdf'
@@ -1200,8 +1199,96 @@ module JPQMelaminaPro
                 w_esp_num = [x_end_num - x_start_num, 0.0].max
                 h_esp_num = [z_end_num - z_start_num, 0.0].max
 
-                # Configuración de repisas del espacio
+                # Configuración de este espacio
                 e_cfg = espacios_cfg[s_idx] || {}
+
+                # 2.1 Sub-parantes secundarios dentro de este espacio
+                sub_parantes_resueltos = []
+                es_tipo_h = (parantes_tipo == 'horizontal')
+                es_tipo_v = (parantes_tipo == 'vertical')
+                permite_sub = es_tipo_h || es_tipo_v
+                sub_p_raw = e_cfg['sub_parantes'] || []
+
+                max_sub_p = es_tipo_h ? [((w_esp_num - 150.0) / (150.0 + t_num)).floor, 0].max : (es_tipo_v ? [((h_esp_num - 120.0) / (120.0 + t_num)).floor, 0].max : 0)
+                cant_sub_p = permite_sub ? [sub_p_raw.length, max_sub_p].min : 0
+
+                if cant_sub_p > 0
+                  if es_tipo_h
+                    paso_sub = (w_esp_num - (cant_sub_p * t_num)) / (cant_sub_p + 1.0)
+                    cant_sub_p.times do |sp|
+                      raw_sp = sub_p_raw[sp] || {}
+                      pos_prop = ((sp + 1) * paso_sub) + (sp * t_num)
+                      min_x_rel = (sp == 0) ? 150.0 : (sub_parantes_resueltos[sp - 1][:posicion_rel] + t_num + 150.0)
+                      cant_rest = cant_sub_p - 1 - sp
+                      max_x_rel = [min_x_rel, w_esp_num - t_num - 150.0 - (cant_rest * (150.0 + t_num))].max
+
+                      pos_final = pos_prop
+                      if raw_sp['modo'] == 'fija' && raw_sp['posicion_mm'].to_f > 0
+                        pos_final = [[raw_sp['posicion_mm'].to_f, min_x_rel].max, max_x_rel].min
+                      end
+
+                      sub_parantes_resueltos << {
+                        posicion_rel: pos_final,
+                        x: x_start_num + pos_final,
+                        z: z_start_num
+                      }
+
+                      CabinetBuilder.crear_panel(
+                        grupo_mod, "M#{idx + 1} E#{s_idx + 1} Sub-Parante Vertical #{sp + 1}",
+                        x_pos + t + (x_start_num + pos_final).mm, y_rep_start, z_base + t + z_start_num.mm,
+                        t, prof_rep_num.mm, h_esp_num.mm,
+                        {
+                          'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-E#{s_idx + 1}-SUBPAR-V#{sp + 1}",
+                          'pieza_nombre' => "M#{idx + 1} E#{s_idx + 1} Sub-Parante Vertical #{sp + 1}", 'material' => mat_estructura,
+                          'resistencia' => resistencia,
+                          'largo_bruto_mm' => h_esp_num, 'ancho_bruto_mm' => prof_rep_num, 'espesor_mm' => t_num,
+                          'largo_neto_mm' => h_esp_num - 1.0, 'ancho_neto_mm' => prof_rep_num - 1.0,
+                          'cantidad' => 1, 'veta' => 'longitudinal',
+                          'canto_L1' => 0.5, 'canto_L2' => 0.5, 'canto_A1' => 0.5, 'canto_A2' => 0.5,
+                          'ranura' => 'Ninguna'
+                        }
+                      )
+                    end
+                  elsif es_tipo_v
+                    paso_sub = (h_esp_num - (cant_sub_p * t_num)) / (cant_sub_p + 1.0)
+                    cant_sub_p.times do |sp|
+                      raw_sp = sub_p_raw[sp] || {}
+                      pos_prop = ((sp + 1) * paso_sub) + (sp * t_num)
+                      min_z_rel = (sp == 0) ? 120.0 : (sub_parantes_resueltos[sp - 1][:posicion_rel] + t_num + 120.0)
+                      cant_rest = cant_sub_p - 1 - sp
+                      max_z_rel = [min_z_rel, h_esp_num - t_num - 120.0 - (cant_rest * (120.0 + t_num))].max
+
+                      pos_final = pos_prop
+                      if raw_sp['modo'] == 'fija' && raw_sp['posicion_mm'].to_f > 0
+                        pos_final = [[raw_sp['posicion_mm'].to_f, min_z_rel].max, max_z_rel].min
+                      end
+
+                      sub_parantes_resueltos << {
+                        posicion_rel: pos_final,
+                        x: x_start_num,
+                        z: z_start_num + pos_final
+                      }
+
+                      CabinetBuilder.crear_panel(
+                        grupo_mod, "M#{idx + 1} E#{s_idx + 1} Sub-Parante Horizontal #{sp + 1}",
+                        x_pos + t + x_start_num.mm, y_rep_start, z_base + t + (z_start_num + pos_final).mm,
+                        w_esp_num.mm, prof_rep_num.mm, t,
+                        {
+                          'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-E#{s_idx + 1}-SUBPAR-H#{sp + 1}",
+                          'pieza_nombre' => "M#{idx + 1} E#{s_idx + 1} Sub-Parante Horizontal #{sp + 1}", 'material' => mat_estructura,
+                          'resistencia' => resistencia,
+                          'largo_bruto_mm' => w_esp_num, 'ancho_bruto_mm' => prof_rep_num, 'espesor_mm' => t_num,
+                          'largo_neto_mm' => w_esp_num - 1.0, 'ancho_neto_mm' => prof_rep_num - 1.0,
+                          'cantidad' => 1, 'veta' => 'longitudinal',
+                          'canto_L1' => 0.5, 'canto_L2' => 0.5, 'canto_A1' => 0.5, 'canto_A2' => 0.5,
+                          'ranura' => 'Ninguna'
+                        }
+                      )
+                    end
+                  end
+                end
+
+                # 2.2 Repisas del espacio
                 cant_max_r = [((h_esp_num - 80.0) / (80.0 + t_num)).floor, 0].max
                 cant_r = if e_cfg['cantidad']
                            [e_cfg['cantidad'].to_i, cant_max_r].min
@@ -1230,23 +1317,48 @@ module JPQMelaminaPro
                     repisas_z_resueltas << cota_final
 
                     z_rep_panel = z_base + t + (z_start_num + cota_final).mm
-                    x_rep_panel = x_pos + t + x_start_num.mm
 
-                    CabinetBuilder.crear_panel(
-                      grupo_mod, "M#{idx + 1} Repisa E#{s_idx + 1}-#{r_idx + 1}",
-                      x_rep_panel, y_rep_start, z_rep_panel,
-                      w_esp_num.mm, prof_rep_num.mm, t,
-                      {
-                        'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-E#{s_idx + 1}-REP-#{r_idx + 1}",
-                        'pieza_nombre' => "M#{idx + 1} Repisa E#{s_idx + 1}-#{r_idx + 1}", 'material' => mat_estructura,
-                        'resistencia' => resistencia,
-                        'largo_bruto_mm' => w_esp_num, 'ancho_bruto_mm' => prof_rep_num, 'espesor_mm' => t_num,
-                        'largo_neto_mm' => w_esp_num - 1.0, 'ancho_neto_mm' => prof_rep_num - 1.0,
-                        'cantidad' => 1, 'veta' => 'longitudinal',
-                        'canto_L1' => 2.0, 'canto_L2' => 0.0, 'canto_A1' => 0.5, 'canto_A2' => 0.5,
-                        'ranura' => 'Ninguna'
-                      }
-                    )
+                    if es_tipo_h && sub_parantes_resueltos.length > 0
+                      # Subdividir repisa en los sub-vanos para que no colisione con el sub-parante vertical
+                      num_sub_vanos = sub_parantes_resueltos.length + 1
+                      num_sub_vanos.times do |sv|
+                        sub_x_start = (sv == 0) ? x_start_num : (sub_parantes_resueltos[sv - 1][:x] + t_num)
+                        sub_x_end   = (sv == sub_parantes_resueltos.length) ? x_end_num : sub_parantes_resueltos[sv][:x]
+                        sub_ancho   = [sub_x_end - sub_x_start, 0.0].max
+
+                        CabinetBuilder.crear_panel(
+                          grupo_mod, "M#{idx + 1} Repisa E#{s_idx + 1}-V#{sv + 1}-#{r_idx + 1}",
+                          x_pos + t + sub_x_start.mm, y_rep_start, z_rep_panel,
+                          sub_ancho.mm, prof_rep_num.mm, t,
+                          {
+                            'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-E#{s_idx + 1}-V#{sv + 1}-REP-#{r_idx + 1}",
+                            'pieza_nombre' => "M#{idx + 1} Repisa E#{s_idx + 1} V#{sv + 1}-#{r_idx + 1}", 'material' => mat_estructura,
+                            'resistencia' => resistencia,
+                            'largo_bruto_mm' => sub_ancho, 'ancho_bruto_mm' => prof_rep_num, 'espesor_mm' => t_num,
+                            'largo_neto_mm' => sub_ancho - 1.0, 'ancho_neto_mm' => prof_rep_num - 1.0,
+                            'cantidad' => 1, 'veta' => 'longitudinal',
+                            'canto_L1' => 2.0, 'canto_L2' => 0.0, 'canto_A1' => 0.5, 'canto_A2' => 0.5,
+                            'ranura' => 'Ninguna'
+                          }
+                        )
+                      end
+                    else
+                      CabinetBuilder.crear_panel(
+                        grupo_mod, "M#{idx + 1} Repisa E#{s_idx + 1}-#{r_idx + 1}",
+                        x_pos + t + x_start_num.mm, y_rep_start, z_rep_panel,
+                        w_esp_num.mm, prof_rep_num.mm, t,
+                        {
+                          'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-E#{s_idx + 1}-REP-#{r_idx + 1}",
+                          'pieza_nombre' => "M#{idx + 1} Repisa E#{s_idx + 1}-#{r_idx + 1}", 'material' => mat_estructura,
+                          'resistencia' => resistencia,
+                          'largo_bruto_mm' => w_esp_num, 'ancho_bruto_mm' => prof_rep_num, 'espesor_mm' => t_num,
+                          'largo_neto_mm' => w_esp_num - 1.0, 'ancho_neto_mm' => prof_rep_num - 1.0,
+                          'cantidad' => 1, 'veta' => 'longitudinal',
+                          'canto_L1' => 2.0, 'canto_L2' => 0.0, 'canto_A1' => 0.5, 'canto_A2' => 0.5,
+                          'ranura' => 'Ninguna'
+                        }
+                      )
+                    end
                   end
                 end
               end
@@ -1303,9 +1415,13 @@ module JPQMelaminaPro
           end
 
           model.commit_operation
+          model.active_view.zoom_extents if model.active_view
+          model.active_view.invalidate if model.active_view
           { 'ok' => true, 'mensaje' => "Composición modular de #{modulos_data.length} módulos creada exitosamente.", 'modulo_id' => composicion_id }
         rescue => e
           model.abort_operation
+          puts "[JPQMelaminaPro] ERROR al construir módulos: #{e.message}"
+          puts e.backtrace.first(6).join("\n") if e.backtrace
           { 'ok' => false, 'error' => "#{e.message} (en #{File.basename(e.backtrace.first)})", 'backtrace' => e.backtrace }
         end
       end

@@ -207,10 +207,17 @@ module JPQMelaminaPro
         if mat_existente
           mat = model.materials.add(nombre_final)
           mat.color = mat_existente.color
-          if mat_existente.texture
-            mat.texture = mat_existente.texture.filename
-            mat.texture.width = mat_existente.texture.width
-            mat.texture.height = mat_existente.texture.height
+          begin
+            if mat_existente.texture
+              mat.texture = mat_existente.texture.filename
+              if mat.texture && mat.texture.respond_to?(:size=)
+                w_tex = mat_existente.texture.width
+                h_tex = mat_existente.texture.height
+                mat.texture.size = [w_tex, h_tex] if w_tex && h_tex
+              end
+            end
+          rescue => e
+            puts "[JPQMelaminaPro] Advertencia al duplicar textura RH: #{e.message}"
           end
           return mat
         end
@@ -231,8 +238,14 @@ module JPQMelaminaPro
         if item && Dir.exist?(texturas_dir)
           archivo_png = Dir[File.join(texturas_dir, "*#{item['id']}*.png")].first
           if archivo_png && File.exist?(archivo_png)
-            mat.texture = archivo_png
-            mat.texture.width = 1200.mm # Mapeo a escala real de veta
+            begin
+              mat.texture = archivo_png
+              if mat.texture && mat.texture.respond_to?(:size=)
+                mat.texture.size = 1200.mm # Mapeo a escala real de veta en SketchUp
+              end
+            rescue => e
+              puts "[JPQMelaminaPro] Advertencia al asignar textura a '#{nombre_final}': #{e.message}"
+            end
           end
         end
 

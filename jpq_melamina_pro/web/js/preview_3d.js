@@ -285,9 +285,11 @@ const Preview3D = (function() {
 
       // 1. ZÓCALO Y LISTONES
       const tieneZocalo = (m.tiene_zocalo === true || m.tiene_zocalo === 'true');
-      const zocaloH = tieneZocalo ? (m.alto_zocalo || 100) : 0;
+      const zocaloH = tieneZocalo ? (parseFloat(m.alto_zocalo) || 100) : 0;
       const cantListones = m.cant_listones || 2;
-      const retransZocalo = 35;
+      const retransZocalo = (m.retrans_zocalo !== undefined && m.retrans_zocalo !== '')
+        ? parseFloat(m.retrans_zocalo)
+        : (m.retransporte_zocalo !== undefined ? parseFloat(m.retransporte_zocalo) : 35);
 
       if (tieneZocalo && zocaloH > 0) {
         // Listón frontal
@@ -361,9 +363,8 @@ const Preview3D = (function() {
       // Techo de la Carcasa / Amarres de Techo con distribución milimétrica exacta sin solapamientos
       if (usaAmarresTecho) {
         const cantTecho = Math.max(1, parseInt(m.cant_listones_techo || m.cant_listones_amarre || 2));
-        const wNominal = Math.max(40, parseFloat(m.medida_liston_techo || m.alto_liston_amarre || 80));
-        // Evitar que el ancho del listón exceda el espacio físico disponible
-        const wListonTecho = Math.min(wNominal, Math.floor(profMod / cantTecho));
+        const wUser = parseFloat(m.ancho_liston_techo || m.medida_liston_techo || m.alto_liston_amarre || m.ancho_liston);
+        const wListonTecho = (wUser && wUser > 0) ? wUser : 80;
 
         if (cantTecho === 1) {
           prismas.push({
@@ -434,9 +435,9 @@ const Preview3D = (function() {
 
       if (usaAmarresPost) {
         const cantPost = Math.max(1, parseInt(m.cant_listones_post || m.cant_listones_amarre || 2));
-        const hNominal = Math.max(40, parseFloat(m.medida_liston_post || m.alto_liston_amarre || 80));
+        const hUser = parseFloat(m.ancho_liston_post || m.medida_liston_post || m.alto_liston_amarre || m.ancho_liston);
+        const hListonPost = (hUser && hUser > 0) ? hUser : 80;
         const hVanoUtilPost = hCarcasa - (2 * t);
-        const hListonPost = Math.min(hNominal, Math.floor(hVanoUtilPost / cantPost));
 
         if (cantPost === 1) {
           prismas.push({
@@ -520,10 +521,10 @@ const Preview3D = (function() {
           : null;
 
         if (geo) {
-          const yStart = (geo.profInfo && geo.profInfo.yStart) ? geo.profInfo.yStart : 20;
-          const dyRep = (geo.profInfo && geo.profInfo.profUtil) ? geo.profInfo.profUtil : (profMod - 20);
+          const yStart = (geo.profInfo && geo.profInfo.yStart !== undefined) ? geo.profInfo.yStart : 20;
+          const dyRep = (geo.profInfo && geo.profInfo.profUtil) ? geo.profInfo.profUtil : (profMod - yStart);
 
-          // A. Parantes (Verticales u Horizontales)
+          // A. Parantes Principales (Verticales u Horizontales)
           geo.parantes.forEach((p, pIdx) => {
             if (geo.limites.tipo === 'vertical') {
               prismas.push({
@@ -552,8 +553,26 @@ const Preview3D = (function() {
             }
           });
 
-          // B. Repisas en cada Espacio Compartimentado
+          // B. Espacios: Sub-parantes Secundarios y Repisas Compartimentadas
           geo.espacios.forEach((esp) => {
+            // Sub-parantes (por ej. vertical en espacio inferior)
+            if (Array.isArray(esp.subParantes) && esp.subParantes.length > 0) {
+              esp.subParantes.forEach((sp, spIdx) => {
+                prismas.push({
+                  x: xMod + t + sp.x,
+                  y: yStart,
+                  z: zBase + t + sp.z,
+                  dx: sp.dx,
+                  dy: dyRep,
+                  dz: sp.dz,
+                  mat,
+                  name: `M${idx + 1} ${esp.nombre} ${sp.nombre}`,
+                  moduloIndex: idx
+                });
+              });
+            }
+
+            // Repisas en este espacio
             esp.repisas.forEach((rep) => {
               prismas.push({
                 x: xMod + t + rep.xStart,
