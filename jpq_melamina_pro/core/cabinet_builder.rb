@@ -60,7 +60,7 @@ module JPQMelaminaPro
         prof_total  = params['profundidad'].to_f.mm
         t_num       = (params['espesor'] && params['espesor'].to_f > 0) ? params['espesor'].to_f : 18.0
         t           = t_num.mm
-        material    = params['material'] || 'Pelikano Bellota 18mm'
+        material    = params['material'] || 'Pelikano Blanco Nieve 18mm'
         nombre_mod  = params['nombre'] || 'Escritorio Profesional'
         modulo_id   = params['modulo_id'] || "ESC-#{Time.now.to_i % 10000}"
 
@@ -1008,7 +1008,7 @@ module JPQMelaminaPro
         dict_mod['prof_mm']     = params['profundidad'].to_f
         esp_val = (params['espesor'] && params['espesor'].to_f > 0) ? params['espesor'].to_f : 18.0
         dict_mod['espesor_mm']  = esp_val
-        dict_mod['material']    = params['material'] || 'Pelikano Bellota 18mm'
+        dict_mod['material']    = params['material'] || 'Pelikano Blanco Nieve 18mm'
         dict_mod['params_json'] = JSON.generate(params)
 
         # Seleccionar automáticamente el módulo en SketchUp y registrarlo como activo
@@ -1097,7 +1097,7 @@ module JPQMelaminaPro
         cara.pushpull(dz.abs)
 
         # Asignar color y textura fotorrealista de SketchUp (Pelikano, Vesto o Universal)
-        mat_nombre = attrs['material'] || 'Pelikano Bellota 18mm'
+        mat_nombre = attrs['material'] || 'Pelikano Blanco Nieve 18mm'
         su_mat = MaterialManager.obtener_o_crear_material_su(parent_group.model, mat_nombre)
         panel_group.material = su_mat if su_mat
 

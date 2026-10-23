@@ -44,7 +44,7 @@ module JPQMelaminaPro
         t_val      = (dict_mod['espesor_mm'] && dict_mod['espesor_mm'].to_f > 0) ? dict_mod['espesor_mm'].to_f : 18.0
         t          = t_val.mm
         modulo_id  = dict_mod['modulo_id']
-        material   = dict_mod['material'] || 'Pelikano Bellota 18mm'
+        material   = dict_mod['material'] || 'Pelikano Blanco Nieve 18mm'
 
         cant_cajones   = (params['cantidad_cajones'] || 3).to_i
         tipo_corr      = params['tipo_corredera'] || 'telescopica'
@@ -234,7 +234,7 @@ module JPQMelaminaPro
         face.reverse! if face.normal.z < 0
         face.pushpull(dz.abs)
 
-        mat_nombre = attrs['material'] || 'Pelikano Bellota 18mm'
+        mat_nombre = attrs['material'] || 'Pelikano Blanco Nieve 18mm'
         su_mat = MaterialManager.obtener_o_crear_material_su(parent.model, mat_nombre)
         sub.material = su_mat if su_mat
 

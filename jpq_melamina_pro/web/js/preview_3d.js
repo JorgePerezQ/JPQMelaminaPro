@@ -49,7 +49,7 @@ const Preview3D = (function() {
     alto_total: 0,
     prof_total: 0,
     espesor: 18,
-    material: 'Pelikano Bellota 18mm',
+    material: 'Pelikano Blanco Nieve 18mm',
     modulo_activo: 0,
     modulos: []
   };
@@ -81,7 +81,7 @@ const Preview3D = (function() {
    * Resuelve los colores fotorrealistas para un material determinado.
    */
   function obtenerPaleta(matNombre) {
-    if (!matNombre) return materialColors['Pelikano Bellota 18mm'];
+    if (!matNombre) return materialColors['Pelikano Blanco Nieve 18mm'];
     if (materialColors[matNombre]) return materialColors[matNombre];
 
     const norm = matNombre.toLowerCase();
@@ -102,7 +102,7 @@ const Preview3D = (function() {
       };
     }
 
-    return materialColors['Pelikano Bellota 18mm'];
+    return materialColors['Pelikano Blanco Nieve 18mm'];
   }
 
   /**
@@ -270,7 +270,7 @@ const Preview3D = (function() {
   function generarPrismasModulos() {
     const d = currentData;
     const t = d.espesor || 18;
-    const mat = d.material || 'Pelikano Bellota 18mm';
+    const mat = d.material || 'Pelikano Blanco Nieve 18mm';
     const modulos = d.modulos || [];
     const prismas = [];
 
@@ -318,7 +318,16 @@ const Preview3D = (function() {
       }
 
       // 2. CARCASA ESTRUCTURAL (Laterales, Piso y Techo)
-      const hCarcasa = hMod - zocaloH;
+      // Determinar si lleva listones de techo y techo sobrepuesto
+      const usaAmarresTecho = (m.tiene_liston_techo === true || m.tiene_liston_techo === 'true') ||
+        ((m.tiene_liston_amarre === true || m.tiene_liston_amarre === 'true') && (m.posicion_liston_amarre === 'techo' || m.posicion_liston_amarre === 'ambos'));
+
+      const techoSobreListon = usaAmarresTecho && (m.techo_sobre_liston === true || m.techo_sobre_liston === 'true');
+      const esDobleMelamina = m.techo_doble_melamina === true || m.techo_doble_melamina === 'true';
+      const hTecho = techoSobreListon ? (esDobleMelamina ? (2 * t) : t) : 0;
+
+      // Descontar la altura del techo de la altura de la carcasa (laterales) para mantener la altura total del módulo
+      const hCarcasa = hMod - zocaloH - hTecho;
       const zBase = zocaloH;
       const anchoInt = wMod - (2 * t);
 
@@ -347,65 +356,136 @@ const Preview3D = (function() {
       });
 
       // Techo de la Carcasa / Amarres de Techo
-      const tieneAmarre = (m.tiene_liston_amarre === true || m.tiene_liston_amarre === 'true');
-      const posAmarre = m.posicion_liston_amarre || 'posterior'; // 'posterior', 'techo', 'ambos'
-      const hAmarre = (m.alto_liston_amarre && m.alto_liston_amarre >= 50) ? m.alto_liston_amarre : 80;
-      const cantAmarre = m.cant_listones_amarre || 2;
-
-      const usaAmarresTecho = tieneAmarre && (posAmarre === 'techo' || posAmarre === 'ambos');
-
       if (usaAmarresTecho) {
-        // Amarre Frontal de Techo
+        const cantTecho = m.cant_listones_techo || m.cant_listones_amarre || 2;
+        const wListonTecho = m.medida_liston_techo || m.alto_liston_amarre || 80;
+
+        // Amarre Frontal de Techo (siempre que cant >= 1)
         prismas.push({
           x: xMod + t, y: 0, z: zBase + hCarcasa - t,
-          dx: anchoInt, dy: hAmarre, dz: t,
+          dx: anchoInt, dy: wListonTecho, dz: t,
           mat, name: `M${idx + 1} Amarre Techo Frontal`,
           moduloIndex: idx
         });
-        // Amarre Posterior de Techo
-        prismas.push({
-          x: xMod + t, y: profMod - hAmarre, z: zBase + hCarcasa - t,
-          dx: anchoInt, dy: hAmarre, dz: t,
-          mat, name: `M${idx + 1} Amarre Techo Posterior`,
-          moduloIndex: idx
-        });
 
-        // Techo / Tapa sobrepuesta sobre los listones de amarre
-        if (m.techo_sobre_liston === true || m.techo_sobre_liston === 'true') {
+        // Amarre Posterior de Techo (si cant >= 2)
+        if (cantTecho >= 2) {
           prismas.push({
-            x: xMod, y: 0, z: zBase + hCarcasa,
-            dx: wMod, dy: profMod, dz: t,
-            mat, name: `M${idx + 1} Tapa Techo Sobrepuesta`,
+            x: xMod + t, y: profMod - wListonTecho, z: zBase + hCarcasa - t,
+            dx: anchoInt, dy: wListonTecho, dz: t,
+            mat, name: `M${idx + 1} Amarre Techo Posterior`,
             moduloIndex: idx
           });
         }
+
+        // Amarre Central de Techo (si cant == 3)
+        if (cantTecho === 3) {
+          prismas.push({
+            x: xMod + t, y: (profMod - wListonTecho) / 2, z: zBase + hCarcasa - t,
+            dx: anchoInt, dy: wListonTecho, dz: t,
+            mat, name: `M${idx + 1} Amarre Techo Central`,
+            moduloIndex: idx
+          });
+        } else if (cantTecho >= 4) {
+          const paso = (profMod - wListonTecho) / 3;
+          prismas.push({
+            x: xMod + t, y: paso, z: zBase + hCarcasa - t,
+            dx: anchoInt, dy: wListonTecho, dz: t,
+            mat, name: `M${idx + 1} Amarre Techo Intermedio 1`,
+            moduloIndex: idx
+          });
+          prismas.push({
+            x: xMod + t, y: paso * 2, z: zBase + hCarcasa - t,
+            dx: anchoInt, dy: wListonTecho, dz: t,
+            mat, name: `M${idx + 1} Amarre Techo Intermedio 2`,
+            moduloIndex: idx
+          });
+        }
+
+        // Techo / Tapa sobrepuesta sobre los listones de amarre
+        if (techoSobreListon) {
+          if (esDobleMelamina) {
+            // Capa Inferior (18mm)
+            prismas.push({
+              x: xMod, y: 0, z: zBase + hCarcasa,
+              dx: wMod, dy: profMod, dz: t,
+              mat, name: `M${idx + 1} Techo Sobrepuesto Doble Melamina (Capa Inf. ${t}mm)`,
+              moduloIndex: idx
+            });
+            // Capa Superior (18mm engrosado)
+            prismas.push({
+              x: xMod, y: 0, z: zBase + hCarcasa + t,
+              dx: wMod, dy: profMod, dz: t,
+              mat, name: `M${idx + 1} Techo Sobrepuesto Doble Melamina (Capa Sup. ${t}mm)`,
+              moduloIndex: idx
+            });
+          } else {
+            prismas.push({
+              x: xMod, y: 0, z: zBase + hCarcasa,
+              dx: wMod, dy: profMod, dz: t,
+              mat, name: `M${idx + 1} Tapa Techo Sobrepuesta Simple (${t}mm)`,
+              moduloIndex: idx
+            });
+          }
+        }
       } else {
-        // Techo Sólido Completo
+        // Techo Sólido Completo Estándar
         prismas.push({
           x: xMod + t, y: 0, z: zBase + hCarcasa - t,
           dx: anchoInt, dy: profMod, dz: t,
-          mat, name: `M${idx + 1} Techo`,
+          mat, name: `M${idx + 1} Techo Carcasa Sólido`,
           moduloIndex: idx
         });
       }
 
       // Listones Posteriores de Amarre / Fijación a Pared
-      const usaAmarresPost = tieneAmarre && (posAmarre === 'posterior' || posAmarre === 'ambos');
+      const usaAmarresPost = (m.tiene_liston_post === true || m.tiene_liston_post === 'true') ||
+        ((m.tiene_liston_amarre === true || m.tiene_liston_amarre === 'true') && (m.posicion_liston_amarre === 'posterior' || m.posicion_liston_amarre === 'ambos'));
+
       if (usaAmarresPost) {
-        // Listón Superior Posterior
+        const cantPost = m.cant_listones_post || m.cant_listones_amarre || 2;
+        const hListonPost = m.medida_liston_post || m.alto_liston_amarre || 80;
+
+        // Listón Superior Posterior (siempre presente)
         prismas.push({
-          x: xMod + t, y: profMod - t, z: zBase + hCarcasa - t - hAmarre,
-          dx: anchoInt, dy: t, dz: hAmarre,
+          x: xMod + t, y: profMod - t, z: zBase + hCarcasa - t - hListonPost,
+          dx: anchoInt, dy: t, dz: hListonPost,
           mat, name: `M${idx + 1} Listón Posterior Superior`,
           moduloIndex: idx
         });
 
-        // Listón Inferior Posterior (si cantAmarre >= 2)
-        if (cantAmarre >= 2) {
+        // Listón Inferior Posterior (si cantPost >= 2)
+        if (cantPost >= 2) {
           prismas.push({
             x: xMod + t, y: profMod - t, z: zBase + t,
-            dx: anchoInt, dy: t, dz: hAmarre,
+            dx: anchoInt, dy: t, dz: hListonPost,
             mat, name: `M${idx + 1} Listón Posterior Inferior`,
+            moduloIndex: idx
+          });
+        }
+
+        // Listón Central Posterior (si cantPost == 3)
+        if (cantPost === 3) {
+          const zCentro = zBase + t + ((hCarcasa - (2 * t) - hListonPost) / 2);
+          prismas.push({
+            x: xMod + t, y: profMod - t, z: zCentro,
+            dx: anchoInt, dy: t, dz: hListonPost,
+            mat, name: `M${idx + 1} Listón Posterior Central`,
+            moduloIndex: idx
+          });
+        } else if (cantPost >= 4) {
+          const espacioLibre = hCarcasa - (2 * t) - (2 * hListonPost);
+          const paso = espacioLibre / 3;
+          prismas.push({
+            x: xMod + t, y: profMod - t, z: zBase + t + hListonPost + paso,
+            dx: anchoInt, dy: t, dz: hListonPost,
+            mat, name: `M${idx + 1} Listón Posterior Intermedio 1`,
+            moduloIndex: idx
+          });
+          prismas.push({
+            x: xMod + t, y: profMod - t, z: zBase + t + hListonPost + (paso * 2),
+            dx: anchoInt, dy: t, dz: hListonPost,
+            mat, name: `M${idx + 1} Listón Posterior Intermedio 2`,
             moduloIndex: idx
           });
         }
@@ -437,22 +517,77 @@ const Preview3D = (function() {
       }
 
       // 3. COMPONENTES INTERIORES
-      const tipoInt = m.tipo_interior || 'repisas';
+      const tipoInt = m.tipo_interior || 'carcasa';
       const hVanoUtil = hCarcasa - (2 * t);
 
       if (tipoInt === 'repisas') {
-        const cantRep = m.cant_repisas || 2;
-        const pasoRep = hVanoUtil / (cantRep + 1);
-        const profRep = profMod - 20;
+        const geo = (typeof window.calcularDivisionesYEspaciosModulo === 'function')
+          ? window.calcularDivisionesYEspaciosModulo(m, t)
+          : null;
 
-        for (let r = 1; r <= cantRep; r++) {
-          const zRep = zBase + t + (r * pasoRep);
-          prismas.push({
-            x: xMod + t, y: 20, z: zRep,
-            dx: anchoInt, dy: profRep, dz: t,
-            mat, name: `M${idx + 1} Repisa ${r}`,
-            moduloIndex: idx
+        if (geo) {
+          // A. Parantes (Verticales u Horizontales)
+          geo.parantes.forEach((p, pIdx) => {
+            if (geo.limites.tipo === 'vertical') {
+              prismas.push({
+                x: xMod + t + p.posicion,
+                y: 20,
+                z: zBase + t,
+                dx: p.dx,
+                dy: p.dy,
+                dz: p.dz,
+                mat,
+                name: `M${idx + 1} Parante Vertical ${pIdx + 1}`,
+                moduloIndex: idx
+              });
+            } else if (geo.limites.tipo === 'horizontal') {
+              prismas.push({
+                x: xMod + t,
+                y: 20,
+                z: zBase + t + p.posicion,
+                dx: p.dx,
+                dy: p.dy,
+                dz: p.dz,
+                mat,
+                name: `M${idx + 1} Parante Horizontal ${pIdx + 1}`,
+                moduloIndex: idx
+              });
+            }
           });
+
+          // B. Repisas en cada Espacio Compartimentado
+          geo.espacios.forEach((esp) => {
+            esp.repisas.forEach((rep) => {
+              prismas.push({
+                x: xMod + t + rep.xStart,
+                y: 20,
+                z: zBase + t + rep.zStart + rep.zRel,
+                dx: rep.ancho,
+                dy: rep.prof,
+                dz: rep.espesor,
+                mat,
+                name: `M${idx + 1} ${esp.nombre} Repisa ${rep.index + 1}`,
+                moduloIndex: idx
+              });
+            });
+          });
+        } else {
+          // Modo de contingencia sin cálculo de espacios
+          const cantRep = (m.cant_repisas !== undefined) ? m.cant_repisas : 0;
+          if (cantRep > 0) {
+            const pasoRep = hVanoUtil / (cantRep + 1);
+            const profRep = profMod - 20;
+
+            for (let r = 1; r <= cantRep; r++) {
+              const zRep = zBase + t + (r * pasoRep);
+              prismas.push({
+                x: xMod + t, y: 20, z: zRep,
+                dx: anchoInt, dy: profRep, dz: t,
+                mat, name: `M${idx + 1} Repisa ${r}`,
+                moduloIndex: idx
+              });
+            }
+          }
         }
       } else if (tipoInt === 'cajonera') {
         const cantCaj = m.cant_cajones || 3;

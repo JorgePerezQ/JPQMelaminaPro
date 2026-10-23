@@ -1455,4 +1455,167 @@ body.theme-oscuro .alert-technical.success {
   padding: 16px;
 }
 
+/* ==============================================================================
+   ESTILOS PRIME-NG: SISTEMA PARAMÉTRICO DE PARANTES Y REPISAS POR ESPACIO
+   ============================================================================== */
+.divisiones-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.item-parante-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.item-parante-card:hover {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.item-parante-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.item-parante-title {
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.item-espacio-card {
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 9px 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+}
+
+.item-espacio-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 5px;
+}
+
+.item-espacio-title {
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--text-primary);
+}
+
+.item-espacio-dims {
+  font-size: 10px;
+  color: var(--primary);
+  font-family: monospace;
+  font-weight: bold;
+}
+
+.stepper-counter {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  overflow: hidden;
+}
+
+.stepper-btn {
+  background: transparent;
+  border: none;
+  width: 24px;
+  height: 24px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+
+.stepper-btn:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--primary);
+}
+
+.stepper-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.stepper-value {
+  width: 32px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  border-left: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+  padding: 2px 0;
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.cota-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 9.5px;
+  font-weight: 600;
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+.cota-badge-muted {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+}
+
+.cotas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.cota-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 4px 6px;
+}
+
+.cota-item label {
+  font-size: 9.5px;
+  color: var(--text-secondary);
+}
+
+.cota-item input {
+  padding: 2px 4px;
+  font-size: 10.5px;
+  height: 24px;
+}
+
+
 

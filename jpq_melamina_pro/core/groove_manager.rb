@@ -41,7 +41,7 @@ module JPQMelaminaPro
         t_val      = (dict_mod['espesor_mm'] && dict_mod['espesor_mm'].to_f > 0) ? dict_mod['espesor_mm'].to_f : 18.0
         t          = t_val.mm
         modulo_id  = dict_mod['modulo_id']
-        material   = dict_mod['material'] || 'Pelikano Bellota 18mm'
+        material   = dict_mod['material'] || 'Pelikano Blanco Nieve 18mm'
 
         tipo         = params['tipo'] || 'ranura'
         prof_ranura  = (params['prof_ranura'] || 8.0).to_f.mm

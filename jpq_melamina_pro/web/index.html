@@ -235,49 +235,79 @@
           </div>
         </div>
 
-        <!-- CONFIGURACIÓN DE LISTÓN POSTERIOR Y/O TECHO -->
+        <!-- CONFIGURACIÓN DE LISTONES PARTE POSTERIOR (FIJACIÓN A PARED) -->
         <div style="background: var(--bg-hover); padding: 10px; border-radius: var(--radius-sm); margin-top: 8px;">
           <label class="switch-container">
-            <input type="checkbox" id="modTieneListonAmarre" class="switch-input" onchange="onToggleListonAmarre(this.checked)">
+            <input type="checkbox" id="modTieneListonPost" class="switch-input" onchange="onToggleListonPost(this.checked)">
             <span class="switch-slider"></span>
-            <span>¿Usará Listón Posterior / Amarres?</span>
+            <span><strong>¿Llevará Listones en Parte Posterior? (Pared)</strong></span>
           </label>
 
-          <div id="grpDetalleListonAmarre" style="display: none; margin-top: 8px;">
-            <div class="form-grid-3">
+          <div id="grpDetalleListonPost" style="display: none; margin-top: 8px;">
+            <div class="form-grid-2">
               <div class="form-group">
-                <label for="modCantListonesAmarre">Cantidad</label>
-                <select id="modCantListonesAmarre" onchange="onEditarCantListonesAmarre(this.value)">
-                  <option value="1">1 listón</option>
-                  <option value="2" selected>2 listones</option>
-                  <option value="3">3 listones</option>
-                  <option value="4">4 listones</option>
+                <label for="modCantListonesPost">Cantidad de Listones Posteriores</label>
+                <select id="modCantListonesPost" onchange="onEditarCantListonesPost(this.value)">
+                  <option value="1">1 listón (Superior)</option>
+                  <option value="2" selected>2 listones (Superior + Inferior)</option>
+                  <option value="3">3 listones (+ Refuerzo Central)</option>
+                  <option value="4">4 listones (Doble Refuerzo)</option>
                 </select>
               </div>
               <div class="form-group">
-                <label for="modAltoListonAmarre">Altura Listón (mm)</label>
-                <input type="number" id="modAltoListonAmarre" value="80" min="50" max="150" step="5" oninput="onEditarAltoListonAmarre(this.value)">
+                <label for="modMedidaListonPost">Medida / Altura Listón Posterior (mm)</label>
+                <input type="number" id="modMedidaListonPost" value="80" min="40" max="250" step="5" oninput="onEditarMedidaListonPost(this.value)">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONFIGURACIÓN DE TECHO Y LISTONES DE TECHO (AMARRES SUPERIORES) -->
+        <div style="background: var(--bg-hover); padding: 10px; border-radius: var(--radius-sm); margin-top: 8px;">
+          <label class="switch-container">
+            <input type="checkbox" id="modTieneListonTecho" class="switch-input" onchange="onToggleListonTecho(this.checked)">
+            <span class="switch-slider"></span>
+            <span><strong>¿Llevará Techo de Listón? (Amarres de Techo)</strong></span>
+          </label>
+          <span style="font-size: 9.5px; color: var(--text-muted); display: block; margin-top: 2px;">
+            Si se desactiva, se construye techo sólido completo estándar.
+          </span>
+
+          <div id="grpDetalleListonTecho" style="display: none; margin-top: 8px;">
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label for="modCantListonesTecho">Cantidad de Listones en Techo</label>
+                <select id="modCantListonesTecho" onchange="onEditarCantListonesTecho(this.value)">
+                  <option value="1">1 listón (Frontal)</option>
+                  <option value="2" selected>2 listones (Frontal + Posterior)</option>
+                  <option value="3">3 listones (+ Central)</option>
+                  <option value="4">4 listones (Cuadriculado Reforzado)</option>
+                </select>
               </div>
               <div class="form-group">
-                <label for="modPosicionListonAmarre">Ubicación</label>
-                <select id="modPosicionListonAmarre" onchange="onCambiarPosicionListonAmarre(this.value)">
-                  <option value="posterior" selected>Parte Posterior (Pared)</option>
-                  <option value="techo">Techo (Encimera)</option>
-                  <option value="ambos">Posterior y Techo</option>
-                </select>
+                <label for="modMedidaListonTecho">Medida / Ancho Listón Techo (mm)</label>
+                <input type="number" id="modMedidaListonTecho" value="80" min="40" max="250" step="5" oninput="onEditarMedidaListonTecho(this.value)">
               </div>
             </div>
 
-            <!-- Pregunta condicional: ¿Sobre el listón va techo? Recalcula la altura del módulo -->
-            <div id="grpTechoSobreListon" style="display: none; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border-color);">
+            <!-- Pregunta condicional: ¿Desea incluir techo sobre el techo de listón? -->
+            <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border-color);">
               <label class="switch-container">
                 <input type="checkbox" id="modTechoSobreListon" class="switch-input" onchange="onToggleTechoSobreListon(this.checked)">
                 <span class="switch-slider"></span>
-                <span>¿Sobre el listón va techo / tapa sobrepuesta?</span>
+                <span><strong>¿Desea incluir techo sobre el techo de listón?</strong></span>
               </label>
-              <span style="font-size: 10px; color: var(--primary); display: block; margin-top: 3px;">
-                ★ Al activar, recalcula automáticamente la altura del módulo sumando el espesor de la tapa (+18mm).
-              </span>
+
+              <div id="grpDetalleTechoSobre" style="display: none; margin-top: 8px; padding-left: 10px;">
+                <label class="switch-container" style="margin-bottom: 6px;">
+                  <input type="checkbox" id="modTechoDobleMelamina" class="switch-input" onchange="onToggleTechoDobleMelamina(this.checked)">
+                  <span class="switch-slider"></span>
+                  <span>¿Va con doble melamina? (Doble engrosado 36mm)</span>
+                </label>
+                <div id="badgeDescuentoTecho" style="font-size: 10px; color: var(--primary); background: rgba(59, 130, 246, 0.1); border-left: 3px solid var(--primary); padding: 5px 8px; border-radius: var(--radius-sm); margin-top: 4px;">
+                  ★ <strong>Altura de techo descontada:</strong> Se descuentan <span id="lblEspesorDescontado">18</span> mm de los costados para conservar la altura exacta del módulo.
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -308,16 +338,64 @@
         <div class="form-group" style="margin-top: 10px;">
           <label for="modTipoInterior">Equipamiento Interior del Módulo</label>
           <select id="modTipoInterior" onchange="onCambiarTipoInterior(this.value)">
-            <option value="repisas" selected>Repisas / Estantes (Distribución Equidistante)</option>
+            <option value="carcasa" selected>Carcasa Abierta (Sin divisiones)</option>
+            <option value="repisas">Parantes y Repisas por Espacio</option>
             <option value="cajonera">Cajonera (Gavetas con correderas de 26mm)</option>
             <option value="puertas">Puertas Batientes (Bisagras de Cazoleta)</option>
-            <option value="carcasa">Carcasa Abierta (Sin divisiones)</option>
           </select>
         </div>
 
-        <div id="grpDetalleRepisas" class="form-group" style="margin-top: 6px;">
-          <label for="modCantRepisas">Cantidad de Repisas</label>
-          <input type="number" id="modCantRepisas" value="2" min="1" max="8" oninput="onEditarCantRepisas(this.value)">
+        <!-- DETALLE DE PARANTES Y REPISAS POR ESPACIO -->
+        <div id="grpDetalleRepisas" style="display: none; margin-top: 10px; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px; background: var(--bg-surface);">
+          
+          <!-- SECCIÓN: PARANTES (DIVISIONES) -->
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <div style="font-weight: 700; font-size: 11.5px; color: var(--primary); display: flex; align-items: center; gap: 6px;">
+              <svg class="svg-icon" style="width: 14px; height: 14px;"><use href="#icon-cubo"></use></svg>
+              <span>Parantes (Divisiones)</span>
+            </div>
+            <span id="badgeInfoParantesPermitidos" class="cota-badge">0 Parantes</span>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 8px;">
+            <label for="modParantesTipo" style="font-size: 11px;">Orientación de Parantes:</label>
+            <select id="modParantesTipo" onchange="onCambiarOrientacionParantes(this.value)">
+              <option value="ninguno">Ninguno (Vano Libre)</option>
+              <option value="vertical">Verticales (Columnas)</option>
+              <option value="horizontal">Horizontales (Niveles)</option>
+            </select>
+          </div>
+
+          <div id="contenedorConfigParantes" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span id="lblSubtituloParantes" style="font-size: 10.5px; color: var(--text-muted);">Listado de Parantes:</span>
+              <button type="button" class="btn btn-secondary" id="btnAgregarParante" onclick="onAgregarParante()" style="padding: 2px 8px; font-size: 10.5px; height: 26px;">
+                + Agregar Parante
+              </button>
+            </div>
+            <div id="listaParantesModulo" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px;">
+              <!-- Se puebla dinámicamente con las tarjetas de cada parante -->
+            </div>
+          </div>
+
+          <hr style="border: none; border-top: 1px dashed var(--border-color); margin: 10px 0;">
+
+          <!-- SECCIÓN: REPISAS POR ESPACIO -->
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+            <div style="font-weight: 700; font-size: 11.5px; color: var(--accent); display: flex; align-items: center; gap: 6px;">
+              <svg class="svg-icon" style="width: 14px; height: 14px;"><use href="#icon-regla"></use></svg>
+              <span>Repisas por Espacio</span>
+            </div>
+            <span id="badgeTotalRepisas" class="badge badge-success" style="font-size: 10px;">0 Repisas</span>
+          </div>
+          <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 8px;">
+            Configure las repisas dentro de cada compartimento de forma proporcional o con cota fija milimétrica:
+          </div>
+
+          <div id="listaEspaciosRepisasModulo" style="display: flex; flex-direction: column; gap: 8px;">
+            <!-- Se puebla dinámicamente con cada espacio y sus controles de repisas -->
+          </div>
+
         </div>
 
         <div id="grpDetalleCajonera" class="form-group" style="display: none; margin-top: 6px;">

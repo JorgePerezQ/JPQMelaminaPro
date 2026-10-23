@@ -192,7 +192,7 @@ module JPQMelaminaPro
       # ========================================================================
       def obtener_o_crear_material_su(model, nombre, resistencia = 'Normal')
         return nil unless model
-        nombre = 'Pelikano Bellota 18mm' if nombre.nil? || nombre.to_s.strip.empty?
+        nombre = 'Pelikano Blanco Nieve 18mm' if nombre.nil? || nombre.to_s.strip.empty?
         nombre_clean = nombre.to_s.strip
 
         # 1. Si el material ya está cargado en la bandeja del usuario en SketchUp
@@ -247,7 +247,7 @@ module JPQMelaminaPro
       def aplicar_materiales_a_modelo(params, model = Sketchup.active_model)
         return { 'ok' => false, 'error' => 'No hay modelo activo en SketchUp.' } unless model
 
-        nom_est = params['material'] || 'Pelikano Bellota 18mm'
+        nom_est = params['material'] || 'Pelikano Blanco Nieve 18mm'
         nom_fre = params['material_frentes'] || nom_est
         resistencia = params['resistencia'] || 'Normal'
 

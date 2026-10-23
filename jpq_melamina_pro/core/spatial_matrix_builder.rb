@@ -598,7 +598,7 @@ module JPQMelaminaPro
           t_num           = (params['espesor'] && params['espesor'].to_f > 0) ? params['espesor'].to_f : 18.0
           t               = t_num.mm
 
-          mat_estructura = params['material_estructura'] || 'Pelikano Bellota 18mm'
+          mat_estructura = params['material_estructura'] || 'Pelikano Blanco Nieve 18mm'
           mat_frentes    = params['material_frentes'] || mat_estructura
           resistencia    = params['resistencia'] || 'Normal'
           composicion_id = params['composicion_id'] || "COMP-MOD-#{Time.now.to_i % 10000}"
@@ -610,7 +610,7 @@ module JPQMelaminaPro
               'id' => 1, 'nombre' => 'Módulo 1',
               'ancho' => ancho_total_num, 'alto' => alto_total_num, 'profundidad' => prof_total_num,
               'tiene_zocalo' => true, 'alto_zocalo' => 100.0, 'cant_listones' => 2,
-              'tipo_interior' => 'repisas', 'cant_repisas' => 2
+              'tipo_interior' => 'carcasa', 'cant_repisas' => 0
             }]
           end
 
@@ -718,8 +718,22 @@ module JPQMelaminaPro
               end
             end
 
+            # Determinar si lleva listones de techo y techo sobrepuesto
+            tiene_amarre_ant = m_data['tiene_liston_amarre'] == true || m_data['tiene_liston_amarre'] == 'true'
+            pos_amarre_ant = m_data['posicion_liston_amarre'] || 'posterior'
+
+            usa_amarres_techo = (m_data['tiene_liston_techo'] == true || m_data['tiene_liston_techo'] == 'true') ||
+                                (tiene_amarre_ant && (pos_amarre_ant == 'techo' || pos_amarre_ant == 'ambos'))
+
+            tiene_techo_sobre = usa_amarres_techo && (m_data['techo_sobre_liston'] == true || m_data['techo_sobre_liston'] == 'true')
+            es_doble_melamina = (m_data['techo_doble_melamina'] == true || m_data['techo_doble_melamina'] == 'true')
+
+            # Descontar la altura del techo de los costados si lleva tapa sobrepuesta (1x melamina o 2x melamina si es doble)
+            h_techo_num = tiene_techo_sobre ? (es_doble_melamina ? (2.0 * t_num) : t_num) : 0.0
+
             # B. Carcasa del Módulo (Laterales, Piso y Techo)
-            h_carcasa_num = h_mod_num - zocalo_h_num
+            # La altura de la carcasa descuenta el zócalo y la altura del techo sobrepuesto para respetar la altura total del módulo
+            h_carcasa_num = h_mod_num - zocalo_h_num - h_techo_num
             h_carcasa = h_carcasa_num.mm
             z_base = zocalo_h
 
@@ -777,65 +791,139 @@ module JPQMelaminaPro
             )
 
             # Techo de la Carcasa / Amarres de Techo
-            tiene_amarre = m_data['tiene_liston_amarre'] == true || m_data['tiene_liston_amarre'] == 'true'
-            pos_amarre = m_data['posicion_liston_amarre'] || 'posterior' # 'posterior', 'techo', 'ambos'
-            h_amarre_num = (m_data['alto_liston_amarre'] && m_data['alto_liston_amarre'].to_f >= 50.0) ? m_data['alto_liston_amarre'].to_f : 80.0
-            cant_amarre = (m_data['cant_listones_amarre'] || 2).to_i
-
-            usa_amarres_techo = tiene_amarre && (pos_amarre == 'techo' || pos_amarre == 'ambos')
-
             if usa_amarres_techo
-              # Amarre Frontal de Techo (Estándar muebles bajos para encimera)
+              cant_techo = (m_data['cant_listones_techo'] || m_data['cant_listones_amarre'] || 2).to_i
+              w_liston_techo_num = (m_data['medida_liston_techo'] || m_data['alto_liston_amarre'] || 80.0).to_f
+              w_liston_techo_num = 80.0 if w_liston_techo_num < 40.0
+
+              # Amarre Frontal de Techo (siempre que cant_techo >= 1)
               CabinetBuilder.crear_panel(
                 grupo_mod, "M#{idx + 1} Amarre Techo Frontal",
                 x_pos + t, 0.mm, z_base + h_carcasa - t,
-                ancho_int, h_amarre_num.mm, t,
+                ancho_int, w_liston_techo_num.mm, t,
                 {
                   'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-AMARRE-TECH-FRONT",
                   'pieza_nombre' => "M#{idx + 1} Amarre Techo Frontal", 'material' => mat_estructura,
                   'resistencia' => resistencia,
-                  'largo_bruto_mm' => ancho_int_num, 'ancho_bruto_mm' => h_amarre_num, 'espesor_mm' => t_num,
-                  'largo_neto_mm' => ancho_int_num - 1.0, 'ancho_neto_mm' => h_amarre_num - 1.0,
+                  'largo_bruto_mm' => ancho_int_num, 'ancho_bruto_mm' => w_liston_techo_num, 'espesor_mm' => t_num,
+                  'largo_neto_mm' => ancho_int_num - 1.0, 'ancho_neto_mm' => w_liston_techo_num - 1.0,
                   'cantidad' => 1, 'veta' => 'longitudinal',
                   'canto_L1' => 2.0, 'canto_L2' => 0.5, 'canto_A1' => 0.5, 'canto_A2' => 0.5,
                   'ranura' => 'Ninguna'
                 }
               )
 
-              # Amarre Posterior de Techo
-              CabinetBuilder.crear_panel(
-                grupo_mod, "M#{idx + 1} Amarre Techo Posterior",
-                x_pos + t, d_mod - h_amarre_num.mm, z_base + h_carcasa - t,
-                ancho_int, h_amarre_num.mm, t,
-                {
-                  'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-AMARRE-TECH-POST",
-                  'pieza_nombre' => "M#{idx + 1} Amarre Techo Posterior", 'material' => mat_estructura,
-                  'resistencia' => resistencia,
-                  'largo_bruto_mm' => ancho_int_num, 'ancho_bruto_mm' => h_amarre_num, 'espesor_mm' => t_num,
-                  'largo_neto_mm' => ancho_int_num - 1.0, 'ancho_neto_mm' => h_amarre_num - 1.0,
-                  'cantidad' => 1, 'veta' => 'longitudinal',
-                  'canto_L1' => 0.5, 'canto_L2' => 0.5, 'canto_A1' => 0.5, 'canto_A2' => 0.5,
-                  'ranura' => 'Ninguna'
-                }
-              )
-
-              # Techo / Tapa Sobrepuesta colocada sobre los listones de amarre
-              if m_data['techo_sobre_liston'] == true || m_data['techo_sobre_liston'] == 'true'
+              # Amarre Posterior de Techo (si cant_techo >= 2)
+              if cant_techo >= 2
                 CabinetBuilder.crear_panel(
-                  grupo_mod, "M#{idx + 1} Techo Sobrepuesto",
-                  x_pos, 0.mm, z_base + h_carcasa,
-                  w_mod, d_mod, t,
+                  grupo_mod, "M#{idx + 1} Amarre Techo Posterior",
+                  x_pos + t, d_mod - w_liston_techo_num.mm, z_base + h_carcasa - t,
+                  ancho_int, w_liston_techo_num.mm, t,
                   {
-                    'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-TECHO-SOBREPUESTO",
-                    'pieza_nombre' => "M#{idx + 1} Tapa Techo Sobrepuesta", 'material' => mat_estructura,
+                    'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-AMARRE-TECH-POST",
+                    'pieza_nombre' => "M#{idx + 1} Amarre Techo Posterior", 'material' => mat_estructura,
                     'resistencia' => resistencia,
-                    'largo_bruto_mm' => w_mod_num, 'ancho_bruto_mm' => d_mod_num, 'espesor_mm' => t_num,
-                    'largo_neto_mm' => w_mod_num - 1.0, 'ancho_neto_mm' => d_mod_num - 1.0,
+                    'largo_bruto_mm' => ancho_int_num, 'ancho_bruto_mm' => w_liston_techo_num, 'espesor_mm' => t_num,
+                    'largo_neto_mm' => ancho_int_num - 1.0, 'ancho_neto_mm' => w_liston_techo_num - 1.0,
                     'cantidad' => 1, 'veta' => 'longitudinal',
-                    'canto_L1' => 2.0, 'canto_L2' => 2.0, 'canto_A1' => 2.0, 'canto_A2' => 2.0,
+                    'canto_L1' => 0.5, 'canto_L2' => 0.5, 'canto_A1' => 0.5, 'canto_A2' => 0.5,
                     'ranura' => 'Ninguna'
                   }
                 )
+              end
+
+              # Amarre Central de Techo (si cant_techo == 3)
+              if cant_techo === 3
+                y_cent = (d_mod_num - w_liston_techo_num) / 2.0
+                CabinetBuilder.crear_panel(
+                  grupo_mod, "M#{idx + 1} Amarre Techo Central",
+                  x_pos + t, y_cent.mm, z_base + h_carcasa - t,
+                  ancho_int, w_liston_techo_num.mm, t,
+                  {
+                    'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-AMARRE-TECH-CENT",
+                    'pieza_nombre' => "M#{idx + 1} Amarre Techo Central", 'material' => mat_estructura,
+                    'resistencia' => resistencia,
+                    'largo_bruto_mm' => ancho_int_num, 'ancho_bruto_mm' => w_liston_techo_num, 'espesor_mm' => t_num,
+                    'largo_neto_mm' => ancho_int_num - 1.0, 'ancho_neto_mm' => w_liston_techo_num - 1.0,
+                    'cantidad' => 1, 'veta' => 'longitudinal',
+                    'canto_L1' => 0.5, 'canto_L2' => 0.5, 'canto_A1' => 0.5, 'canto_A2' => 0.5,
+                    'ranura' => 'Ninguna'
+                  }
+                )
+              elsif cant_techo >= 4
+                paso = (d_mod_num - w_liston_techo_num) / 3.0
+                [1, 2].each do |k|
+                  CabinetBuilder.crear_panel(
+                    grupo_mod, "M#{idx + 1} Amarre Techo Intermedio #{k}",
+                    x_pos + t, (paso * k).mm, z_base + h_carcasa - t,
+                    ancho_int, w_liston_techo_num.mm, t,
+                    {
+                      'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-AMARRE-TECH-INT#{k}",
+                      'pieza_nombre' => "M#{idx + 1} Amarre Techo Intermedio #{k}", 'material' => mat_estructura,
+                      'resistencia' => resistencia,
+                      'largo_bruto_mm' => ancho_int_num, 'ancho_bruto_mm' => w_liston_techo_num, 'espesor_mm' => t_num,
+                      'largo_neto_mm' => ancho_int_num - 1.0, 'ancho_neto_mm' => w_liston_techo_num - 1.0,
+                      'cantidad' => 1, 'veta' => 'longitudinal',
+                      'canto_L1' => 0.5, 'canto_L2' => 0.5, 'canto_A1' => 0.5, 'canto_A2' => 0.5,
+                      'ranura' => 'Ninguna'
+                    }
+                  )
+                end
+              end
+
+              # Techo / Tapa Sobrepuesta colocada sobre los listones de amarre
+              if tiene_techo_sobre
+                if es_doble_melamina
+                  # Tapa Capa Inferior
+                  CabinetBuilder.crear_panel(
+                    grupo_mod, "M#{idx + 1} Techo Sobrepuesto Doble Melamina (1/2)",
+                    x_pos, 0.mm, z_base + h_carcasa,
+                    w_mod, d_mod, t,
+                    {
+                      'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-TECHO-SOBREPUESTO-1",
+                      'pieza_nombre' => "M#{idx + 1} Tapa Techo Doble (Capa 1)", 'material' => mat_estructura,
+                      'resistencia' => resistencia,
+                      'largo_bruto_mm' => w_mod_num, 'ancho_bruto_mm' => d_mod_num, 'espesor_mm' => t_num,
+                      'largo_neto_mm' => w_mod_num - 1.0, 'ancho_neto_mm' => d_mod_num - 1.0,
+                      'cantidad' => 1, 'veta' => 'longitudinal',
+                      'canto_L1' => 2.0, 'canto_L2' => 2.0, 'canto_A1' => 2.0, 'canto_A2' => 2.0,
+                      'ranura' => 'Ninguna'
+                    }
+                  )
+                  # Tapa Capa Superior (engrosado 36mm)
+                  CabinetBuilder.crear_panel(
+                    grupo_mod, "M#{idx + 1} Techo Sobrepuesto Doble Melamina (2/2)",
+                    x_pos, 0.mm, z_base + h_carcasa + t,
+                    w_mod, d_mod, t,
+                    {
+                      'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-TECHO-SOBREPUESTO-2",
+                      'pieza_nombre' => "M#{idx + 1} Tapa Techo Doble (Capa 2)", 'material' => mat_estructura,
+                      'resistencia' => resistencia,
+                      'largo_bruto_mm' => w_mod_num, 'ancho_bruto_mm' => d_mod_num, 'espesor_mm' => t_num,
+                      'largo_neto_mm' => w_mod_num - 1.0, 'ancho_neto_mm' => d_mod_num - 1.0,
+                      'cantidad' => 1, 'veta' => 'longitudinal',
+                      'canto_L1' => 2.0, 'canto_L2' => 2.0, 'canto_A1' => 2.0, 'canto_A2' => 2.0,
+                      'ranura' => 'Ninguna'
+                    }
+                  )
+                else
+                  # Tapa Simple (18mm)
+                  CabinetBuilder.crear_panel(
+                    grupo_mod, "M#{idx + 1} Techo Sobrepuesto",
+                    x_pos, 0.mm, z_base + h_carcasa,
+                    w_mod, d_mod, t,
+                    {
+                      'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-TECHO-SOBREPUESTO",
+                      'pieza_nombre' => "M#{idx + 1} Tapa Techo Sobrepuesta", 'material' => mat_estructura,
+                      'resistencia' => resistencia,
+                      'largo_bruto_mm' => w_mod_num, 'ancho_bruto_mm' => d_mod_num, 'espesor_mm' => t_num,
+                      'largo_neto_mm' => w_mod_num - 1.0, 'ancho_neto_mm' => d_mod_num - 1.0,
+                      'cantidad' => 1, 'veta' => 'longitudinal',
+                      'canto_L1' => 2.0, 'canto_L2' => 2.0, 'canto_A1' => 2.0, 'canto_A2' => 2.0,
+                      'ranura' => 'Ninguna'
+                    }
+                  )
+                end
               end
             else
               # Techo Sólido Completo Estándar
@@ -857,42 +945,88 @@ module JPQMelaminaPro
             end
 
             # Listones Posteriores de Amarre / Fijación a Pared
-            usa_amarres_post = tiene_amarre && (pos_amarre == 'posterior' || pos_amarre == 'ambos')
+            usa_amarres_post = (m_data['tiene_liston_post'] == true || m_data['tiene_liston_post'] == 'true') ||
+                               (tiene_amarre_ant && (pos_amarre_ant == 'posterior' || pos_amarre_ant == 'ambos'))
             if usa_amarres_post
-              # Listón Superior Posterior
+              cant_post = (m_data['cant_listones_post'] || m_data['cant_listones_amarre'] || 2).to_i
+              h_liston_post_num = (m_data['medida_liston_post'] || m_data['alto_liston_amarre'] || 80.0).to_f
+              h_liston_post_num = 80.0 if h_liston_post_num < 40.0
+
+              # Listón Superior Posterior (siempre presente)
               CabinetBuilder.crear_panel(
                 grupo_mod, "M#{idx + 1} Listón Posterior Superior",
-                x_pos + t, d_mod - t, z_base + h_carcasa - t - h_amarre_num.mm,
-                ancho_int, t, h_amarre_num.mm,
+                x_pos + t, d_mod - t, z_base + h_carcasa - t - h_liston_post_num.mm,
+                ancho_int, t, h_liston_post_num.mm,
                 {
                   'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-LISTON-POST-SUP",
                   'pieza_nombre' => "M#{idx + 1} Listón Amarre Posterior Superior", 'material' => mat_estructura,
                   'resistencia' => resistencia,
-                  'largo_bruto_mm' => ancho_int_num, 'ancho_bruto_mm' => h_amarre_num, 'espesor_mm' => t_num,
-                  'largo_neto_mm' => ancho_int_num - 1.0, 'ancho_neto_mm' => h_amarre_num - 1.0,
+                  'largo_bruto_mm' => ancho_int_num, 'ancho_bruto_mm' => h_liston_post_num, 'espesor_mm' => t_num,
+                  'largo_neto_mm' => ancho_int_num - 1.0, 'ancho_neto_mm' => h_liston_post_num - 1.0,
                   'cantidad' => 1, 'veta' => 'longitudinal',
                   'canto_L1' => 0.5, 'canto_L2' => 0.0, 'canto_A1' => 0.5, 'canto_A2' => 0.5,
                   'ranura' => 'Ninguna'
                 }
               )
 
-              # Listón Inferior Posterior (si cant_amarre >= 2)
-              if cant_amarre >= 2
+              # Listón Inferior Posterior (si cant_post >= 2)
+              if cant_post >= 2
                 CabinetBuilder.crear_panel(
                   grupo_mod, "M#{idx + 1} Listón Posterior Inferior",
                   x_pos + t, d_mod - t, z_base + t,
-                  ancho_int, t, h_amarre_num.mm,
+                  ancho_int, t, h_liston_post_num.mm,
                   {
                     'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-LISTON-POST-INF",
                     'pieza_nombre' => "M#{idx + 1} Listón Amarre Posterior Inferior", 'material' => mat_estructura,
                     'resistencia' => resistencia,
-                    'largo_bruto_mm' => ancho_int_num, 'ancho_bruto_mm' => h_amarre_num, 'espesor_mm' => t_num,
-                    'largo_neto_mm' => ancho_int_num - 1.0, 'ancho_neto_mm' => h_amarre_num - 1.0,
+                    'largo_bruto_mm' => ancho_int_num, 'ancho_bruto_mm' => h_liston_post_num, 'espesor_mm' => t_num,
+                    'largo_neto_mm' => ancho_int_num - 1.0, 'ancho_neto_mm' => h_liston_post_num - 1.0,
                     'cantidad' => 1, 'veta' => 'longitudinal',
                     'canto_L1' => 0.5, 'canto_L2' => 0.0, 'canto_A1' => 0.5, 'canto_A2' => 0.5,
                     'ranura' => 'Ninguna'
                   }
                 )
+              end
+
+              # Listón Central Posterior (si cant_post == 3)
+              if cant_post == 3
+                z_cent = z_base + t + ((h_carcasa_num - (2 * t_num) - h_liston_post_num) / 2.0).mm
+                CabinetBuilder.crear_panel(
+                  grupo_mod, "M#{idx + 1} Listón Posterior Central",
+                  x_pos + t, d_mod - t, z_cent,
+                  ancho_int, t, h_liston_post_num.mm,
+                  {
+                    'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-LISTON-POST-CENT",
+                    'pieza_nombre' => "M#{idx + 1} Listón Amarre Posterior Central", 'material' => mat_estructura,
+                    'resistencia' => resistencia,
+                    'largo_bruto_mm' => ancho_int_num, 'ancho_bruto_mm' => h_liston_post_num, 'espesor_mm' => t_num,
+                    'largo_neto_mm' => ancho_int_num - 1.0, 'ancho_neto_mm' => h_liston_post_num - 1.0,
+                    'cantidad' => 1, 'veta' => 'longitudinal',
+                    'canto_L1' => 0.5, 'canto_L2' => 0.0, 'canto_A1' => 0.5, 'canto_A2' => 0.5,
+                    'ranura' => 'Ninguna'
+                  }
+                )
+              elsif cant_post >= 4
+                espacio_libre = h_carcasa_num - (2 * t_num) - (2 * h_liston_post_num)
+                paso = espacio_libre / 3.0
+                [1, 2].each do |k|
+                  z_int = z_base + t + h_liston_post_num.mm + (paso * k).mm
+                  CabinetBuilder.crear_panel(
+                    grupo_mod, "M#{idx + 1} Listón Posterior Intermedio #{k}",
+                    x_pos + t, d_mod - t, z_int,
+                    ancho_int, t, h_liston_post_num.mm,
+                    {
+                      'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-LISTON-POST-INT#{k}",
+                      'pieza_nombre' => "M#{idx + 1} Listón Amarre Posterior Intermedio #{k}", 'material' => mat_estructura,
+                      'resistencia' => resistencia,
+                      'largo_bruto_mm' => ancho_int_num, 'ancho_bruto_mm' => h_liston_post_num, 'espesor_mm' => t_num,
+                      'largo_neto_mm' => ancho_int_num - 1.0, 'ancho_neto_mm' => h_liston_post_num - 1.0,
+                      'cantidad' => 1, 'veta' => 'longitudinal',
+                      'canto_L1' => 0.5, 'canto_L2' => 0.0, 'canto_A1' => 0.5, 'canto_A2' => 0.5,
+                      'ranura' => 'Ninguna'
+                    }
+                  )
+                end
               end
             end
 
@@ -943,33 +1077,154 @@ module JPQMelaminaPro
             end
 
             # C. Componentes Interiores (Repisas, Cajones o Puertas)
-            tipo_interior = m_data['tipo_interior'] || 'repisas'
+            tipo_interior = m_data['tipo_interior'] || 'carcasa'
             h_vano_util_num = h_carcasa_num - (2 * t_num)
             h_vano_util = h_vano_util_num.mm
 
             case tipo_interior
             when 'repisas'
-              cant_rep = (m_data['cant_repisas'] || 2).to_i
-              if cant_rep > 0
-                paso_rep_num = h_vano_util_num / (cant_rep + 1.0)
-                prof_rep_num = d_mod_num - 20.0
-                cant_rep.times do |r_idx|
-                  z_rep = z_base + t + ((r_idx + 1) * paso_rep_num).mm
+              # Parantes y Repisas Interiores por Espacio
+              parantes_tipo = m_data['parantes_tipo'] || 'ninguno'
+              parantes_raw = m_data['parantes'] || []
+              espacios_cfg = m_data['espacios_repisas'] || []
+              prof_rep_num = d_mod_num - 20.0
+
+              # 1. Resolver y construir Parantes (Verticales u Horizontales)
+              parantes_resueltos = []
+              max_parantes = (parantes_tipo == 'vertical') ? [((ancho_int_num - 150.0) / (150.0 + t_num)).floor, 0].max : [((h_vano_util_num - 120.0) / (120.0 + t_num)).floor, 0].max
+              num_parantes = (parantes_tipo == 'ninguno') ? 0 : [parantes_raw.length, max_parantes].min
+
+              if parantes_tipo == 'vertical' && num_parantes > 0
+                paso_equi = (ancho_int_num - (num_parantes * t_num)) / (num_parantes + 1.0)
+                num_parantes.times do |p_idx|
+                  p_item = parantes_raw[p_idx] || {}
+                  pos_prop = ((p_idx + 1) * paso_equi) + (p_idx * t_num)
+                  min_x = (p_idx == 0) ? 150.0 : (parantes_resueltos[p_idx - 1] + t_num + 150.0)
+                  cant_rest = num_parantes - 1 - p_idx
+                  max_x = [min_x, ancho_int_num - t_num - 150.0 - (cant_rest * (150.0 + t_num))].max
+
+                  pos_final = pos_prop
+                  if p_item['modo'] == 'fija' && p_item['posicion_mm'].to_f > 0
+                    pos_final = [[p_item['posicion_mm'].to_f, min_x].max, max_x].min
+                  end
+                  parantes_resueltos << pos_final
+
                   CabinetBuilder.crear_panel(
-                    grupo_mod, "M#{idx + 1} Repisa #{r_idx + 1}",
-                    x_pos + t, 20.0.mm, z_rep,
+                    grupo_mod, "M#{idx + 1} Parante Vertical #{p_idx + 1}",
+                    x_pos + t + pos_final.mm, 20.0.mm, z_base + t,
+                    t, prof_rep_num.mm, h_vano_util,
+                    {
+                      'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-PAR-V#{p_idx + 1}",
+                      'pieza_nombre' => "M#{idx + 1} Parante Vertical #{p_idx + 1}", 'material' => mat_estructura,
+                      'resistencia' => resistencia,
+                      'largo_bruto_mm' => h_vano_util_num, 'ancho_bruto_mm' => prof_rep_num, 'espesor_mm' => t_num,
+                      'largo_neto_mm' => h_vano_util_num - 1.0, 'ancho_neto_mm' => prof_rep_num - 1.0,
+                      'cantidad' => 1, 'veta' => 'longitudinal',
+                      'canto_L1' => 0.5, 'canto_L2' => 0.5, 'canto_A1' => 0.5, 'canto_A2' => 0.5,
+                      'ranura' => 'Ninguna'
+                    }
+                  )
+                end
+              elsif parantes_tipo == 'horizontal' && num_parantes > 0
+                paso_equi = (h_vano_util_num - (num_parantes * t_num)) / (num_parantes + 1.0)
+                num_parantes.times do |p_idx|
+                  p_item = parantes_raw[p_idx] || {}
+                  pos_prop = ((p_idx + 1) * paso_equi) + (p_idx * t_num)
+                  min_z = (p_idx == 0) ? 120.0 : (parantes_resueltos[p_idx - 1] + t_num + 120.0)
+                  cant_rest = num_parantes - 1 - p_idx
+                  max_z = [min_z, h_vano_util_num - t_num - 120.0 - (cant_rest * (120.0 + t_num))].max
+
+                  pos_final = pos_prop
+                  if p_item['modo'] == 'fija' && p_item['posicion_mm'].to_f > 0
+                    pos_final = [[p_item['posicion_mm'].to_f, min_z].max, max_z].min
+                  end
+                  parantes_resueltos << pos_final
+
+                  CabinetBuilder.crear_panel(
+                    grupo_mod, "M#{idx + 1} Parante Horizontal #{p_idx + 1}",
+                    x_pos + t, 20.0.mm, z_base + t + pos_final.mm,
                     ancho_int, prof_rep_num.mm, t,
                     {
-                      'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-REP-#{r_idx + 1}",
-                      'pieza_nombre' => "M#{idx + 1} Repisa #{r_idx + 1}", 'material' => mat_estructura,
+                      'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-PAR-H#{p_idx + 1}",
+                      'pieza_nombre' => "M#{idx + 1} Parante Horizontal #{p_idx + 1}", 'material' => mat_estructura,
                       'resistencia' => resistencia,
                       'largo_bruto_mm' => ancho_int_num, 'ancho_bruto_mm' => prof_rep_num, 'espesor_mm' => t_num,
                       'largo_neto_mm' => ancho_int_num - 1.0, 'ancho_neto_mm' => prof_rep_num - 1.0,
                       'cantidad' => 1, 'veta' => 'longitudinal',
-                      'canto_L1' => 2.0, 'canto_L2' => 0.0, 'canto_A1' => 0.5, 'canto_A2' => 0.5,
+                      'canto_L1' => 0.5, 'canto_L2' => 0.5, 'canto_A1' => 0.5, 'canto_A2' => 0.5,
                       'ranura' => 'Ninguna'
                     }
                   )
+                end
+              end
+
+              # 2. Determinar Espacios y Construir Repisas por cada Espacio
+              num_espacios = (parantes_tipo == 'ninguno' || num_parantes == 0) ? 1 : (num_parantes + 1)
+              num_espacios.times do |s_idx|
+                x_start_num = 0.0
+                x_end_num = ancho_int_num
+                z_start_num = 0.0
+                z_end_num = h_vano_util_num
+
+                if parantes_tipo == 'vertical' && num_parantes > 0
+                  x_start_num = (s_idx == 0) ? 0.0 : (parantes_resueltos[s_idx - 1] + t_num)
+                  x_end_num = (s_idx == num_parantes) ? ancho_int_num : parantes_resueltos[s_idx]
+                elsif parantes_tipo == 'horizontal' && num_parantes > 0
+                  z_start_num = (s_idx == 0) ? 0.0 : (parantes_resueltos[s_idx - 1] + t_num)
+                  z_end_num = (s_idx == num_parantes) ? h_vano_util_num : parantes_resueltos[s_idx]
+                end
+
+                w_esp_num = [x_end_num - x_start_num, 0.0].max
+                h_esp_num = [z_end_num - z_start_num, 0.0].max
+
+                # Configuración de repisas del espacio
+                e_cfg = espacios_cfg[s_idx] || {}
+                cant_max_r = [((h_esp_num - 80.0) / (80.0 + t_num)).floor, 0].max
+                cant_r = if e_cfg['cantidad']
+                           [e_cfg['cantidad'].to_i, cant_max_r].min
+                         elsif s_idx == 0 && m_data['cant_repisas'].to_i > 0
+                           [m_data['cant_repisas'].to_i, cant_max_r].min
+                         else
+                           0
+                         end
+
+                if cant_r > 0
+                  modo_r = e_cfg['modo'] || 'proporcional'
+                  pos_fijas = e_cfg['posiciones_fijas'] || []
+                  paso_r_num = (h_esp_num - (cant_r * t_num)) / (cant_r + 1.0)
+                  repisas_z_resueltas = []
+
+                  cant_r.times do |r_idx|
+                    cota_prop = ((r_idx + 1) * paso_r_num) + (r_idx * t_num)
+                    min_z_rel = (r_idx == 0) ? 80.0 : (repisas_z_resueltas[r_idx - 1] + t_num + 80.0)
+                    cant_r_rest = cant_r - 1 - r_idx
+                    max_z_rel = [min_z_rel, h_esp_num - t_num - 80.0 - (cant_r_rest * (80.0 + t_num))].max
+
+                    cota_final = cota_prop
+                    if modo_r == 'fija' && pos_fijas[r_idx].to_f > 0
+                      cota_final = [[pos_fijas[r_idx].to_f, min_z_rel].max, max_z_rel].min
+                    end
+                    repisas_z_resueltas << cota_final
+
+                    z_rep_panel = z_base + t + (z_start_num + cota_final).mm
+                    x_rep_panel = x_pos + t + x_start_num.mm
+
+                    CabinetBuilder.crear_panel(
+                      grupo_mod, "M#{idx + 1} Repisa E#{s_idx + 1}-#{r_idx + 1}",
+                      x_rep_panel, 20.0.mm, z_rep_panel,
+                      w_esp_num.mm, prof_rep_num.mm, t,
+                      {
+                        'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-E#{s_idx + 1}-REP-#{r_idx + 1}",
+                        'pieza_nombre' => "M#{idx + 1} Repisa E#{s_idx + 1}-#{r_idx + 1}", 'material' => mat_estructura,
+                        'resistencia' => resistencia,
+                        'largo_bruto_mm' => w_esp_num, 'ancho_bruto_mm' => prof_rep_num, 'espesor_mm' => t_num,
+                        'largo_neto_mm' => w_esp_num - 1.0, 'ancho_neto_mm' => prof_rep_num - 1.0,
+                        'cantidad' => 1, 'veta' => 'longitudinal',
+                        'canto_L1' => 2.0, 'canto_L2' => 0.0, 'canto_A1' => 0.5, 'canto_A2' => 0.5,
+                        'ranura' => 'Ninguna'
+                      }
+                    )
+                  end
                 end
               end
 

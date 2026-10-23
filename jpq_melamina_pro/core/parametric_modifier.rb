@@ -105,7 +105,7 @@ module JPQMelaminaPro
           params_combinados['profundidad'] = (params['profundidad'] && params['profundidad'].to_f > 0) ? params['profundidad'].to_f : dict_mod['prof_mm'].to_f
           esp_val = (params['espesor'] && params['espesor'].to_f > 0) ? params['espesor'].to_f : (dict_mod['espesor_mm'] ? dict_mod['espesor_mm'].to_f : 18.0)
           params_combinados['espesor']     = esp_val
-          params_combinados['material']    = params['material'] || dict_mod['material'] || 'Pelikano Bellota 18mm'
+          params_combinados['material']    = params['material'] || dict_mod['material'] || 'Pelikano Blanco Nieve 18mm'
           params_combinados['target_group']= entidad
 
           # Eliminar geometría interna previa
