@@ -3012,3 +3012,4 @@ window.JPQ_PERFILES_CONFIG = {
     }
   }
 };
+window.PERFILES_CONFIG_FALLBACK = window.JPQ_PERFILES_CONFIG;

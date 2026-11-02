@@ -228,6 +228,19 @@ const ICONOS_EDAD_GENERO = {
 };
 
 /**
+ * Helper global para comunicación IPC bidireccional segura con SketchUp (Chromium CEF / HtmlDialog).
+ */
+window.callSketchup = function(callbackName, payload = '') {
+  const dataStr = (typeof payload === 'object') ? JSON.stringify(payload) : String(payload);
+  if (window.sketchup && typeof window.sketchup[callbackName] === 'function') {
+    return window.sketchup[callbackName](dataStr);
+  }
+  if (typeof sketchup !== 'undefined' && typeof sketchup[callbackName] === 'function') {
+    return sketchup[callbackName](dataStr);
+  }
+};
+
+/**
  * Callback de respuesta de SketchUp IPC cuando se solicitan los perfiles.
  * @param {object} datos - Objeto con los perfiles cargados desde Ruby
  */
@@ -247,23 +260,27 @@ function inicializarSelectorPlantillas() {
  * Recarga el catálogo de perfiles desde todas las fuentes posibles (IPC, HTTP o Respaldo Offline).
  */
 function recargarCatalogoPerfiles() {
-  // 1. Si estamos en el entorno de SketchUp, solicitar por IPC
-  if (typeof callSketchup === 'function') {
-    callSketchup('obtenerPerfilesUsuario');
+  // 1. Respaldo local inmediato en memoria (100% garantizado y síncrono al cargar la app)
+  const respaldoLocal = window.JPQ_PERFILES_CONFIG || window.PERFILES_CONFIG_FALLBACK;
+  if (respaldoLocal) {
+    procesarDatosPerfiles(respaldoLocal);
   }
 
-  // 2. Si hay respaldo local cargado en window.PERFILES_CONFIG_FALLBACK, procesarlo de inmediato
-  if (window.PERFILES_CONFIG_FALLBACK && (!AppState.catalogoPerfiles || AppState.catalogoPerfiles.length === 0)) {
-    procesarDatosPerfiles(window.PERFILES_CONFIG_FALLBACK);
+  // 2. Si estamos en el entorno de SketchUp, solicitar por IPC
+  if (typeof window.callSketchup === 'function') {
+    window.callSketchup('obtenerPerfilesUsuario', '');
   }
 
-  // 3. Intentar fetch si estamos en un servidor web local
-  if (typeof fetch === 'function' && location.protocol.startsWith('http')) {
-    fetch('../perfiles_config.json')
-      .then(res => res.json())
+  // 3. Intentar fetch si estamos en un servidor web local (http o https)
+  if (typeof fetch === 'function' && location.protocol && location.protocol.startsWith('http')) {
+    fetch('perfiles_config.json')
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
       .then(datos => procesarDatosPerfiles(datos))
       .catch(() => {
-        fetch('perfiles_config.json')
+        fetch('../perfiles_config.json')
           .then(res => res.json())
           .then(datos => procesarDatosPerfiles(datos))
           .catch(() => {});
