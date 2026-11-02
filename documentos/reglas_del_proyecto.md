@@ -431,24 +431,35 @@ Cada perfil en el archivo JSON puede definir su matriz modular interna sin recur
   4. Al pulsar **✓ Aplicar** con el check activo, los módulos y divisiones se generan automáticamente a partir de `modulos_sugeridos`.
   5. Se provee un botón **🔄 Recargar JSON** en la interfaz para refrescar el catálogo en caliente sin reiniciar la ventana.
 
-#### D. Familias Estandarizadas de Roperos, Cocinas, Centros TV y Tocadores
-1. **Roperos Modulares por Cantidad de Cuerpos**:
-   - `ropero_1_cuerpo` (550 × 2100 × 580 mm): 1 columna con maletero, colgado y 2 cajones inferiores.
-   - `ropero_2_cuerpos` (1100 × 2100 × 580 mm): 2 cuerpos (colgado largo y cajonera triple con repisas).
-   - `ropero_3_cuerpos` (1650 × 2100 × 580 mm): 3 cuerpos (columna repisas, colgado central y cajonera con camisas).
-   - `ropero_4_cuerpos` (2200 × 2200 × 600 mm): 4 cuerpos master matrimonial (8 cajones, doble colgado simétrico y maleteros).
+#### D. Familias Estandarizadas de Roperos, Cocinas, Centros TV y Tocadores (Cero Duplicados)
+1. **Roperos Modulares con Maleteros Superiores Independientes (Norma Anti-Pandeo de Puertas)**:
+   - *Norma de Taller*: Una puerta batiente no debe superar los 1600-1800 mm de altura para evitar alabeo, exceso de peso y sobrecarga de bisagras. Los muebles altos de dormitorio integran obligatoriamente maletero superior independiente (`nivel_apilado: 1`).
+   - `ropero_1_cuerpo` (600 × 2100 × 580 mm): 1 columna. Cuerpo principal inferior de 1600 mm (colgado y 2 cajones) + Maletero superior de 420 mm con puerta batiente.
+   - `ropero_2_cuerpos` (1200 × 2100 × 580 mm): 2 columnas de 600 mm. Cuerpos inferiores de 1600 mm (colgado y cajonera 3C) + Batería de 2 maleteros superiores independientes de 420 mm.
+   - `ropero_3_cuerpos` (1800 × 2100 × 580 mm): 3 columnas de 600 mm. Cuerpos inferiores de 1600 mm (repisas dobladas, colgado central vestidos y cajonera camisas) + 3 maleteros superiores independientes de 420 mm.
+   - `ropero_4_cuerpos` (2400 × 2200 × 600 mm): 4 columnas de 600 mm. Cuerpos inferiores de 1650 mm (colgado dama, cajoneras dobles y trajes varón) + 4 maleteros superiores independientes de 470 mm.
+   - `closet_vestidor` (2700 × 2400 × 600 mm): Vestidor walk-in master con 3 cuerpos inferiores de 1800 mm y 3 maleteros superiores de 500 mm.
+   - `ropero_puertas_corredizas` (1800 × 2200 × 620 mm): Ropero corredizo con cuerpos inferiores de 1650 mm y maleteros superiores de 470 mm.
 2. **Bajos de Cocina Modulares por Cantidad de Módulos (Módulos de 600 mm en Melamina RH)**:
    - `cocina_1_modulo` (600 × 850 × 580 mm): Módulo fregadero individual o torre horno.
    - `cocina_2_modulos` (1200 × 850 × 580 mm): Cajonera ollera 3C + Módulo fregadero lavaplatos.
    - `cocina_3_modulos` (1800 × 850 × 580 mm): Cajonera ollera 3C + Fregadero + Despensa vajilla.
    - `cocina_4_modulos` (2400 × 850 × 580 mm): Línea completa: ollera, zona cocción/anafe, lavaplatos y despensa.
    - `cocina_5_modulos` (3000 × 850 × 580 mm): Línea master de chef: 6 cajones telescópicos y 3 zonas de puertas.
-3. **Centros de Entretenimiento Específicos por Tamaño de Pantalla (Pulgadas)**:
-   - `centro_tv_40_pulgadas` (1550 × 1500 × 400 mm): Nicho central de 1050 mm para TV 40" (pantalla 920 mm) con librero de 500 mm.
-   - `centro_tv_48_pulgadas` (1850 × 1600 × 400 mm): Nicho central de 1250 mm para TV 48" (pantalla 1080 mm) con columnas laterales simétricas.
-   - `centro_tv_55_pulgadas` (2200 × 1750 × 420 mm): Nicho central de 1400 mm para TV 55" (pantalla 1240 mm) con repisa soundbar y vitrinas.
+3. **Módulos Aéreos de Cocina con Altillos Telescópicos (1, 2, 3, 4 y 5 Módulos)**:
+   - *Norma de Taller*: La puerta de un módulo aéreo no puede ir continua hasta el techo porque golpea la cabeza y sobrecarga las bisagras. Se divide en alacena inferior de 550 mm con puertas batientes y altillo superior de 350 mm con puerta elevable mediante compás telescópico / pistón a gas.
+   - `aereo_cocina_1_modulo` (600 × 900 × 340 mm): 1 columna. Alacena vajillera inferior de 550 mm + Altillo superior telescópico de 350 mm.
+   - `aereo_cocina_2_modulos` (1200 × 900 × 340 mm): 2 columnas de 600 mm. Alacena vajilla y módulo campana + 2 altillos superiores con puertas telescópicas.
+   - `aereo_cocina_3_modulos` (1800 × 900 × 340 mm): 3 columnas de 600 mm. Alacenas laterales, campana central + 3 altillos superiores telescópicos.
+   - `aereo_cocina_4_modulos` (2400 × 900 × 340 mm): 4 columnas de 600 mm. Despensa aéreo, vajillero, extractor y copero + 4 altillos superiores telescópicos.
+   - `aereo_cocina_5_modulos` (3000 × 900 × 340 mm): 5 columnas de 600 mm. Línea completa para mesones de chef con 5 altillos superiores telescópicos.
+4. **Centros de Entretenimiento Específicos por Tamaño de Pantalla (Pulgadas)**:
+   - `centro_tv_40_pulgadas` (1550 × 1500 × 400 mm): Nicho central de 1050 mm para TV 40" (pantalla 920 mm) con librero lateral de 500 mm.
+   - `centro_tv_48_pulgadas` (1850 × 1600 × 400 mm): Nicho central de 1250 mm para TV 48" (pantalla 1080 mm) con repisas y columnas simétricas.
+   - `centro_tv_55_pulgadas` (2200 × 1750 × 420 mm): Nicho central de 1400 mm para TV 55" (pantalla 1240 mm) con espacio soundbar, audio y vitrina.
    - `centro_tv_65_pulgadas` (2600 × 1900 × 450 mm): Nicho central master de 1650 mm para TV 65" (pantalla 1460 mm) con vitrinas laterales dobles.
-4. **Tocadores de Maquillaje Ergonómicos para Señoritas**:
+   - *Depuración*: Se eliminó el antiguo perfil genérico `centro_entretenimiento` para evitar duplicidad y garantizar nichos normalizados exactos.
+5. **Tocadores de Maquillaje Ergonómicos para Señoritas**:
    - `tocador_juvenil` (1100 × 780 × 450 mm): Altura ergonómica de mesa (780 mm con zócalo 80 mm) y fondo de 450 mm para alcance óptimo al espejo. Incluye cajonera lateral de 4 gavetas para skincare y vano ergonómico para sentarse con cajón joyero superior.
    - `tocador_hollywood_led` (1200 × 800 × 480 mm): Modelo amplio con torre de 5 cajones cosméticos y cubierta engrosada.
 

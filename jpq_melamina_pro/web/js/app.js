@@ -378,9 +378,9 @@ function poblarSelectoresCascada(ambienteSel = 'todos', edadSel = 'todos', muebl
   // --------------------------------------------------------------------------
   // PASO 3: Poblar Selector de Muebles Prediseñados filtrado por Ambiente y Edad
   // --------------------------------------------------------------------------
-  const mueblesFiltrados = perfilesPorAmbiente.filter(p => {
-    return (edadActiva === 'todos' || p.edad_genero === edadActiva);
-  });
+  const mueblesFiltrados = perfilesPorAmbiente
+    .filter(p => (edadActiva === 'todos' || p.edad_genero === edadActiva))
+    .sort((a, b) => (a.nombre || '').localeCompare(b.nombre || '', 'es', { numeric: true, sensitivity: 'base' }));
 
   selMue.innerHTML = '';
 
@@ -402,7 +402,7 @@ function poblarSelectoresCascada(ambienteSel = 'todos', edadSel = 'todos', muebl
       const optgroup = document.createElement('optgroup');
       const iconoAmb = ICONOS_AMBIENTES[nombreAmb] || '🚪';
       optgroup.label = `${iconoAmb} ${nombreAmb}`;
-      grupos[nombreAmb].forEach(p => {
+      grupos[nombreAmb].sort((a, b) => (a.nombre || '').localeCompare(b.nombre || '', 'es', { numeric: true, sensitivity: 'base' })).forEach(p => {
         const opt = document.createElement('option');
         opt.value = p.id;
         const d = p.prof_baja || p.prof_alta || 600;
@@ -677,43 +677,94 @@ function armarEstructuraModularDesdePerfil(perfil) {
 
   // Verificación dinámica de módulos sugeridos en el JSON
   if (Array.isArray(perfil.modulos_sugeridos) && perfil.modulos_sugeridos.length > 0) {
-    const totalSugeridos = perfil.modulos_sugeridos.length;
-    let anchoRestante = w;
-    let modulosVariables = [];
+    const hayColumnasExplicitas = perfil.modulos_sugeridos.some(ms => ms.columna_idx !== undefined && ms.columna_idx !== null);
 
-    // Descontar anchos fijos especificados
+    // Mapeo de columna a array de módulos sugeridos
+    const columnasMap = new Map();
     perfil.modulos_sugeridos.forEach((ms, idx) => {
-      if (ms.ancho_fijo && ms.ancho_fijo > 0) {
-        anchoRestante -= ms.ancho_fijo;
+      const cIdx = hayColumnasExplicitas
+        ? ((ms.columna_idx !== undefined && ms.columna_idx !== null) ? ms.columna_idx : idx)
+        : idx;
+      if (!columnasMap.has(cIdx)) columnasMap.set(cIdx, []);
+      columnasMap.get(cIdx).push({ ms, originalIdx: idx });
+    });
+
+    const colIndices = Array.from(columnasMap.keys()).sort((a, b) => a - b);
+    const cantColumnas = colIndices.length;
+
+    // Calcular ancho de cada columna a lo largo del eje X (ancho total w)
+    let anchoRestante = w;
+    const columnasVariables = [];
+    const anchosPorColumna = {};
+
+    colIndices.forEach(cIdx => {
+      const items = columnasMap.get(cIdx);
+      const itemConAnchoFijo = items.find(it => it.ms.ancho_fijo && it.ms.ancho_fijo > 0);
+      if (itemConAnchoFijo) {
+        anchosPorColumna[cIdx] = itemConAnchoFijo.ms.ancho_fijo;
+        anchoRestante -= itemConAnchoFijo.ms.ancho_fijo;
       } else {
-        modulosVariables.push(idx);
+        columnasVariables.push(cIdx);
       }
     });
 
-    // Suma de proporciones de los módulos con ancho variable
+    // Suma de proporciones de columnas variables
     let sumaProporciones = 0;
-    modulosVariables.forEach(idx => {
-      sumaProporciones += (perfil.modulos_sugeridos[idx].ancho_proporcional || (1 / (modulosVariables.length || 1)));
+    columnasVariables.forEach(cIdx => {
+      const items = columnasMap.get(cIdx);
+      const propItem = items.find(it => it.ms.ancho_proporcional && it.ms.ancho_proporcional > 0);
+      const prop = propItem ? propItem.ms.ancho_proporcional : (1 / (columnasVariables.length || 1));
+      sumaProporciones += prop;
     });
 
     let anchoAcumulado = 0;
-    perfil.modulos_sugeridos.forEach((ms, idx) => {
-      let anchoModulo = 0;
-      if (idx === totalSugeridos - 1) {
-        // El último módulo absorbe la diferencia exacta para garantizar suma = w
-        anchoModulo = Math.max(100, w - anchoAcumulado);
-      } else if (ms.ancho_fijo && ms.ancho_fijo > 0) {
-        anchoModulo = ms.ancho_fijo;
+    colIndices.forEach((cIdx, colSeq) => {
+      let anchoCol = 0;
+      if (anchosPorColumna[cIdx] !== undefined) {
+        anchoCol = anchosPorColumna[cIdx];
+      } else if (colSeq === cantColumnas - 1) {
+        // La última columna absorbe la diferencia exacta para garantizar suma = w
+        anchoCol = Math.max(100, w - anchoAcumulado);
       } else {
-        const prop = (ms.ancho_proporcional || (1 / (modulosVariables.length || 1)));
-        anchoModulo = Math.round((anchoRestante * prop) / (sumaProporciones || 1));
+        const items = columnasMap.get(cIdx);
+        const propItem = items.find(it => it.ms.ancho_proporcional && it.ms.ancho_proporcional > 0);
+        const prop = propItem ? propItem.ms.ancho_proporcional : (1 / (columnasVariables.length || 1));
+        anchoCol = Math.round((anchoRestante * prop) / (sumaProporciones || 1));
       }
-      anchoAcumulado += anchoModulo;
+      anchosPorColumna[cIdx] = anchoCol;
+      anchoAcumulado += anchoCol;
+    });
+
+    // Ahora crear cada módulo con sus dimensiones precisas (ancho de columna y altura individual)
+    perfil.modulos_sugeridos.forEach((ms, idx) => {
+      const cIdx = hayColumnasExplicitas
+        ? ((ms.columna_idx !== undefined && ms.columna_idx !== null) ? ms.columna_idx : idx)
+        : idx;
+      const anchoMod = (ms.ancho_fijo && ms.ancho_fijo > 0) ? ms.ancho_fijo : (anchosPorColumna[cIdx] || 600);
+
+      const itemsCol = columnasMap.get(cIdx);
+      let altoMod = ms.alto;
+      if (!altoMod || altoMod <= 0) {
+        if (itemsCol.length <= 1) {
+          altoMod = altoDisponible;
+        } else {
+          let altoOcupado = 0;
+          let cantSinAlto = 0;
+          itemsCol.forEach(it => {
+            if (it.ms.alto && it.ms.alto > 0) altoOcupado += it.ms.alto;
+            else cantSinAlto++;
+          });
+          const altoRestanteCol = Math.max(100, altoDisponible - altoOcupado);
+          altoMod = Math.round(altoRestanteCol / (cantSinAlto || 1));
+        }
+      }
+
+      const nivelMod = (ms.nivel_apilado !== undefined && ms.nivel_apilado !== null) ? ms.nivel_apilado : 0;
 
       modulos.push(crearModulo(
         idx,
         ms.nombre || `Módulo ${idx + 1}`,
-        anchoModulo,
+        anchoMod,
         ms.tipo_interior || 'repisas',
         ms.cant_repisas !== undefined ? ms.cant_repisas : 0,
         ms.cant_cajones !== undefined ? ms.cant_cajones : 0,
@@ -721,10 +772,10 @@ function armarEstructuraModularDesdePerfil(perfil) {
         ms.tiene_techo !== undefined ? ms.tiene_techo : true,
         ms.tiene_laterales !== undefined ? ms.tiene_laterales : true,
         ms.tiene_fondo !== undefined ? ms.tiene_fondo : false,
-        ms.alto,
+        altoMod,
         ms.profundidad,
-        ms.columna_idx,
-        ms.nivel_apilado
+        cIdx,
+        nivelMod
       ));
     });
   } else {
