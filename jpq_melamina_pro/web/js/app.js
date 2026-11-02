@@ -181,418 +181,276 @@ function onDimensionesGeneralesChange() {
 }
 
 // ==============================================================================
-// 3. CATÁLOGO MAESTRO DE PLANTILLAS NORMALIZADAS & LISTAS DESPLEGABLES
+// 3. CATÁLOGO DINÁMICO DE MUEBLES PREDISEÑADOS (100% BASADO EN JSON)
 // ==============================================================================
 
 /**
- * Catálogo completo de plantillas normalizadas agrupadas por ambientes de taller.
+ * Catálogo maestro en memoria poblado dinámicamente desde perfiles_config.json.
+ * Cualquier mueble, ambiente o rango de edad/género agregado al archivo JSON
+ * se integrará inmediatamente sin requerir modificaciones en el código JavaScript.
  */
-const CATALOGO_PLANTILLAS = [
-  // --- COCINA ---
-  {
-    id: 'bajo_cocina',
-    nombre: 'Bajo Cocina Estándar',
-    ambiente: 'cocina',
-    ambienteNombre: '🍳 Cocina',
-    icono: '🍳',
-    w: 1800, h: 850, d: 600,
-    tieneZ: true, altoZ: 100, retransZ: 50, cantL: 2,
-    desc: 'H=850mm ergonómico para mesón terminado, Zócalo 100mm RH, D=600mm'
-  },
-  {
-    id: 'aereo_cocina',
-    nombre: 'Módulo Aéreo Superior',
-    ambiente: 'cocina',
-    ambienteNombre: '🍳 Cocina',
-    icono: '🍲',
-    w: 1800, h: 700, d: 320,
-    tieneZ: false, altoZ: 0, retransZ: 0, cantL: 0,
-    desc: 'D=320mm de seguridad anti-golpes en cabeza, suspendido aéreo'
-  },
-  {
-    id: 'alacena',
-    nombre: 'Torre Alacena / Hornos',
-    ambiente: 'cocina',
-    ambienteNombre: '🍳 Cocina',
-    icono: '🥫',
-    w: 600, h: 2100, d: 600,
-    tieneZ: true, altoZ: 100, retransZ: 50, cantL: 1,
-    desc: 'H=2100mm columna de despensa con nicho para microondas/horno a 900mm'
-  },
-  {
-    id: 'isla_cocina',
-    nombre: 'Isla / Península Central',
-    ambiente: 'cocina',
-    ambienteNombre: '🍳 Cocina',
-    icono: '🏝️',
-    w: 1400, h: 900, d: 800,
-    tieneZ: true, altoZ: 100, retransZ: 50, cantL: 2,
-    desc: 'W=1400 D=800mm mesón de preparación central con cajones y puertas'
-  },
-
-  // --- BAÑO ---
-  {
-    id: 'vanitorio',
-    nombre: 'Vanitorio Flotante RH',
-    ambiente: 'bano',
-    ambienteNombre: '🚿 Baño',
-    icono: '🚿',
-    w: 800, h: 550, d: 480,
-    tieneZ: false, altoZ: 0, retransZ: 0, cantL: 0,
-    desc: 'Suspendido a 300mm del suelo en Melamina RH con calado en U para sifón'
-  },
-  {
-    id: 'columna_bano',
-    nombre: 'Columna Auxiliar Suspendida',
-    ambiente: 'bano',
-    ambienteNombre: '🚿 Baño',
-    icono: '🧴',
-    w: 400, h: 1500, d: 320,
-    tieneZ: false, altoZ: 0, retransZ: 0, cantL: 0,
-    desc: 'W=400 H=1500 D=320mm torre flotante para toallas y cosméticos'
-  },
-  {
-    id: 'botiquin',
-    nombre: 'Botiquín Espejo Aéreo',
-    ambiente: 'bano',
-    ambienteNombre: '🚿 Baño',
-    icono: '🪞',
-    w: 600, h: 700, d: 150,
-    tieneZ: false, altoZ: 0, retransZ: 0, cantL: 0,
-    desc: 'D=150mm compacto de sobreponer sobre lavamanos con repisas interiores'
-  },
-
-  // --- SALA & TV ---
-  {
-    id: 'centro_tv',
-    nombre: 'Centro TV Integral con Panel',
-    ambiente: 'sala',
-    ambienteNombre: '📺 Sala & TV',
-    icono: '📺',
-    w: 2000, h: 1800, d: 400,
-    tieneZ: true, altoZ: 70, retransZ: 35, cantL: 2,
-    desc: 'W=2000mm para TV hasta 75", panel pasacables y base para consolas'
-  },
-  {
-    id: 'rack_tv_bajo',
-    nombre: 'Rack TV Bajo / Consolas',
-    ambiente: 'sala',
-    ambienteNombre: '📺 Sala & TV',
-    icono: '📻',
-    w: 1600, h: 500, d: 400,
-    tieneZ: true, altoZ: 70, retransZ: 35, cantL: 2,
-    desc: 'H=500mm a nivel óptico desde sofá con vanos para audio y receptores'
-  },
-  {
-    id: 'repisa',
-    nombre: 'Repisa Flotante de Muro',
-    ambiente: 'sala',
-    ambienteNombre: '📺 Sala & TV',
-    icono: '🪵',
-    w: 1000, h: 300, d: 250,
-    tieneZ: false, altoZ: 0, retransZ: 0, cantL: 0,
-    desc: 'D=250mm fijación invisible o French Cleat sin zócalo'
-  },
-  {
-    id: 'estanteria',
-    nombre: 'Estantería Modular Alta',
-    ambiente: 'sala',
-    ambienteNombre: '📺 Sala & TV',
-    icono: '🧱',
-    w: 800, h: 1800, d: 300,
-    tieneZ: true, altoZ: 70, retransZ: 35, cantL: 1,
-    desc: 'W=800mm límite estricto anti-pandeo para repisas de melamina 18mm'
-  },
-  {
-    id: 'mesa_centro',
-    nombre: 'Mesa de Centro con Revistero',
-    ambiente: 'sala',
-    ambienteNombre: '📺 Sala & TV',
-    icono: '☕',
-    w: 900, h: 420, d: 500,
-    tieneZ: false, altoZ: 0, retransZ: 0, cantL: 0,
-    desc: 'H=420mm estándar frente a sofás con repisa central revistero'
-  },
-
-  // --- COMEDOR ---
-  {
-    id: 'aparador',
-    nombre: 'Aparador / Buffet de Comedor',
-    ambiente: 'comedor',
-    ambienteNombre: '🍷 Comedor & Bar',
-    icono: '🍽️',
-    w: 1500, h: 850, d: 450,
-    tieneZ: true, altoZ: 80, retransZ: 35, cantL: 2,
-    desc: 'H=850 D=450mm servicio de vajilla y mantelería con 3 módulos'
-  },
-  {
-    id: 'vitrina',
-    nombre: 'Vitrina Vajillera Alta',
-    ambiente: 'comedor',
-    ambienteNombre: '🍷 Comedor & Bar',
-    icono: '🥂',
-    w: 900, h: 1800, d: 400,
-    tieneZ: true, altoZ: 80, retransZ: 35, cantL: 1,
-    desc: 'W=900 H=1800mm repisas interiores con puertas batientes'
-  },
-  {
-    id: 'bar_mural',
-    nombre: 'Mueble Bar / Cava Mural',
-    ambiente: 'comedor',
-    ambienteNombre: '🍷 Comedor & Bar',
-    icono: '🍷',
-    w: 1000, h: 900, d: 350,
-    tieneZ: false, altoZ: 0, retransZ: 0, cantL: 0,
-    desc: 'Flotante suspendido con copero y compartimentos para botellas'
-  },
-
-  // --- DORMITORIO ---
-  {
-    id: 'ropero',
-    nombre: 'Ropero / Clóset 3 Cuerpos',
-    ambiente: 'dormitorio',
-    ambienteNombre: '🛏️ Dormitorio',
-    icono: '👔',
-    w: 2400, h: 2200, d: 600,
-    tieneZ: true, altoZ: 80, retransZ: 35, cantL: 3,
-    desc: 'D=600mm para ganchos sin roce, Zócalo 80mm anti-humedad'
-  },
-  {
-    id: 'comoda',
-    nombre: 'Cómoda 4 Cajones',
-    ambiente: 'dormitorio',
-    ambienteNombre: '🛏️ Dormitorio',
-    icono: '🗄️',
-    w: 900, h: 900, d: 480,
-    tieneZ: true, altoZ: 80, retransZ: 35, cantL: 1,
-    desc: 'D=480mm óptimo para correderas telescópicas (descuento 26mm)'
-  },
-  {
-    id: 'comoda_doble',
-    nombre: 'Cómoda Doble Master 8 Cajones',
-    ambiente: 'dormitorio',
-    ambienteNombre: '🛏️ Dormitorio',
-    icono: '🗄️',
-    w: 1400, h: 850, d: 500,
-    tieneZ: true, altoZ: 80, retransZ: 35, cantL: 2,
-    desc: 'W=1400mm modular con 2 columnas simétricas de cajoneras'
-  },
-  {
-    id: 'velador',
-    nombre: 'Velador / Mesa de Noche',
-    ambiente: 'dormitorio',
-    ambienteNombre: '🛏️ Dormitorio',
-    icono: '🕯️',
-    w: 500, h: 550, d: 400,
-    tieneZ: true, altoZ: 60, retransZ: 35, cantL: 0,
-    desc: 'H=550mm a ras del colchón estándar, D=400mm compacto 2 cajones'
-  },
-  {
-    id: 'zapatera',
-    nombre: 'Zapatera Ergonómica',
-    ambiente: 'dormitorio',
-    ambienteNombre: '🛏️ Dormitorio',
-    icono: '👠',
-    w: 800, h: 1000, d: 350,
-    tieneZ: true, altoZ: 70, retransZ: 35, cantL: 1,
-    desc: 'D=350mm para calzado, H=1000mm visibilidad sin agacharse'
-  },
-  {
-    id: 'cabecero',
-    nombre: 'Panel Cabecero con Repisa',
-    ambiente: 'dormitorio',
-    ambienteNombre: '🛏️ Dormitorio',
-    icono: '🛌',
-    w: 1600, h: 1100, d: 150,
-    tieneZ: false, altoZ: 0, retransZ: 0, cantL: 0,
-    desc: 'W=1600mm para cama Queen de 1500mm con repisa de apoyo superior'
-  },
-
-  // --- BIBLIOTECA ---
-  {
-    id: 'librero',
-    nombre: 'Librero / Biblioteca Doble',
-    ambiente: 'biblioteca',
-    ambienteNombre: '📚 Biblioteca & Estudio',
-    icono: '📚',
-    w: 1200, h: 1800, d: 300,
-    tieneZ: true, altoZ: 60, retransZ: 35, cantL: 1,
-    desc: 'D=300mm para libros/archivadores, vanos anti-pandeo ≤800mm'
-  },
-  {
-    id: 'estanteria_libros',
-    nombre: 'Estantería Alta para Libros',
-    ambiente: 'biblioteca',
-    ambienteNombre: '📚 Biblioteca & Estudio',
-    icono: '📖',
-    w: 800, h: 2100, d: 300,
-    tieneZ: true, altoZ: 80, retransZ: 35, cantL: 1,
-    desc: 'H=2100mm columna vertical de 6 niveles con vanos anti-pandeo'
-  },
-  {
-    id: 'repisero_cubos',
-    nombre: 'Repisero Modular en Cubos',
-    ambiente: 'biblioteca',
-    ambienteNombre: '📚 Biblioteca & Estudio',
-    icono: '🧩',
-    w: 1000, h: 1000, d: 280,
-    tieneZ: false, altoZ: 0, retransZ: 0, cantL: 0,
-    desc: 'Módulo cuadrado de 3x3 nichos para libros y objetos decorativos'
-  },
-
-  // --- OFICINA ---
-  {
-    id: 'escritorio',
-    nombre: 'Escritorio Home Office',
-    ambiente: 'oficina',
-    ambienteNombre: '💻 Oficina & Home Office',
-    icono: '💻',
-    w: 1200, h: 750, d: 600,
-    tieneZ: false, altoZ: 0, retransZ: 0, cantL: 0,
-    desc: 'H=750mm norma ISO, vano libre para piernas y silla ergonómica'
-  },
-  {
-    id: 'escritorio_gamer',
-    nombre: 'Battlestation Gamer Pasacables',
-    ambiente: 'oficina',
-    ambienteNombre: '💻 Oficina & Home Office',
-    icono: '🎮',
-    w: 1600, h: 750, d: 700,
-    tieneZ: false, altoZ: 0, retransZ: 0, cantL: 0,
-    desc: 'D=700mm para monitores ultrawide y brazos, cámara pasacables trasera'
-  },
-  {
-    id: 'credencia',
-    nombre: 'Credencia / Auxiliar Oficina',
-    ambiente: 'oficina',
-    ambienteNombre: '💻 Oficina & Home Office',
-    icono: '📂',
-    w: 1400, h: 750, d: 450,
-    tieneZ: true, altoZ: 70, retransZ: 35, cantL: 2,
-    desc: 'H=750mm a ras de escritorio, puertas y archivador para carpetas'
-  },
-  {
-    id: 'cajonera_movil',
-    nombre: 'Cajonera Pedestal Rodante',
-    ambiente: 'oficina',
-    ambienteNombre: '💻 Oficina & Home Office',
-    icono: '🗄️',
-    w: 400, h: 600, d: 480,
-    tieneZ: false, altoZ: 0, retransZ: 0, cantL: 0,
-    desc: 'H=600mm cabe bajo escritorios estándar, 3 cajones con corredera'
-  },
-
-  // --- TIENDA ---
-  {
-    id: 'mostrador_caja',
-    nombre: 'Mostrador de Atención / Caja',
-    ambiente: 'tienda',
-    ambienteNombre: '🏪 Tienda & Comercio',
-    icono: '🏪',
-    w: 1400, h: 950, d: 600,
-    tieneZ: true, altoZ: 100, retransZ: 50, cantL: 2,
-    desc: 'H=950mm ergonomía de atención de pie, cajón de dinero y repisa bolso'
-  },
-  {
-    id: 'gondola_exhibidora',
-    nombre: 'Góndola Central Comercial',
-    ambiente: 'tienda',
-    ambienteNombre: '🏪 Tienda & Comercio',
-    icono: '🛍️',
-    w: 1200, h: 1200, d: 500,
-    tieneZ: true, altoZ: 80, retransZ: 35, cantL: 2,
-    desc: 'H=1200mm visualización perimétrica sin tapar la visual de la tienda'
-  },
-  {
-    id: 'estante_exhibidor',
-    nombre: 'Vitrina Exhibidora Comercial',
-    ambiente: 'tienda',
-    ambienteNombre: '🏪 Tienda & Comercio',
-    icono: '✨',
-    w: 900, h: 1900, d: 400,
-    tieneZ: true, altoZ: 80, retransZ: 35, cantL: 1,
-    desc: 'W=900 H=1900mm exhibición comercial de alta carga con repisas fijas'
-  }
-];
+AppState.catalogoPerfiles = [];
 
 /**
- * Inicializa los dos selectores desplegables en cascada (Ambiente y Mueble).
+ * Mapeo de iconos para ambientes de mobiliario estándar.
+ * Si un ambiente nuevo no está en este mapa, se asigna el icono genérico '🚪'.
+ */
+const ICONOS_AMBIENTES = {
+  'Cocina': '🍳',
+  'Baño': '🚿',
+  'Lavandería & Despensa': '🧺',
+  'Lavandería': '🧺',
+  'Dormitorio': '🛏️',
+  'Ambiente Infantil': '🧸',
+  'Ambiente Juvenil': '🛹',
+  'Zona Gamer': '🎮',
+  'Oficina & Home Office': '💻',
+  'Biblioteca & Estudio': '📚',
+  'Sala de Estar & TV': '📺',
+  'Comedor & Bar': '🍽️',
+  'Tienda & Comercio': '🏪'
+};
+
+/**
+ * Mapeo de iconos para grupos de edad y género.
+ */
+const ICONOS_EDAD_GENERO = {
+  'Universal': '🌐',
+  'Familiar': '👨‍👩‍👧‍👦',
+  'Matrimonial': '💍',
+  'Juvenil chicos': '👦',
+  'Juvenil señoritas': '👧',
+  'Infantil (de 2 a 8 años)': '🧸',
+  'Escolar (de 6 a 12 años)': '🎒',
+  'Adultos / Profesional': '💼',
+  'Adultos Mayores / Senior (65+ años)': '🧓',
+  'Comercial / Empresa': '🏬'
+};
+
+/**
+ * Callback de respuesta de SketchUp IPC cuando se solicitan los perfiles.
+ * @param {object} datos - Objeto con los perfiles cargados desde Ruby
+ */
+window.onPerfilesObtenidos = function(datos) {
+  procesarDatosPerfiles(datos);
+  mostrarNotificacion(`Catálogo sincronizado: ${AppState.catalogoPerfiles.length} muebles disponibles.`, 'info');
+};
+
+/**
+ * Inicializa el cargador de plantillas y selectores dinámicos al iniciar la app.
  */
 function inicializarSelectorPlantillas() {
-  const selAmb = document.getElementById('selAmbientePreset');
-  const selMue = document.getElementById('selMueblePreset');
-  if (!selAmb || !selMue) return;
-
-  selAmb.value = 'todos';
-  poblarDesplegableMuebles('todos', 'escritorio');
+  recargarCatalogoPerfiles();
 }
 
 /**
- * Puebla el selector de muebles según el ambiente elegido.
- * Si el ambiente es 'todos', agrupa las opciones por ambiente usando optgroup.
- * @param {string} ambiente - Código del ambiente ('todos', 'cocina', 'bano', etc.)
- * @param {string|null} preseleccionarId - ID del mueble a preseleccionar
+ * Recarga el catálogo de perfiles desde todas las fuentes posibles (IPC, HTTP o Respaldo Offline).
  */
-function poblarDesplegableMuebles(ambiente, preseleccionarId = null) {
-  const selMueble = document.getElementById('selMueblePreset');
-  if (!selMueble) return;
+function recargarCatalogoPerfiles() {
+  // 1. Si estamos en el entorno de SketchUp, solicitar por IPC
+  if (typeof callSketchup === 'function') {
+    callSketchup('obtenerPerfilesUsuario');
+  }
 
-  selMueble.innerHTML = '';
+  // 2. Si hay respaldo local cargado en window.PERFILES_CONFIG_FALLBACK, procesarlo de inmediato
+  if (window.PERFILES_CONFIG_FALLBACK && (!AppState.catalogoPerfiles || AppState.catalogoPerfiles.length === 0)) {
+    procesarDatosPerfiles(window.PERFILES_CONFIG_FALLBACK);
+  }
 
-  let items = [];
-  if (ambiente === 'todos') {
-    items = CATALOGO_PLANTILLAS;
+  // 3. Intentar fetch si estamos en un servidor web local
+  if (typeof fetch === 'function' && location.protocol.startsWith('http')) {
+    fetch('../perfiles_config.json')
+      .then(res => res.json())
+      .then(datos => procesarDatosPerfiles(datos))
+      .catch(() => {
+        fetch('perfiles_config.json')
+          .then(res => res.json())
+          .then(datos => procesarDatosPerfiles(datos))
+          .catch(() => {});
+      });
+  }
+}
+
+/**
+ * Procesa el objeto JSON de perfiles y lo convierte en un arreglo ordenado en AppState.
+ * @param {object} datos - Datos del archivo perfiles_config.json
+ */
+function procesarDatosPerfiles(datos) {
+  if (!datos) return;
+  const diccionario = datos.perfiles || datos;
+  if (typeof diccionario !== 'object') return;
+
+  const lista = [];
+  Object.keys(diccionario).forEach(key => {
+    const p = diccionario[key];
+    if (p && typeof p === 'object') {
+      if (!p.id) p.id = key;
+      if (!p.ambiente) p.ambiente = 'General';
+      if (!p.edad_genero) p.edad_genero = 'Universal';
+      if (!p.ancho_sugerido) p.ancho_sugerido = 1200;
+      if (!p.alto_sugerido) p.alto_sugerido = 800;
+      if (!p.prof_baja) p.prof_baja = p.prof_alta || 600;
+      lista.push(p);
+    }
+  });
+
+  AppState.catalogoPerfiles = lista;
+
+  // Actualizar los 3 selectores en cascada
+  poblarSelectoresCascada('todos', 'todos', null);
+}
+
+/**
+ * Puebla en cascada los tres selectores desplegables:
+ * 1. Ambiente
+ * 2. Edad / Género
+ * 3. Mueble Prediseñado
+ * @param {string} ambienteSel - Ambiente seleccionado ('todos' o nombre exacto)
+ * @param {string} edadSel - Edad/Género seleccionada ('todos' o nombre exacto)
+ * @param {string|null} muebleSelId - ID de mueble a seleccionar si existe
+ */
+function poblarSelectoresCascada(ambienteSel = 'todos', edadSel = 'todos', muebleSelId = null) {
+  const selAmb = document.getElementById('selAmbientePreset');
+  const selEdad = document.getElementById('selEdadGeneroPreset');
+  const selMue = document.getElementById('selMueblePreset');
+  if (!selAmb || !selEdad || !selMue) return;
+
+  const catalogo = AppState.catalogoPerfiles || [];
+
+  // --------------------------------------------------------------------------
+  // PASO 1: Poblar Selector de Ambientes dinámicamente desde el conjunto de datos
+  // --------------------------------------------------------------------------
+  const ambientesUnicos = Array.from(new Set(catalogo.map(p => p.ambiente).filter(Boolean))).sort();
+
+  selAmb.innerHTML = '';
+  const optAmbTodos = document.createElement('option');
+  optAmbTodos.value = 'todos';
+  optAmbTodos.textContent = `🌐 Todos los Ambientes (${catalogo.length})`;
+  selAmb.appendChild(optAmbTodos);
+
+  ambientesUnicos.forEach(amb => {
+    const cant = catalogo.filter(p => p.ambiente === amb).length;
+    const icono = ICONOS_AMBIENTES[amb] || '🚪';
+    const opt = document.createElement('option');
+    opt.value = amb;
+    opt.textContent = `${icono} ${amb} (${cant})`;
+    selAmb.appendChild(opt);
+  });
+
+  if (ambienteSel !== 'todos' && ambientesUnicos.includes(ambienteSel)) {
+    selAmb.value = ambienteSel;
+  } else {
+    selAmb.value = 'todos';
+  }
+  const ambienteActivo = selAmb.value;
+
+  // --------------------------------------------------------------------------
+  // PASO 2: Poblar Selector de Edad / Género filtrado por el ambiente activo
+  // --------------------------------------------------------------------------
+  const perfilesPorAmbiente = (ambienteActivo === 'todos')
+    ? catalogo
+    : catalogo.filter(p => p.ambiente === ambienteActivo);
+
+  const edadesUnicas = Array.from(new Set(perfilesPorAmbiente.map(p => p.edad_genero).filter(Boolean))).sort();
+
+  selEdad.innerHTML = '';
+  const optEdadTodas = document.createElement('option');
+  optEdadTodas.value = 'todos';
+  optEdadTodas.textContent = `👥 Todas las Edades / Géneros (${perfilesPorAmbiente.length})`;
+  selEdad.appendChild(optEdadTodas);
+
+  edadesUnicas.forEach(edad => {
+    const cant = perfilesPorAmbiente.filter(p => p.edad_genero === edad).length;
+    const icono = ICONOS_EDAD_GENERO[edad] || '👤';
+    const opt = document.createElement('option');
+    opt.value = edad;
+    opt.textContent = `${icono} ${edad} (${cant})`;
+    selEdad.appendChild(opt);
+  });
+
+  if (edadSel !== 'todos' && edadesUnicas.includes(edadSel)) {
+    selEdad.value = edadSel;
+  } else {
+    selEdad.value = 'todos';
+  }
+  const edadActiva = selEdad.value;
+
+  // --------------------------------------------------------------------------
+  // PASO 3: Poblar Selector de Muebles Prediseñados filtrado por Ambiente y Edad
+  // --------------------------------------------------------------------------
+  const mueblesFiltrados = perfilesPorAmbiente.filter(p => {
+    return (edadActiva === 'todos' || p.edad_genero === edadActiva);
+  });
+
+  selMue.innerHTML = '';
+
+  if (mueblesFiltrados.length === 0) {
+    const optVacio = document.createElement('option');
+    optVacio.value = '';
+    optVacio.textContent = '(Sin modelos para esta combinación)';
+    selMue.appendChild(optVacio);
+  } else if (ambienteActivo === 'todos') {
+    // Si están todos los ambientes, agrupar con optgroup para máxima claridad visual
     const grupos = {};
-    items.forEach(p => {
-      if (!grupos[p.ambienteNombre]) grupos[p.ambienteNombre] = [];
-      grupos[p.ambienteNombre].push(p);
+    mueblesFiltrados.forEach(p => {
+      const ambKey = p.ambiente || 'Otros';
+      if (!grupos[ambKey]) grupos[ambKey] = [];
+      grupos[ambKey].push(p);
     });
 
-    Object.keys(grupos).forEach(nomAmb => {
+    Object.keys(grupos).sort().forEach(nombreAmb => {
       const optgroup = document.createElement('optgroup');
-      optgroup.label = nomAmb;
-      grupos[nomAmb].forEach(p => {
+      const iconoAmb = ICONOS_AMBIENTES[nombreAmb] || '🚪';
+      optgroup.label = `${iconoAmb} ${nombreAmb}`;
+      grupos[nombreAmb].forEach(p => {
         const opt = document.createElement('option');
         opt.value = p.id;
-        opt.textContent = `${p.icono} ${p.nombre} (${p.w}×${p.h}×${p.d} mm)`;
+        const d = p.prof_baja || p.prof_alta || 600;
+        opt.textContent = `${p.icono || '🪵'} ${p.nombre} (${p.ancho_sugerido}×${p.alto_sugerido}×${d} mm)`;
         optgroup.appendChild(opt);
       });
-      selMueble.appendChild(optgroup);
+      selMue.appendChild(optgroup);
     });
   } else {
-    items = CATALOGO_PLANTILLAS.filter(p => p.ambiente === ambiente);
-    items.forEach(p => {
+    // Ambiente específico seleccionado
+    mueblesFiltrados.forEach(p => {
       const opt = document.createElement('option');
       opt.value = p.id;
-      opt.textContent = `${p.icono} ${p.nombre} (${p.w}×${p.h}×${p.d} mm)`;
-      selMueble.appendChild(opt);
+      const d = p.prof_baja || p.prof_alta || 600;
+      opt.textContent = `${p.icono || '🪵'} ${p.nombre} (${p.ancho_sugerido}×${p.alto_sugerido}×${d} mm)`;
+      selMue.appendChild(opt);
     });
   }
 
   // Preseleccionar según parámetro o primer elemento
-  if (preseleccionarId && items.some(p => p.id === preseleccionarId)) {
-    selMueble.value = preseleccionarId;
-  } else if (items.length > 0) {
-    selMueble.value = items[0].id;
+  if (muebleSelId && mueblesFiltrados.some(p => p.id === muebleSelId)) {
+    selMue.value = muebleSelId;
+  } else if (mueblesFiltrados.length > 0) {
+    selMue.value = mueblesFiltrados[0].id;
   }
 
-  // Actualizar tarjeta resumen y badge
-  const actualId = selMueble.value;
-  const presetActual = CATALOGO_PLANTILLAS.find(p => p.id === actualId) || items[0];
+  // Actualizar tarjeta resumen y badge numérico
+  const actualId = selMue.value;
+  const presetActual = catalogo.find(p => p.id === actualId) || mueblesFiltrados[0];
   actualizarTarjetaResumenPreset(presetActual);
 
   const badge = document.getElementById('badgeTotalPlantillas');
   if (badge) {
-    badge.textContent = (ambiente === 'todos') ? `${CATALOGO_PLANTILLAS.length} Modelos` : `${items.length} Modelos`;
+    badge.textContent = `${mueblesFiltrados.length} Modelos`;
   }
 }
 
 /**
  * Evento al cambiar el ambiente en la lista desplegable 1.
- * @param {string} ambiente - Código del ambiente seleccionado
+ * @param {string} ambiente - Código o nombre del ambiente seleccionado
  */
 function onAmbientePresetChange(ambiente) {
-  poblarDesplegableMuebles(ambiente);
+  // Conservar edad/género si es compatible, de lo contrario resetear a 'todos'
+  const selEdad = document.getElementById('selEdadGeneroPreset');
+  const edadActual = selEdad ? selEdad.value : 'todos';
+
+  poblarSelectoresCascada(ambiente, edadActual, null);
+
   const selMueble = document.getElementById('selMueblePreset');
   if (selMueble && selMueble.value) {
     onMueblePresetChange(selMueble.value, true);
@@ -600,33 +458,67 @@ function onAmbientePresetChange(ambiente) {
 }
 
 /**
- * Evento al cambiar el mueble en la lista desplegable 2.
- * @param {string} muebleId - ID de la plantilla seleccionada
+ * Evento al cambiar la edad / género en la lista desplegable 2.
+ * @param {string} edad - Categoría de edad / género seleccionada
+ */
+function onEdadGeneroPresetChange(edad) {
+  const selAmb = document.getElementById('selAmbientePreset');
+  const ambActual = selAmb ? selAmb.value : 'todos';
+
+  poblarSelectoresCascada(ambActual, edad, null);
+
+  const selMueble = document.getElementById('selMueblePreset');
+  if (selMueble && selMueble.value) {
+    onMueblePresetChange(selMueble.value, true);
+  }
+}
+
+/**
+ * Evento al cambiar el mueble en la lista desplegable 3.
+ * @param {string} muebleId - ID del mueble prediseñado
  * @param {boolean} autoAplicar - Si true, aplica el mueble de inmediato
  */
 function onMueblePresetChange(muebleId, autoAplicar = true) {
-  const preset = CATALOGO_PLANTILLAS.find(p => p.id === muebleId);
+  const catalogo = AppState.catalogoPerfiles || [];
+  const preset = catalogo.find(p => p.id === muebleId);
   if (!preset) return;
+
   actualizarTarjetaResumenPreset(preset);
+
   if (autoAplicar) {
     aplicarPresetMobiliario(muebleId);
   }
 }
 
 /**
- * Actualiza la tarjeta visual resumen con las especificaciones de la plantilla.
- * @param {object} preset - Objeto de datos de la plantilla
+ * Actualiza la tarjeta visual resumen con las especificaciones del mueble seleccionado.
+ * @param {object} preset - Objeto de datos del perfil
  */
 function actualizarTarjetaResumenPreset(preset) {
   if (!preset) return;
   const lblNom = document.getElementById('lblPresetNombre');
   const lblCot = document.getElementById('lblPresetCotas');
   const lblDet = document.getElementById('lblPresetDetalle');
-  if (lblNom) lblNom.innerHTML = `${preset.icono} ${preset.nombre}`;
-  if (lblCot) lblCot.textContent = `${preset.w} × ${preset.h} × ${preset.d} mm`;
+  const lblAmb = document.getElementById('lblPresetAmbienteBadge');
+  const lblEdad = document.getElementById('lblPresetEdadBadge');
+
+  const w = preset.ancho_sugerido || 1200;
+  const h = preset.alto_sugerido || 800;
+  const d = preset.prof_baja || preset.prof_alta || 600;
+  const icono = preset.icono || '🪵';
+
+  if (lblNom) lblNom.innerHTML = `${icono} ${preset.nombre}`;
+  if (lblCot) lblCot.textContent = `${w} × ${h} × ${d} mm`;
+  if (lblAmb) lblAmb.textContent = preset.ambiente || 'General';
+  if (lblEdad) lblEdad.textContent = preset.edad_genero || 'Universal';
+
   if (lblDet) {
-    const zocaloInfo = preset.tieneZ ? `Zócalo ${preset.altoZ}mm` : 'Sin Zócalo';
-    lblDet.innerHTML = `<strong>${zocaloInfo}</strong> • ${preset.desc}`;
+    const tieneZ = preset.altura_zocalo > 0;
+    const zocaloInfo = tieneZ ? `Zócalo ${preset.altura_zocalo}mm` : 'Sin Zócalo';
+    const cantMods = (Array.isArray(preset.modulos_sugeridos) && preset.modulos_sugeridos.length > 0)
+      ? `${preset.modulos_sugeridos.length} Módulos prediseñados`
+      : 'Estructura adaptable';
+    lblDet.innerHTML = `<strong>${zocaloInfo}</strong> • <em>${cantMods}</em> • ${preset.descripcion || ''}`;
   }
 }
 
@@ -641,39 +533,37 @@ function ejecutarAplicacionPresetSeleccionado() {
 }
 
 /**
- * Aplica una plantilla antropométrica rápida de mobiliario estandarizado según las normas de taller.
- * @param {string} tipo - Identificador de la plantilla normalizada
+ * Aplica un mueble prediseñado según las especificaciones del archivo JSON.
+ * @param {string} tipo - Identificador del perfil prediseñado
  */
 function aplicarPresetMobiliario(tipo) {
-  const preset = CATALOGO_PLANTILLAS.find(p => p.id === tipo) || CATALOGO_PLANTILLAS[0];
+  const catalogo = AppState.catalogoPerfiles || [];
+  const preset = catalogo.find(p => p.id === tipo) || catalogo[0];
   if (!preset) return;
 
-  const w = preset.w;
-  const h = preset.h;
-  const d = preset.d;
-  const tieneZ = preset.tieneZ;
-  const altoZ = preset.altoZ;
-  const retransZ = preset.retransZ;
-  const cantL = preset.cantL;
-  const descTecnica = `${preset.nombre}: ${preset.desc}`;
+  const w = preset.ancho_sugerido || 1200;
+  const h = preset.alto_sugerido || 800;
+  const d = preset.prof_baja || preset.prof_alta || 600;
+  const tieneZ = (preset.altura_zocalo && preset.altura_zocalo > 0);
+  const altoZ = tieneZ ? preset.altura_zocalo : 0;
+  const retransZ = preset.retrans_zocalo !== undefined ? preset.retrans_zocalo : 35;
+  const cantL = preset.cant_listones_zocalo !== undefined ? preset.cant_listones_zocalo : 2;
+  const descTecnica = `${preset.nombre}: ${preset.descripcion || ''}`;
 
-  // Sincronizar selectores si no coinciden
+  // Sincronizar selectores si difieren
   const selMue = document.getElementById('selMueblePreset');
-  const selAmb = document.getElementById('selAmbientePreset');
   if (selMue && selMue.value !== tipo) {
-    if (selAmb && selAmb.value !== 'todos' && selAmb.value !== preset.ambiente) {
-      selAmb.value = preset.ambiente;
-      poblarDesplegableMuebles(preset.ambiente, tipo);
-    } else {
-      selMue.value = tipo;
-    }
+    selMue.value = tipo;
   }
   actualizarTarjetaResumenPreset(preset);
 
   // Asignar cotas a la interfaz
-  document.getElementById('dimAnchoTotal').value = w;
-  document.getElementById('dimAltoTotal').value = h;
-  document.getElementById('dimProfTotal').value = d;
+  const elW = document.getElementById('dimAnchoTotal');
+  const elH = document.getElementById('dimAltoTotal');
+  const elD = document.getElementById('dimProfTotal');
+  if (elW) elW.value = w;
+  if (elH) elH.value = h;
+  if (elD) elD.value = d;
 
   AppState.tieneZocalo = tieneZ;
   AppState.altoZocalo = altoZ;
@@ -689,11 +579,11 @@ function aplicarPresetMobiliario(tipo) {
 
   actualizarUIZocaloGeneral();
 
-  // Verificar si el usuario tiene activo el auto-armado modular de taller
+  // Verificar si el usuario tiene activo el auto-armado modular desde el JSON
   const chkAuto = document.getElementById('chkAutoArmarModulos');
   if (chkAuto && chkAuto.checked) {
-    armarEstructuraModularRecomendada(tipo, w, h, d, tieneZ, altoZ);
-    mostrarNotificacion(`⚡ ${descTecnica} Módulos configurados automáticamente.`, "success");
+    armarEstructuraModularDesdePerfil(preset);
+    mostrarNotificacion(`⚡ ${preset.nombre}: Módulos y cotas configurados dinámicamente desde JSON.`, "success");
   } else {
     onDimensionesGeneralesChange();
     mostrarNotificacion(descTecnica || `Plantilla aplicada: ${w} x ${h} x ${d} mm`, "info");
@@ -701,16 +591,20 @@ function aplicarPresetMobiliario(tipo) {
 }
 
 /**
- * Arma la estructura modular completa sugerida para una plantilla normalizada.
- * Genera la división interior recomendada con cajones, repisas, puertas o vanos ergonómicos.
- * @param {string} tipo - Nombre del preset
- * @param {number} w - Ancho total
- * @param {number} h - Alto total
- * @param {number} d - Profundidad total
- * @param {boolean} tieneZ - Si lleva zócalo perimétrico
- * @param {number} altoZ - Altura del zócalo
+ * Arma la estructura modular completa desde la definición JSON del perfil.
+ * Si el perfil incluye 'modulos_sugeridos', los genera con precisión matemática milimétrica.
+ * Si no incluye 'modulos_sugeridos', calcula una distribución modular ergonómica anti-pandeo.
+ * @param {object} perfil - Objeto del perfil prediseñado
  */
-function armarEstructuraModularRecomendada(tipo, w, h, d, tieneZ, altoZ) {
+function armarEstructuraModularDesdePerfil(perfil) {
+  if (!perfil) return;
+
+  const w = perfil.ancho_sugerido || 1200;
+  const h = perfil.alto_sugerido || 800;
+  const d = perfil.prof_baja || perfil.prof_alta || 600;
+  const tieneZ = (perfil.altura_zocalo && perfil.altura_zocalo > 0);
+  const altoZ = tieneZ ? perfil.altura_zocalo : 0;
+
   AppState.anchoTotal = w;
   AppState.altoTotal = h;
   AppState.profTotal = d;
@@ -781,171 +675,65 @@ function armarEstructuraModularRecomendada(tipo, w, h, d, tieneZ, altoZ) {
     };
   };
 
-  switch (tipo) {
-    // --- OFICINA ---
-    case 'escritorio':
-      modulos.push(crearModulo(0, "Cajonera Cajones", 400, "cajonera", 0, 3, true, true, true, false));
-      modulos.push(crearModulo(1, "Vano Libre Piernas", 800, "carcasa", 0, 0, false, true, true, false));
-      break;
+  // Verificación dinámica de módulos sugeridos en el JSON
+  if (Array.isArray(perfil.modulos_sugeridos) && perfil.modulos_sugeridos.length > 0) {
+    const totalSugeridos = perfil.modulos_sugeridos.length;
+    let anchoRestante = w;
+    let modulosVariables = [];
 
-    case 'escritorio_gamer':
-      modulos.push(crearModulo(0, "Módulo Gabinete / Cajones", 450, "cajonera", 0, 3, true, true, true, false));
-      modulos.push(crearModulo(1, "Vano Battlestation Gamer", 1150, "carcasa", 0, 0, false, true, true, false));
-      break;
+    // Descontar anchos fijos especificados
+    perfil.modulos_sugeridos.forEach((ms, idx) => {
+      if (ms.ancho_fijo && ms.ancho_fijo > 0) {
+        anchoRestante -= ms.ancho_fijo;
+      } else {
+        modulosVariables.push(idx);
+      }
+    });
 
-    case 'credencia':
-      modulos.push(crearModulo(0, "Cajonera Archivador", Math.floor(w / 2), "cajonera", 0, 3, true, true, true, true));
-      modulos.push(crearModulo(1, "Módulo Puertas Auxiliar", w - Math.floor(w / 2), "puertas", 1, 0, true, true, true, true));
-      break;
+    // Suma de proporciones de los módulos con ancho variable
+    let sumaProporciones = 0;
+    modulosVariables.forEach(idx => {
+      sumaProporciones += (perfil.modulos_sugeridos[idx].ancho_proporcional || (1 / (modulosVariables.length || 1)));
+    });
 
-    case 'cajonera_movil':
-      modulos.push(crearModulo(0, "Pedestal Rodante 3 Cajones", w, "cajonera", 0, 3, true, true, true, true));
-      break;
+    let anchoAcumulado = 0;
+    perfil.modulos_sugeridos.forEach((ms, idx) => {
+      let anchoModulo = 0;
+      if (idx === totalSugeridos - 1) {
+        // El último módulo absorbe la diferencia exacta para garantizar suma = w
+        anchoModulo = Math.max(100, w - anchoAcumulado);
+      } else if (ms.ancho_fijo && ms.ancho_fijo > 0) {
+        anchoModulo = ms.ancho_fijo;
+      } else {
+        const prop = (ms.ancho_proporcional || (1 / (modulosVariables.length || 1)));
+        anchoModulo = Math.round((anchoRestante * prop) / (sumaProporciones || 1));
+      }
+      anchoAcumulado += anchoModulo;
 
-    // --- DORMITORIO ---
-    case 'comoda':
-      modulos.push(crearModulo(0, "Cuerpo Cómoda 4 Cajones", w, "cajonera", 0, 4, true, true, true, true));
-      break;
-
-    case 'comoda_doble':
-      modulos.push(crearModulo(0, "Columna Cajonera Izq", Math.floor(w / 2), "cajonera", 0, 4, true, true, true, true));
-      modulos.push(crearModulo(1, "Columna Cajonera Der", w - Math.floor(w / 2), "cajonera", 0, 4, true, true, true, true));
-      break;
-
-    case 'ropero':
-      const wRop = Math.floor(w / 3);
-      modulos.push(crearModulo(0, "Columna Repisas", wRop, "repisas", 4, 0, true, true, true, true));
-      modulos.push(crearModulo(1, "Colgado Vestidos", wRop, "carcasa", 0, 0, true, true, true, true));
-      modulos.push(crearModulo(2, "Cajonera y Camisas", w - (wRop * 2), "cajonera", 0, 3, true, true, true, true));
-      break;
-
-    case 'velador':
-      modulos.push(crearModulo(0, "Velador 2 Cajones", w, "cajonera", 0, 2, true, true, true, true));
-      break;
-
-    case 'zapatera':
-      modulos.push(crearModulo(0, "Zapatera 4 Repisas", w, "repisas", 4, 0, true, true, true, true));
-      break;
-
-    case 'cabecero':
-      modulos.push(crearModulo(0, "Panel Cabecero con Repisa", w, "carcasa", 1, 0, true, true, true, true));
-      break;
-
-    // --- BIBLIOTECA ---
-    case 'librero':
-      modulos.push(crearModulo(0, "Columna Libros A", Math.floor(w / 2), "repisas", 4, 0, true, true, true, true));
-      modulos.push(crearModulo(1, "Columna Libros B", w - Math.floor(w / 2), "repisas", 4, 0, true, true, true, true));
-      break;
-
-    case 'estanteria_libros':
-      modulos.push(crearModulo(0, "Estantería Alta 5 Repisas", w, "repisas", 5, 0, true, true, true, true));
-      break;
-
-    case 'repisero_cubos':
-      modulos.push(crearModulo(0, "Repisero Modular Cubos", w, "repisas", 3, 0, true, true, true, true));
-      break;
-
-    // --- SALA & TV ---
-    case 'centro_tv':
-      const wLat = 550;
-      const wCen = w - (wLat * 2);
-      modulos.push(crearModulo(0, "Lateral Izq Audio", wLat, "puertas", 1, 0, true, true, true, true));
-      modulos.push(crearModulo(1, "Centro Consolas/TV", wCen, "repisas", 1, 0, true, true, true, true));
-      modulos.push(crearModulo(2, "Lateral Der Almacén", wLat, "puertas", 1, 0, true, true, true, true));
-      break;
-
-    case 'rack_tv_bajo':
-      modulos.push(crearModulo(0, "Cajones Consolas", Math.floor(w / 2), "cajonera", 0, 2, true, true, true, true));
-      modulos.push(crearModulo(1, "Vanos Receptores", w - Math.floor(w / 2), "repisas", 1, 0, true, true, true, true));
-      break;
-
-    case 'repisa':
-      modulos.push(crearModulo(0, "Repisa Flotante", w, "repisas", 1, 0, true, true, true, true));
-      break;
-
-    case 'estanteria':
-      modulos.push(crearModulo(0, "Estantería Modular", w, "repisas", 4, 0, true, true, true, true));
-      break;
-
-    case 'mesa_centro':
-      modulos.push(crearModulo(0, "Mesa Centro con Nicho", w, "carcasa", 1, 0, true, true, true, false));
-      break;
-
-    // --- COMEDOR ---
-    case 'aparador':
-      const wApLat = 450;
-      const wApCen = w - (wApLat * 2);
-      modulos.push(crearModulo(0, "Módulo Vajilla Izq", wApLat, "puertas", 1, 0, true, true, true, true));
-      modulos.push(crearModulo(1, "Cajonera Cubiertos Centro", wApCen, "cajonera", 0, 4, true, true, true, true));
-      modulos.push(crearModulo(2, "Módulo Mantelería Der", wApLat, "puertas", 1, 0, true, true, true, true));
-      break;
-
-    case 'vitrina':
-      modulos.push(crearModulo(0, "Vitrina Cristalería", w, "puertas", 4, 0, true, true, true, true));
-      break;
-
-    case 'bar_mural':
-      modulos.push(crearModulo(0, "Cava y Copero Mural", w, "repisas", 2, 0, true, true, true, true));
-      break;
-
-    // --- COCINA ---
-    case 'bajo_cocina':
-      const wBajo = Math.floor(w / 3);
-      modulos.push(crearModulo(0, "Cajonera Ollera", wBajo, "cajonera", 0, 3, true, true, true, false));
-      modulos.push(crearModulo(1, "Módulo Central Puertas", wBajo, "puertas", 1, 0, true, true, true, false));
-      modulos.push(crearModulo(2, "Módulo Derecha Puertas", w - (wBajo * 2), "puertas", 1, 0, true, true, true, false));
-      break;
-
-    case 'aereo_cocina':
-      const wAer = Math.floor(w / 3);
-      modulos.push(crearModulo(0, "Aéreo Izq Puertas", wAer, "puertas", 1, 0, true, true, true, true));
-      modulos.push(crearModulo(1, "Aéreo Cen Puertas", wAer, "puertas", 1, 0, true, true, true, true));
-      modulos.push(crearModulo(2, "Aéreo Der Puertas", w - (wAer * 2), "puertas", 1, 0, true, true, true, true));
-      break;
-
-    case 'alacena':
-      modulos.push(crearModulo(0, "Torre Alacena", w, "repisas", 4, 0, true, true, true, true));
-      break;
-
-    case 'isla_cocina':
-      modulos.push(crearModulo(0, "Cajonera Utensilios Isla", Math.floor(w / 2), "cajonera", 0, 3, true, true, true, true));
-      modulos.push(crearModulo(1, "Módulo Puertas Isla", w - Math.floor(w / 2), "puertas", 1, 0, true, true, true, true));
-      break;
-
-    // --- BAÑO ---
-    case 'vanitorio':
-      modulos.push(crearModulo(0, "Vanitorio Suspendido", w, "puertas", 0, 0, true, true, true, false));
-      break;
-
-    case 'columna_bano':
-      modulos.push(crearModulo(0, "Columna Flotante Baño", w, "puertas", 3, 0, true, true, true, false));
-      break;
-
-    case 'botiquin':
-      modulos.push(crearModulo(0, "Botiquín con Espejo", w, "puertas", 2, 0, true, true, true, true));
-      break;
-
-    // --- TIENDA ---
-    case 'mostrador_caja':
-      modulos.push(crearModulo(0, "Módulo Cajón Caja y Bolso", Math.floor(w / 2), "cajonera", 1, 1, true, true, true, true));
-      modulos.push(crearModulo(1, "Repisas Atención Mostrador", w - Math.floor(w / 2), "repisas", 2, 0, true, true, true, true));
-      break;
-
-    case 'gondola_exhibidora':
-      modulos.push(crearModulo(0, "Góndola Cara A", Math.floor(w / 2), "repisas", 3, 0, true, true, true, true));
-      modulos.push(crearModulo(1, "Góndola Cara B", w - Math.floor(w / 2), "repisas", 3, 0, true, true, true, true));
-      break;
-
-    case 'estante_exhibidor':
-      modulos.push(crearModulo(0, "Estante Exhibidor Reforzado", w, "repisas", 4, 0, true, true, true, true));
-      break;
-
-    default:
-      const wDef = Math.floor(w / 3);
-      modulos.push(crearModulo(0, "Módulo A", wDef, "repisas", 3, 0, true, true, true, true));
-      modulos.push(crearModulo(1, "Módulo B", wDef, "carcasa", 0, 0, true, true, true, true));
-      modulos.push(crearModulo(2, "Módulo C", w - (wDef * 2), "cajonera", 0, 3, true, true, true, true));
-      break;
+      modulos.push(crearModulo(
+        idx,
+        ms.nombre || `Módulo ${idx + 1}`,
+        anchoModulo,
+        ms.tipo_interior || 'repisas',
+        ms.cant_repisas !== undefined ? ms.cant_repisas : 0,
+        ms.cant_cajones !== undefined ? ms.cant_cajones : 0,
+        ms.tiene_piso !== undefined ? ms.tiene_piso : true,
+        ms.tiene_techo !== undefined ? ms.tiene_techo : true,
+        ms.tiene_laterales !== undefined ? ms.tiene_laterales : true,
+        ms.tiene_fondo !== undefined ? ms.tiene_fondo : false
+      ));
+    });
+  } else {
+    // Fallback ergonómico automático si el perfil no especifica módulos en el JSON
+    const cantMod = Math.max(1, Math.min(6, Math.ceil(w / 800)));
+    const anchoCadaUno = Math.floor(w / cantMod);
+    for (let i = 0; i < cantMod; i++) {
+      const anchoM = (i === cantMod - 1) ? (w - (anchoCadaUno * (cantMod - 1))) : anchoCadaUno;
+      const tipoInt = (i === 0 && cantMod > 1) ? 'cajonera' : 'repisas';
+      const cajones = (tipoInt === 'cajonera') ? 3 : 0;
+      const repisas = (tipoInt === 'repisas') ? 3 : 0;
+      modulos.push(crearModulo(i, `Módulo ${i + 1}`, anchoM, tipoInt, repisas, cajones, true, true, true, false));
+    }
   }
 
   AppState.cantidadModulos = modulos.length;

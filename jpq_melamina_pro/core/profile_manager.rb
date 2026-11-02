@@ -18,6 +18,7 @@ module JPQMelaminaPro
   class ProfileManager
     # Ruta del archivo de persistencia de perfiles del usuario
     CONFIG_FILE = File.join(__dir__, '..', 'perfiles_config.json').freeze
+    FACTORY_FILE = File.join(__dir__, '..', 'perfiles_factory.json').freeze
 
     # Catálogo maestro de perfiles predeterminados de fábrica
     PERFILES_POR_DEFECTO = {
@@ -404,8 +405,13 @@ module JPQMelaminaPro
       # Descripción: Restablece todos los perfiles a los valores predeterminados de fábrica.
       # ========================================================================
       def restaurar_perfiles_fabrica
-        File.write(CONFIG_FILE, JSON.pretty_generate({ 'perfiles' => PERFILES_POR_DEFECTO }), encoding: 'UTF-8')
-        { 'ok' => true, 'mensaje' => 'Perfiles de fábrica restaurados con éxito.', 'perfiles' => PERFILES_POR_DEFECTO }
+        fabrica = if File.exist?(FACTORY_FILE)
+                    JSON.parse(File.read(FACTORY_FILE, encoding: 'UTF-8'))['perfiles']
+                  else
+                    PERFILES_POR_DEFECTO
+                  end
+        File.write(CONFIG_FILE, JSON.pretty_generate({ 'perfiles' => fabrica }), encoding: 'UTF-8')
+        { 'ok' => true, 'mensaje' => 'Perfiles de fábrica restaurados con éxito.', 'perfiles' => fabrica }
       rescue => e
         { 'ok' => false, 'error' => "Error al restaurar fábrica: #{e.message}" }
       end
@@ -418,7 +424,11 @@ module JPQMelaminaPro
       # ========================================================================
       def asegurar_archivo_configuracion
         return if File.exist?(CONFIG_FILE)
-        File.write(CONFIG_FILE, JSON.pretty_generate({ 'perfiles' => PERFILES_POR_DEFECTO }), encoding: 'UTF-8')
+        if File.exist?(FACTORY_FILE)
+          File.write(CONFIG_FILE, File.read(FACTORY_FILE, encoding: 'UTF-8'), encoding: 'UTF-8')
+        else
+          File.write(CONFIG_FILE, JSON.pretty_generate({ 'perfiles' => PERFILES_POR_DEFECTO }), encoding: 'UTF-8')
+        end
       end
     end
   end

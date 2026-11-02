@@ -370,6 +370,69 @@ Las plantillas normalizadas condensan las directrices antropométricas, ergonóm
 
 ---
 
+### 3.7 Arquitectura Dinámica de Muebles Prediseñados (100% Data-Driven desde JSON)
+
+Para garantizar la máxima escalabilidad y evitar la necesidad de modificar código JavaScript al agregar nuevos muebles, ambientes o categorías etarias, el sistema opera bajo una **arquitectura 100% desacoplada y orientada a datos**:
+
+#### A. Cascada Dinámica de 3 Desplegables
+1. **Selector 1: Ambiente (`#selAmbientePreset`)**:
+   - Se puebla en tiempo de ejecución extrayendo dinámicamente los valores únicos del atributo `ambiente` de todos los perfiles definidos en `perfiles_config.json`.
+   - Incluye la opción inicial `🌐 Todos los Ambientes`.
+   - Ambientes soportados de fábrica: *Cocina, Baño, Lavandería & Despensa, Dormitorio, Ambiente Infantil, Ambiente Juvenil, Zona Gamer, Oficina & Home Office, Biblioteca & Estudio, Sala de Estar & TV, Comedor & Bar, Tienda & Comercio*.
+2. **Selector 2: Edad / Género (`#selEdadGeneroPreset`)**:
+   - Se puebla en tiempo de ejecución filtrando los perfiles del ambiente activo y extrayendo los valores únicos de `edad_genero`.
+   - Incluye la opción inicial `👥 Todas las Edades / Géneros`.
+   - Categorías etarias estandarizadas: *Universal, Familiar, Matrimonial, Juvenil chicos, Juvenil señoritas, Infantil (de 2 a 8 años), Escolar (de 6 a 12 años), Adultos / Profesional, Adultos Mayores / Senior (65+ años), Comercial / Empresa*.
+3. **Selector 3: Mueble Prediseñado (`#selMueblePreset`)**:
+   - Filtra los muebles que coinciden simultáneamente con el Ambiente y la Edad/Género seleccionados.
+   - Si se selecciona `Todos los Ambientes`, agrupa visualmente los muebles mediante etiquetas `<optgroup>`.
+
+#### B. Motor de Auto-Armado Modular Paramétrico (`modulos_sugeridos`)
+Cada perfil en el archivo JSON puede definir su matriz modular interna sin recurrir a código duro:
+```json
+"mi_mueble_personalizado": {
+  "id": "mi_mueble_personalizado",
+  "nombre": "Estación de Costura y Manualidades",
+  "categoria": "Hogar y Manualidades",
+  "ambiente": "Taller Creativo",
+  "edad_genero": "Familiar",
+  "icono": "🧵",
+  "descripcion": "Mueble con gavetero amplio para rollos de tela y vano libre para máquina.",
+  "ancho_sugerido": 1500,
+  "alto_sugerido": 800,
+  "prof_baja": 650,
+  "altura_zocalo": 80,
+  "retrans_zocalo": 35,
+  "cant_listones_zocalo": 2,
+  "modulos_sugeridos": [
+    {
+      "nombre": "Cajonera Telas 4C",
+      "ancho_proporcional": 0.4,
+      "tipo_interior": "cajonera",
+      "cant_cajones": 4,
+      "tiene_fondo": true
+    },
+    {
+      "nombre": "Vano Libre Máquina",
+      "ancho_proporcional": 0.6,
+      "tipo_interior": "carcasa",
+      "tiene_piso": false,
+      "tiene_fondo": false
+    }
+  ]
+}
+```
+
+#### C. Cero Modificaciones de Código
+- Al agregar, modificar o suprimir un mueble en `perfiles_config.json`:
+  1. El nuevo **Ambiente** aparece automáticamente en el Selector 1.
+  2. El nuevo rango de **Edad / Género** aparece automáticamente en el Selector 2.
+  3. El nuevo **Mueble** se lista en el Selector 3 con sus dimensiones $W \times H \times D$.
+  4. Al pulsar **✓ Aplicar** con el check activo, los módulos y divisiones se generan automáticamente a partir de `modulos_sugeridos`.
+  5. Se provee un botón **🔄 Recargar JSON** en la interfaz para refrescar el catálogo en caliente sin reiniciar la ventana.
+
+---
+
 ## 📌 4. RESUMEN DE CONSTANTES MAESTRAS DE TALLER
 
 ```plaintext
