@@ -208,6 +208,7 @@ module JPQMelaminaPro
         load archivo
       end
       load File.join(__dir__, 'controller.rb')
+      ejecutar_en_dialogo("window.location.reload(true)")
     end
   end
 

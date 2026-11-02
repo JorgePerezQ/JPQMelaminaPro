@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JPQMelaminaPro - Suite Industrial de Carpintería y Despiece Milimétrico</title>
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/styles.css?v=2.5.1">
 </head>
 <body class="theme-claro">
 
@@ -53,6 +53,32 @@
         <polyline points="2 17 12 22 22 17"/>
         <polyline points="2 12 12 17 22 12"/>
       </symbol>
+      <symbol id="icon-cubo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+        <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+        <line x1="12" y1="22.08" x2="12" y2="12"/>
+      </symbol>
+      <symbol id="icon-regla" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21.3 8.7 8.7 21.3c-1 1-2.6 1-3.6 0l-2.4-2.4c-1-1-1-2.6 0-3.6L15.3 2.7c1-1 2.6-1 3.6 0l2.4 2.4c1 1 1 2.6 0 3.6Z"/>
+        <path d="m14.5 3.5 2 2"/>
+        <path d="m11.5 6.5 2 2"/>
+        <path d="m8.5 9.5 2 2"/>
+        <path d="m5.5 12.5 2 2"/>
+      </symbol>
+      <symbol id="icon-diseno" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <path d="M3 9h18"/>
+        <path d="M9 21V9"/>
+      </symbol>
+      <symbol id="icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/>
+        <circle cx="7" cy="7" r=".5" fill="currentColor"/>
+      </symbol>
+      <symbol id="icon-stack" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2 2 7l10 5 10-5-10-5Z"/>
+        <path d="m2 17 10 5 10-5"/>
+        <path d="m2 12 10 5 10-5"/>
+      </symbol>
     </defs>
   </svg>
 
@@ -85,6 +111,11 @@
         <svg class="svg-icon"><use href="#icon-table"></use></svg> Lista Despiece & 2D
       </button>
 
+      <button type="button" class="btn btn-xs btn-outline" onclick="window.location.reload(true)" title="Recargar interfaz y scripts (F5)" style="display: inline-flex; align-items: center; gap: 4px;">
+        <svg class="svg-icon" style="width: 12px; height: 12px;"><use href="#icon-refresh"></use></svg>
+        <span>Recargar</span>
+      </button>
+
       <div style="display: flex; align-items: center; gap: 6px;">
         <svg class="svg-icon" style="width: 14px; height: 14px; color: var(--text-muted);"><use href="#icon-palette"></use></svg>
         <select id="selectTemaApp" onchange="cambiarTema(this.value)" style="width: 115px; font-size: 11px; padding: 4px 6px;">
@@ -96,7 +127,8 @@
     </div>
   </header>
 
-  <!-- Contenedor para Notificaciones Toast (PrimeNG) -->
+  <!-- Contenedores para Alertas y Notificaciones Flotantes en la Parte Inferior -->
+  <div id="alertasTecnicasModulo" class="floating-alerts-container"></div>
   <div id="notificationArea" class="notification-container"></div>
 
   <!-- =========================================================================
@@ -112,57 +144,168 @@
     <aside class="panel-left-config">
 
       <!-- TARJETA 1: DIMENSIONES GENERALES DEL MUEBLE -->
-      <div class="card">
+      <div class="card" id="cardDimensionesGenerales">
         <div class="card-header-row">
-          <h3 class="card-title">1. Dimensiones Generales del Mueble</h3>
+          <h3 class="card-title">1. Dimensiones Generales</h3>
           <button type="button" class="btn btn-xs btn-outline" onclick="reiniciarAEstadoVacio()" title="Reiniciar a estado vacío">
-            <svg class="svg-icon"><use href="#icon-trash"></use></svg> Limpiar
+            <svg class="svg-icon" style="width: 12px; height: 12px;"><use href="#icon-trash"></use></svg> Limpiar
           </button>
         </div>
-        <p class="card-subtitle">Al ingresar las cotas, el lado derecho trazará el rectángulo delimitador envolvente.</p>
 
         <div class="form-grid-3">
           <div class="form-group">
-            <label for="dimAnchoTotal">Ancho Total (W mm)</label>
-            <input type="number" id="dimAnchoTotal" min="150" max="6000" step="10" placeholder="Ej: 2400" oninput="onDimensionesGeneralesChange()">
+            <label for="dimAnchoTotal">Ancho (W)</label>
+            <div class="input-with-unit">
+              <input type="number" id="dimAnchoTotal" min="150" max="6000" step="10" placeholder="2400" oninput="onDimensionesGeneralesChange()">
+              <span class="input-unit-tag">mm</span>
+            </div>
           </div>
           <div class="form-group">
-            <label for="dimAltoTotal">Alto Total (H mm)</label>
-            <input type="number" id="dimAltoTotal" min="150" max="3000" step="10" placeholder="Ej: 2100" oninput="onDimensionesGeneralesChange()">
+            <label for="dimAltoTotal">Alto (H)</label>
+            <div class="input-with-unit">
+              <input type="number" id="dimAltoTotal" min="150" max="3000" step="10" placeholder="2100" oninput="onDimensionesGeneralesChange()">
+              <span class="input-unit-tag">mm</span>
+            </div>
           </div>
           <div class="form-group">
-            <label for="dimProfTotal">Profundidad (D mm)</label>
-            <input type="number" id="dimProfTotal" min="150" max="1200" step="10" placeholder="Ej: 600" oninput="onDimensionesGeneralesChange()">
+            <label for="dimProfTotal">Profundidad (D)</label>
+            <div class="input-with-unit">
+              <input type="number" id="dimProfTotal" min="150" max="1200" step="10" placeholder="600" oninput="onDimensionesGeneralesChange()">
+              <span class="input-unit-tag">mm</span>
+            </div>
           </div>
         </div>
 
-        <!-- Presets ergonómicos rápidos -->
-        <div style="margin-top: 8px;">
-          <label style="font-size: 10px; color: var(--text-muted); display: block; margin-bottom: 4px;">Plantillas rápidas normalizadas:</label>
-          <div style="display: flex; gap: 4px; flex-wrap: wrap;">
-            <button type="button" class="btn btn-xs btn-secondary" onclick="aplicarPresetMobiliario('bajo_cocina')">Bajo Cocina (600x850)</button>
-            <button type="button" class="btn btn-xs btn-secondary" onclick="aplicarPresetMobiliario('aereo_cocina')">Aéreo (320x700)</button>
-            <button type="button" class="btn btn-xs btn-secondary" onclick="aplicarPresetMobiliario('ropero')">Ropero (600x2200)</button>
-            <button type="button" class="btn btn-xs btn-secondary" onclick="aplicarPresetMobiliario('librero')">Librero (300x1800)</button>
+        <!-- CONFIGURACIÓN DE ZÓCALO INFERIOR GENERAL (TODO EL PERÍMETRO) -->
+        <div class="p-switch-card" style="margin-top: 10px;">
+          <div class="p-switch-header">
+            <label class="switch-container">
+              <input type="checkbox" id="muebleTieneZocalo" class="switch-input" onchange="onToggleZocaloGeneral(this.checked)">
+              <span class="switch-slider"></span>
+              <span class="p-switch-title">
+                <svg class="svg-icon" style="width: 13px; height: 13px; color: var(--primary);"><use href="#icon-cubo"></use></svg>
+                <span>Zócalo Inferior Perimétrico</span>
+              </span>
+            </label>
+            <span class="badge badge-normal" id="badgeZocaloEstado">Sin Zócalo</span>
+          </div>
+
+          <div id="grpDetalleZocaloGeneral" style="display: none; margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 8px;">
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label for="muebleAltoZocalo">Alto Zócalo</label>
+                <div class="input-with-unit">
+                  <input type="number" id="muebleAltoZocalo" value="100" min="10" max="500" step="5" oninput="onEditarAltoZocaloGeneral(this.value)">
+                  <span class="input-unit-tag">mm</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="muebleRetransZocalo">Retranqueo</label>
+                <div class="input-with-unit">
+                  <input type="number" id="muebleRetransZocalo" value="35" min="0" max="200" step="1" oninput="onEditarRetransZocaloGeneral(this.value)">
+                  <span class="input-unit-tag">mm</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 8px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label for="muebleCantListones" style="margin-bottom: 0;">Listones de Soporte</label>
+                <span class="badge badge-success" id="badgeNormaZocalo" style="font-size: 10px;">✓ Cumple Estándar</span>
+              </div>
+              <select id="muebleCantListones" onchange="onEditarCantListonesGeneral(this.value)">
+                <option value="auto" selected>Auto Estándar (Norma ≤ 600mm)</option>
+                <option value="0">0 listones (Solo marco perimétrico)</option>
+                <option value="1">1 listón (2 partes iguales)</option>
+                <option value="2">2 listones (3 partes iguales)</option>
+                <option value="3">3 listones (4 partes iguales)</option>
+                <option value="4">4 listones (5 partes iguales)</option>
+                <option value="5">5 listones (6 partes iguales)</option>
+                <option value="6">6 listones (7 partes iguales)</option>
+              </select>
+              <div id="infoEstandarZocalo" style="margin-top: 4px; font-size: 10.5px; color: var(--text-muted); line-height: 1.35;">
+                <span id="lblDetalleNormaZocalo">Distribución proporcional (≥ 150 mm libre y ≤ 600 mm anti-pandeo).</span>
+              </div>
+            </div>
+
+            <div id="infoDimensionSobrante" style="margin-top: 6px; padding: 5px 8px; background: rgba(37, 99, 235, 0.08); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-primary); font-size: 10.5px;">
+              <span><strong>Alto libre:</strong> <span id="lblAltoSobranteModulos">2000</span> mm (Total: <span id="lblAltoTotalRef">2100</span> mm - Zócalo: <span id="lblAltoZocaloRef">100</span> mm)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selector Desplegable de Plantillas Normalizadas -->
+        <div style="margin-top: 12px; border-top: 1px solid var(--border-color); padding-top: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <label style="font-size: 11px; font-weight: 700; color: var(--text-primary); margin-bottom: 0;">📐 Plantillas Normalizadas de Taller</label>
+            <span class="badge badge-normal" id="badgeTotalPlantillas">28 Modelos</span>
+          </div>
+
+          <!-- Cuadrícula de 2 Listas Desplegables en Cascada -->
+          <div class="form-grid-2" style="margin-bottom: 8px;">
+            <!-- Desplegable 1: Ambiente / Espacio -->
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="selAmbientePreset" style="font-size: 10.5px; font-weight: 600; color: var(--text-secondary); margin-bottom: 3px;">1. Ambiente:</label>
+              <select id="selAmbientePreset" onchange="onAmbientePresetChange(this.value)" style="width: 100%; font-size: 11px; font-weight: 500;">
+                <option value="todos" selected>🌐 Todos los Ambientes</option>
+                <option value="cocina">🍳 Cocina</option>
+                <option value="bano">🚿 Baño</option>
+                <option value="sala">📺 Sala & TV</option>
+                <option value="comedor">🍷 Comedor & Bar</option>
+                <option value="dormitorio">🛏️ Dormitorio</option>
+                <option value="biblioteca">📚 Biblioteca & Estudio</option>
+                <option value="oficina">💻 Oficina & Home Office</option>
+                <option value="tienda">🏪 Tienda & Comercio</option>
+              </select>
+            </div>
+
+            <!-- Desplegable 2: Mueble Normalizado -->
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="selMueblePreset" style="font-size: 10.5px; font-weight: 600; color: var(--text-secondary); margin-bottom: 3px;">2. Mueble de Taller:</label>
+              <select id="selMueblePreset" onchange="onMueblePresetChange(this.value)" style="width: 100%; font-size: 11px; font-weight: 500;">
+                <!-- Se puebla dinámicamente según el ambiente seleccionado -->
+              </select>
+            </div>
+          </div>
+
+          <!-- Ficha Resumen Rápida de la Plantilla Seleccionada -->
+          <div id="cardResumenPreset" style="margin-top: 6px; padding: 7px 10px; background: var(--bg-hover); border-radius: var(--radius-sm); border: 1px solid var(--border-color); font-size: 10.5px; line-height: 1.35;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <span id="lblPresetNombre" style="font-weight: 700; color: var(--primary);">Escritorio Home Office</span>
+              <span id="lblPresetCotas" class="badge badge-info" style="font-size: 9.5px; font-weight: 600;">1200 × 750 × 600 mm</span>
+            </div>
+            <div id="lblPresetDetalle" style="color: var(--text-muted); font-size: 10px;">
+              H=750mm norma ISO, vano libre para piernas y silla ergonómica.
+            </div>
+          </div>
+
+          <!-- Controles de Acción: Checkbox Auto-armar y Botón Aplicar -->
+          <div style="margin-top: 8px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+            <label style="font-size: 10.5px; font-weight: 600; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; gap: 6px; margin-bottom: 0;">
+              <input type="checkbox" id="chkAutoArmarModulos" checked style="cursor: pointer; accent-color: var(--primary);">
+              <span>⚡ Auto-armar módulos y divisiones de taller</span>
+            </label>
+            <button type="button" class="btn btn-xs btn-primary" onclick="ejecutarAplicacionPresetSeleccionado()" style="white-space: nowrap; font-size: 10.5px; padding: 4px 10px;">
+              ✓ Aplicar
+            </button>
           </div>
         </div>
       </div>
 
       <!-- TARJETA 2: MELAMINA & CANTIDAD DE MÓDULOS -->
-      <div class="card">
+      <div class="card" id="cardMelaminaModulos">
         <div class="card-header-row">
-          <h3 class="card-title">2. Melamina & Cantidad de Módulos</h3>
+          <h3 class="card-title">2. Melamina & Módulos</h3>
           <span class="badge badge-info">Cálculo en Vivo</span>
         </div>
-        <p class="card-subtitle">Al ingresar el espesor y la cantidad, se armarán los módulos dentro del rectángulo.</p>
 
         <div class="form-grid-2">
           <div class="form-group">
             <label for="dimEspesorMelamina">Espesor de Tablero</label>
             <select id="dimEspesorMelamina" onchange="onEspesorMelaminaChange()">
-              <option value="18" selected>18 mm (Estándar Industrial)</option>
-              <option value="15">15 mm (Económico / Estantes)</option>
-              <option value="36">36 mm (Doble Engrosado)</option>
+              <option value="18" selected>18 mm (Estándar)</option>
+              <option value="15">15 mm (Económico)</option>
+              <option value="36">36 mm (Doble)</option>
             </select>
           </div>
 
@@ -176,331 +319,596 @@
             </div>
           </div>
         </div>
+
+        <!-- Acceso directo a módulos creados si hay 2 o más -->
+        <div id="wrapperAccesosModulos" style="display: none; margin-top: 10px; padding: 8px 10px; background: var(--bg-hover); border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-size: 11px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 5px;">
+              <svg class="svg-icon" style="width: 12px; height: 12px;"><use href="#icon-cubo"></use></svg>
+              <span>Módulos Creados:</span>
+            </span>
+            <span class="badge badge-info" id="badgeTotalModulosInfo">0 módulos</span>
+          </div>
+          <div id="listaBotonesAccesoModulos" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+        </div>
       </div>
 
-      <!-- TARJETA 3: PESTAÑAS DINÁMICAS DE MÓDULOS (TABS) -->
+      <!-- TARJETA 3: CONFIGURACIÓN DETALLADA DEL MÓDULO (CON SUBPESTAÑAS LIMPIAS) -->
       <div class="card" id="cardConfigModulo" style="display: none;">
-        <div class="card-header-row">
-          <h3 class="card-title" id="lblTituloModuloActivo">Configuración de Módulo 1</h3>
-          <span class="badge badge-normal">Editable</span>
+        <div class="card-header-row" style="margin-bottom: 8px;">
+          <div>
+            <button type="button" class="btn btn-xs btn-outline" onclick="seleccionarModoDiseno()" title="Volver a seleccionar todo el mueble y ver dimensiones generales" style="margin-bottom: 6px; display: inline-flex; align-items: center; gap: 5px;">
+              <svg class="svg-icon" style="width: 12px; height: 12px;"><use href="#icon-regla"></use></svg>
+              <span>← Diseño General</span>
+            </button>
+            <h3 class="card-title" id="lblTituloModuloActivo">Configuración de Módulo 1</h3>
+          </div>
+          <span class="badge badge-normal" id="badgeEstadoModuloActivo">Editable</span>
         </div>
 
-        <!-- Barra de pestañas horizontales de los módulos -->
+        <!-- Barra de pestañas horizontales de los módulos creados -->
         <div id="moduleTabsHeader" class="module-tabs-header">
           <!-- Renderizado dinámico de pestañas [ Módulo 1 ] [ Módulo 2 ] ... -->
         </div>
 
-        <!-- Campos Dimensionales Particulares -->
-        <div class="form-grid-3">
-          <div class="form-group">
-            <label for="modAncho">Ancho (W mm)</label>
-            <input type="number" id="modAncho" min="150" max="1000" step="5" oninput="onEditarAnchoModulo(this.value)">
-            <span style="font-size: 9.5px; color: var(--text-muted); display: block; margin-top: 2px;">Recalcula los otros módulos al total</span>
-          </div>
-          <div class="form-group">
-            <label for="modAlto">Alto (H mm)</label>
-            <input type="number" id="modAlto" min="150" step="5" oninput="onEditarAltoModulo(this.value)">
-            <span style="font-size: 9.5px; color: var(--text-muted); display: block; margin-top: 2px;">Puede ser menor al total</span>
-          </div>
-          <div class="form-group">
-            <label for="modProf">Profundidad (D mm)</label>
-            <input type="number" id="modProf" min="150" step="5" oninput="onEditarProfModulo(this.value)">
-            <span style="font-size: 9.5px; color: var(--text-muted); display: block; margin-top: 2px;">Puede ser menor al total</span>
-          </div>
+        <!-- SUBPESTAÑAS ORGANIZADORAS PRIMENG (CARCASA / FONDO / INTERIOR / LÍMITES) -->
+        <div class="p-subtabs-nav">
+          <button type="button" class="p-subtab-btn active" id="btnSubtab_carcasa" onclick="switchModuloConfigSubtab('carcasa')">
+            <svg class="svg-icon" style="width: 12px; height: 12px;"><use href="#icon-cubo"></use></svg>
+            <span>Carcasa</span>
+          </button>
+          <button type="button" class="p-subtab-btn" id="btnSubtab_fondo" onclick="switchModuloConfigSubtab('fondo')">
+            <svg class="svg-icon" style="width: 12px; height: 12px;"><use href="#icon-layers"></use></svg>
+            <span>Fondo & Pared</span>
+          </button>
+          <button type="button" class="p-subtab-btn" id="btnSubtab_interior" onclick="switchModuloConfigSubtab('interior')">
+            <svg class="svg-icon" style="width: 12px; height: 12px;"><use href="#icon-diseno"></use></svg>
+            <span>Interior</span>
+          </button>
+          <button type="button" class="p-subtab-btn" id="btnSubtab_limites" onclick="switchModuloConfigSubtab('limites')">
+            <svg class="svg-icon" style="width: 12px; height: 12px;"><use href="#icon-info"></use></svg>
+            <span>Límites</span>
+          </button>
         </div>
 
-        <!-- CONFIGURACIÓN DE ZÓCALO POR MÓDULO -->
-        <div style="background: var(--bg-hover); padding: 10px; border-radius: var(--radius-sm); margin-top: 8px;">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <label class="switch-container">
-              <input type="checkbox" id="modTieneZocalo" class="switch-input" checked onchange="onToggleZocaloModulo(this.checked)">
-              <span class="switch-slider"></span>
-              <span>¿Requiere Zócalo este módulo?</span>
+        <!-- SUBTAB 1: CARCASA Y ESTRUCTURA -->
+        <div id="subtab_carcasa" class="subtab-pane active">
+          <!-- Campo de Nombre del Módulo / Submódulo -->
+          <div class="form-group" style="margin-bottom: 8px;">
+            <label for="modNombre" style="display: flex; justify-content: space-between; align-items: center; font-weight: 700;">
+              <span style="display: flex; align-items: center; gap: 5px;">
+                <svg class="svg-icon" style="width: 12px; height: 12px;"><use href="#icon-tag"></use></svg>
+                <span>Nombre del Módulo</span>
+              </span>
+              <span class="badge badge-info" id="badgeJerarquiaModulo">Módulo 1</span>
             </label>
+            <input type="text" id="modNombre" class="form-control" style="font-size: 12px; font-weight: 600;" placeholder="Módulo 1, Bajo Cocina..." oninput="onEditarNombreModulo(this.value)">
           </div>
 
-          <div id="grpDetalleZocalo" class="form-grid-2" style="margin-top: 8px;">
+          <!-- Control de Subdivisión & Apilado Vertical -->
+          <div class="submodulos-stack-box" style="background: var(--bg-hover); padding: 8px 10px; border-radius: var(--radius-sm); border: 1px dashed var(--border-color); margin-bottom: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-size: 11px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 4px;">
+                <svg class="svg-icon" style="width: 12px; height: 12px;"><use href="#icon-stack"></use></svg>
+                <span>Submódulos Apilados:</span>
+              </span>
+              <span class="badge badge-normal" id="badgeInfoStackColumna">Columna 1 (1 Nivel)</span>
+            </div>
+
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+              <button type="button" class="btn btn-xs btn-primary" id="btnSubdividirApilar" onclick="abrirModalSubdividirModulo()" title="Subdivide este módulo" style="display: inline-flex; align-items: center; gap: 4px;">
+                <svg class="svg-icon" style="width: 11px; height: 11px;"><use href="#icon-stack"></use></svg>
+                <span id="txtBtnSubdividirApilar">Subdividir Módulo</span>
+              </button>
+              <button type="button" class="btn btn-xs btn-outline" id="btnEquilibrarAlturasCol" onclick="equilibrarAlturasColumnaActiva()" title="Equilibrar alturas" style="display: none; align-items: center; gap: 4px;">
+                <span>⇕ Equilibrar Alturas</span>
+              </button>
+              <button type="button" class="btn btn-xs btn-danger-outline" id="btnEliminarSubmodulo" onclick="eliminarSubmoduloActivo()" title="Eliminar submódulo" style="display: none; align-items: center; gap: 4px;">
+                <svg class="svg-icon" style="width: 11px; height: 11px;"><use href="#icon-trash"></use></svg>
+                <span>Eliminar</span>
+              </button>
+            </div>
+            <div id="lblStackHelp" class="field-hint" style="margin-top: 4px; display: none;">
+              Subdivide en 2 o más submódulos apilados (150 mm a 2400 mm).
+            </div>
+          </div>
+
+          <!-- Campos Dimensionales Particulares -->
+          <div class="form-grid-3">
             <div class="form-group">
-              <label for="modAltoZocalo">Altura de Zócalo (mm)</label>
-              <input type="number" id="modAltoZocalo" value="100" min="10" step="1" oninput="onEditarAltoZocalo(this.value)">
+              <label for="modAncho">Ancho (W)</label>
+              <div class="input-with-unit">
+                <input type="number" id="modAncho" min="150" step="5" oninput="onEditarAnchoModulo(this.value)">
+                <span class="input-unit-tag">mm</span>
+              </div>
             </div>
             <div class="form-group">
-              <label for="modRetransZocalo">Retranqueo Frontal Zócalo (mm)</label>
-              <input type="number" id="modRetransZocalo" value="35" min="0" step="1" oninput="onEditarRetransZocalo(this.value)">
-            </div>
-            <div class="form-group" style="grid-column: span 2;">
-              <label for="modCantListones">Cantidad de Listones</label>
-              <select id="modCantListones" onchange="onEditarCantListones(this.value)">
-                <option value="2" selected>2 listones (Frontal + Posterior)</option>
-                <option value="3">3 listones (+ Refuerzo transversal)</option>
-                <option value="4">4 listones (Doble amarre perimetral)</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- CONFIGURACIÓN DE LISTONES PARTE POSTERIOR (FIJACIÓN A PARED) -->
-        <div style="background: var(--bg-hover); padding: 10px; border-radius: var(--radius-sm); margin-top: 8px;">
-          <label class="switch-container">
-            <input type="checkbox" id="modTieneListonPost" class="switch-input" onchange="onToggleListonPost(this.checked)">
-            <span class="switch-slider"></span>
-            <span><strong>¿Llevará Listones en Parte Posterior? (Pared)</strong></span>
-          </label>
-
-          <div id="grpDetalleListonPost" style="display: none; margin-top: 8px;">
-            <div class="form-grid-2">
-              <div class="form-group">
-                <label for="modCantListonesPost">Cantidad de Listones Posteriores</label>
-                <select id="modCantListonesPost" onchange="onEditarCantListonesPost(this.value)">
-                  <option value="1">1 listón (Superior)</option>
-                  <option value="2" selected>2 listones (Superior + Inferior)</option>
-                  <option value="3">3 listones (+ Refuerzo Central)</option>
-                  <option value="4">4 listones (Doble Refuerzo)</option>
-                </select>
+              <label for="modAlto">Alto (H)</label>
+              <div class="input-with-unit">
+                <input type="number" id="modAlto" min="150" step="5" oninput="onEditarAltoModulo(this.value)">
+                <span class="input-unit-tag">mm</span>
               </div>
-              <div class="form-group">
-                <label for="modMedidaListonPost">Ancho / Medida Listón Posterior (mm)</label>
-                <input type="number" id="modMedidaListonPost" value="80" min="10" step="1" oninput="onEditarMedidaListonPost(this.value)">
+            </div>
+            <div class="form-group">
+              <label for="modProf">Prof. (D)</label>
+              <div class="input-with-unit">
+                <input type="number" id="modProf" min="150" step="5" oninput="onEditarProfModulo(this.value)">
+                <span class="input-unit-tag">mm</span>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- CONFIGURACIÓN DE TECHO Y LISTONES DE TECHO (AMARRES SUPERIORES) -->
-        <div style="background: var(--bg-hover); padding: 10px; border-radius: var(--radius-sm); margin-top: 8px;">
-          <label class="switch-container">
-            <input type="checkbox" id="modTieneListonTecho" class="switch-input" onchange="onToggleListonTecho(this.checked)">
-            <span class="switch-slider"></span>
-            <span><strong>¿Llevará Techo de Listón? (Amarres de Techo)</strong></span>
-          </label>
-          <span style="font-size: 9.5px; color: var(--text-muted); display: block; margin-top: 2px;">
-            Si se desactiva, se construye techo sólido completo estándar.
-          </span>
-
-          <div id="grpDetalleListonTecho" style="display: none; margin-top: 8px;">
-            <div class="form-grid-2">
-              <div class="form-group">
-                <label for="modCantListonesTecho">Cantidad de Listones en Techo</label>
-                <select id="modCantListonesTecho" onchange="onEditarCantListonesTecho(this.value)">
-                  <option value="1">1 listón (Frontal)</option>
-                  <option value="2" selected>2 listones (Frontal + Posterior)</option>
-                  <option value="3">3 listones (+ Central)</option>
-                  <option value="4">4 listones (Cuadriculado Reforzado)</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="modMedidaListonTecho">Ancho / Medida Listón Techo (mm)</label>
-                <input type="number" id="modMedidaListonTecho" value="80" min="10" step="1" oninput="onEditarMedidaListonTecho(this.value)">
+          <!-- Base Zócalo Info -->
+          <div id="cardInfoZocaloBaseModulo" style="background: var(--bg-hover); padding: 8px 10px; border-radius: var(--radius-sm); margin-top: 8px; border-left: 3px solid var(--accent-primary);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 11px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 4px;">
+                <svg class="svg-icon" style="width: 12px; height: 12px;"><use href="#icon-cubo"></use></svg>
+                <span>Zócalo Inferior Continuo</span>
+              </span>
+              <span class="badge badge-normal" id="badgeModuloInfoZocalo">Base General</span>
+            </div>
+            <span id="lblInfoZocaloModulo" style="font-size: 10px; color: var(--text-muted); display: block; margin-top: 2px;">
+              El zócalo continuo sostiene la base de todo el mueble.
+            </span>
+            <div style="display: none;">
+              <input type="checkbox" id="modTieneZocalo" class="switch-input" onchange="onToggleZocaloModulo(this.checked)">
+              <div id="grpDetalleZocalo">
+                <input type="number" id="modAltoZocalo" value="100">
+                <input type="number" id="modRetransZocalo" value="35">
+                <select id="modCantListones"><option value="0">0</option></select>
               </div>
             </div>
+          </div>
 
-            <!-- Pregunta condicional: ¿Desea incluir techo sobre el techo de listón? -->
-            <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border-color);">
+          <!-- Laterales de Carcasa -->
+          <div class="p-switch-card" style="margin-top: 8px;">
+            <div class="p-switch-header">
               <label class="switch-container">
-                <input type="checkbox" id="modTechoSobreListon" class="switch-input" onchange="onToggleTechoSobreListon(this.checked)">
+                <input type="checkbox" id="modTieneLaterales" class="switch-input" checked onchange="onToggleLateralesModulo(this.checked)">
                 <span class="switch-slider"></span>
-                <span><strong>¿Desea incluir techo sobre el techo de listón?</strong></span>
+                <span class="p-switch-title">Costados Laterales</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Piso de Carcasa -->
+          <div class="p-switch-card">
+            <div class="p-switch-header">
+              <label class="switch-container">
+                <input type="checkbox" id="modTienePiso" class="switch-input" checked onchange="onTogglePisoModulo(this.checked)">
+                <span class="switch-slider"></span>
+                <span class="p-switch-title">Piso de Carcasa</span>
+              </label>
+            </div>
+
+            <div id="grpDetalleOpcionesPiso" style="margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border-color);">
+              <label class="switch-container" style="margin-bottom: 4px;">
+                <input type="checkbox" id="modTieneListonPiso" class="switch-input" onchange="onToggleListonPiso(this.checked)">
+                <span class="switch-slider"></span>
+                <span style="font-size: 11px;">¿Piso de Listones (Amarres)?</span>
               </label>
 
-              <div id="grpDetalleTechoSobre" style="display: none; margin-top: 8px; padding-left: 10px;">
-                <label class="switch-container" style="margin-bottom: 6px;">
-                  <input type="checkbox" id="modTechoDobleMelamina" class="switch-input" onchange="onToggleTechoDobleMelamina(this.checked)">
-                  <span class="switch-slider"></span>
-                  <span>¿Va con doble melamina? (Doble engrosado 36mm)</span>
-                </label>
-                <div id="badgeDescuentoTecho" style="font-size: 10px; color: var(--primary); background: rgba(59, 130, 246, 0.1); border-left: 3px solid var(--primary); padding: 5px 8px; border-radius: var(--radius-sm); margin-top: 4px;">
-                  ★ <strong>Altura de techo descontada:</strong> Se descuentan <span id="lblEspesorDescontado">18</span> mm de los costados para conservar la altura exacta del módulo.
+              <div id="grpDetalleListonPiso" style="display: none; margin-top: 6px;">
+                <div class="form-grid-2">
+                  <div class="form-group">
+                    <label for="modCantListonesPiso">Cant. Listones</label>
+                    <select id="modCantListonesPiso" onchange="onEditarCantListonesPiso(this.value)">
+                      <option value="1">1 listón (Frontal)</option>
+                      <option value="2" selected>2 listones (Frontal + Posterior)</option>
+                      <option value="3">3 listones (+ Central)</option>
+                      <option value="4">4 listones (Reforzado)</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="modMedidaListonPiso">Medida Listón</label>
+                    <div class="input-with-unit">
+                      <input type="number" id="modMedidaListonPiso" value="80" min="10" step="1" oninput="onEditarMedidaListonPiso(this.value)">
+                      <span class="input-unit-tag">mm</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Techo de Carcasa -->
+          <div class="p-switch-card">
+            <div class="p-switch-header">
+              <label class="switch-container">
+                <input type="checkbox" id="modTieneTecho" class="switch-input" checked onchange="onToggleTechoModulo(this.checked)">
+                <span class="switch-slider"></span>
+                <span class="p-switch-title">Techo de Carcasa</span>
+              </label>
+            </div>
+
+            <div id="grpDetalleOpcionesTecho" style="margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border-color);">
+              <label class="switch-container" style="margin-bottom: 4px;">
+                <input type="checkbox" id="modTieneListonTecho" class="switch-input" onchange="onToggleListonTecho(this.checked)">
+                <span class="switch-slider"></span>
+                <span style="font-size: 11px;">¿Techo de Listones (Amarres)?</span>
+              </label>
+
+              <div id="grpDetalleListonTecho" style="display: none; margin-top: 6px;">
+                <div class="form-grid-2">
+                  <div class="form-group">
+                    <label for="modCantListonesTecho">Cant. Listones</label>
+                    <select id="modCantListonesTecho" onchange="onEditarCantListonesTecho(this.value)">
+                      <option value="1">1 listón (Frontal)</option>
+                      <option value="2" selected>2 listones (Frontal + Posterior)</option>
+                      <option value="3">3 listones (+ Central)</option>
+                      <option value="4">4 listones (Reforzado)</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="modMedidaListonTecho">Medida Listón</label>
+                    <div class="input-with-unit">
+                      <input type="number" id="modMedidaListonTecho" value="80" min="10" step="1" oninput="onEditarMedidaListonTecho(this.value)">
+                      <span class="input-unit-tag">mm</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--border-color);">
+                  <label class="switch-container">
+                    <input type="checkbox" id="modTechoSobreListon" class="switch-input" onchange="onToggleTechoSobreListon(this.checked)">
+                    <span class="switch-slider"></span>
+                    <span style="font-size: 11px;">Tapa superior sobre listones</span>
+                  </label>
+
+                  <div id="grpDetalleTechoSobre" style="display: none; margin-top: 6px; padding-left: 8px;">
+                    <label class="switch-container" style="margin-bottom: 4px;">
+                      <input type="checkbox" id="modTechoDobleMelamina" class="switch-input" onchange="onToggleTechoDobleMelamina(this.checked)">
+                      <span class="switch-slider"></span>
+                      <span style="font-size: 10.5px;">Doble melamina (36mm)</span>
+                    </label>
+                    <div id="badgeDescuentoTecho" style="font-size: 10px; color: var(--primary); background: rgba(59, 130, 246, 0.08); padding: 3px 6px; border-radius: var(--radius-sm);">
+                      Descuento: <span id="lblEspesorDescontado">18</span> mm
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Zócalo Superior -->
+          <div class="p-switch-card">
+            <div class="p-switch-header">
+              <label class="switch-container">
+                <input type="checkbox" id="modTieneZocaloSup" class="switch-input" onchange="onToggleZocaloSupModulo(this.checked)">
+                <span class="switch-slider"></span>
+                <span class="p-switch-title">Zócalo Superior</span>
+              </label>
+            </div>
+
+            <div id="grpDetalleZocaloSup" class="form-grid-2" style="display: none; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border-color);">
+              <div class="form-group" style="grid-column: span 2;">
+                <label for="modAltoZocaloSup">Alto Zócalo Sup.</label>
+                <div class="input-with-unit">
+                  <input type="number" id="modAltoZocaloSup" value="70" min="10" step="1" oninput="onEditarAltoZocaloSup(this.value)">
+                  <span class="input-unit-tag">mm</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- CONFIGURACIÓN DE FONDO POSTERIOR Y DESCUENTO DE PROFUNDIDAD -->
-        <div style="background: var(--bg-hover); padding: 10px; border-radius: var(--radius-sm); margin-top: 8px;">
-          <div class="form-group" style="margin-bottom: 6px;">
-            <label for="modTipoFondo" style="font-weight: 600;">Tipo de Fondo Posterior:</label>
-            <select id="modTipoFondo" onchange="onCambiarTipoFondo(this.value)">
-              <option value="mdf" selected>Fondo de MDF 3mm</option>
-              <option value="melamina">Fondo Rígido de Melamina (18mm / 15mm)</option>
-              <option value="ninguno">Sin Tablero de Fondo (Carcasa Abierta / Solo Listones)</option>
+        <!-- SUBTAB 2: FONDO & PARED -->
+        <div id="subtab_fondo" class="subtab-pane">
+          <!-- Fondo de Módulo -->
+          <div class="p-switch-card">
+            <div class="p-switch-header">
+              <label class="switch-container">
+                <input type="checkbox" id="modTieneFondo" class="switch-input" onchange="onToggleFondo(this.checked)">
+                <span class="switch-slider"></span>
+                <span class="p-switch-title">Fondo de Módulo</span>
+              </label>
+            </div>
+
+            <div id="grpDetalleFondo" style="display: none; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border-color);">
+              <div class="form-group" style="margin-bottom: 8px;">
+                <label for="modTipoFondo">Material de Fondo</label>
+                <select id="modTipoFondo" onchange="onCambiarTipoFondo(this.value)">
+                  <option value="mdf" selected>Fondo MDF (3mm / 5.5mm)</option>
+                  <option value="melamina">Melamina Estructural (Sin listón)</option>
+                  <option value="panel">Fondo Panel Completo</option>
+                </select>
+              </div>
+
+              <!-- MDF -->
+              <div id="grpSubFondoMdf">
+                <div class="form-grid-2">
+                  <div class="form-group">
+                    <label for="modGrosorMdf">Grosor MDF</label>
+                    <select id="modGrosorMdf" onchange="onEditarGrosorMdf(this.value)">
+                      <option value="3" selected>3 mm (Estándar)</option>
+                      <option value="4">4 mm</option>
+                      <option value="5.5">5.5 mm</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="modPosicionFondoMdf">Montaje</label>
+                    <select id="modPosicionFondoMdf" onchange="onCambiarPosicionFondoMdf(this.value)">
+                      <option value="delante_liston" selected>Enranurado (4x8mm)</option>
+                      <option value="detras_liston">Sobrepuesto / Clavado</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div id="grpDetalleRanuraMdf" style="margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--border-color);">
+                  <div class="form-grid-3">
+                    <div class="form-group">
+                      <label for="modAnchoRanuraMdf">Ancho Ranura</label>
+                      <div class="input-with-unit">
+                        <input type="number" id="modAnchoRanuraMdf" value="4" min="2" max="15" step="0.5" oninput="onEditarAnchoRanuraMdf(this.value)">
+                        <span class="input-unit-tag">mm</span>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label for="modProfRanuraMdf">Prof. Ranura</label>
+                      <div class="input-with-unit">
+                        <input type="number" id="modProfRanuraMdf" value="8" min="3" max="15" step="1" oninput="onEditarProfRanuraMdf(this.value)">
+                        <span class="input-unit-tag">mm</span>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label for="modDistRanuraMdf">Retranqueo</label>
+                      <div class="input-with-unit">
+                        <input type="number" id="modDistRanuraMdf" value="0" min="0" max="100" step="1" oninput="onEditarDistRanuraMdf(this.value)">
+                        <span class="input-unit-tag">mm</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="grpDetalleSobrepuestoMdf" style="display: none; margin-top: 6px; padding: 4px 8px; background: rgba(59, 130, 246, 0.08); border-left: 3px solid var(--primary); border-radius: var(--radius-sm); font-size: 10px; color: var(--primary);">
+                  MDF a cota completa, clavado o atornillado detrás.
+                </div>
+              </div>
+
+              <!-- Melamina -->
+              <div id="grpSubFondoMelamina" style="display: none;">
+                <div class="form-group">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+                    <label for="modAltoFondoMelamina" style="margin-bottom: 0;">Alto Fondo Melamina</label>
+                    <button type="button" class="btn btn-xs btn-secondary" onclick="onRestablecerAltoFondoMelaminaMax()" style="padding: 1px 6px; font-size: 9.5px;">
+                      ↺ Total
+                    </button>
+                  </div>
+                  <div class="input-with-unit">
+                    <input type="number" id="modAltoFondoMelamina" min="80" step="1" oninput="onEditarAltoFondoMelamina(this.value)">
+                    <span class="input-unit-tag">mm</span>
+                  </div>
+                  <span class="field-hint" id="hintAltoFondoMelamina" style="display: none;"></span>
+                </div>
+
+                <div class="form-group" style="margin-top: 6px;">
+                  <label for="modDistFondoMelamina">Retranqueo a Pared</label>
+                  <div class="input-with-unit">
+                    <input type="number" id="modDistFondoMelamina" value="0" min="0" max="150" step="1" oninput="onEditarDistFondoMelamina(this.value)">
+                    <span class="input-unit-tag">mm</span>
+                  </div>
+                  <span class="field-hint" id="hintDistFondoMelamina" style="display: none;"></span>
+                </div>
+              </div>
+
+              <!-- Panel -->
+              <div id="grpSubFondoPanel" style="display: none;">
+                <div class="p-switch-card" style="margin-top: 6px;">
+                  <label class="switch-container">
+                    <input type="checkbox" id="modPanelTieneListonesPared" class="switch-input" checked onchange="onTogglePanelListonesPared(this.checked)">
+                    <span class="switch-slider"></span>
+                    <span style="font-size: 11px;">Listones de anclaje a pared</span>
+                  </label>
+
+                  <div id="grpDetalleListonesPanel" style="margin-top: 6px;">
+                    <div class="form-grid-3">
+                      <div class="form-group">
+                        <label for="modPanelOrientacionListones">Orientación</label>
+                        <select id="modPanelOrientacionListones" onchange="onCambiarPanelOrientacionListones(this.value)">
+                          <option value="horizontal" selected>Horizontal</option>
+                          <option value="vertical">Vertical</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label for="modCantListonesPanel">Cant.</label>
+                        <select id="modCantListonesPanel" onchange="onEditarCantListonesPanel(this.value)">
+                          <option value="1">1</option>
+                          <option value="2" selected>2</option>
+                          <option value="3">3</option>
+                          <option value="4">4</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label for="modMedidaListonPanel">Ancho</label>
+                        <div class="input-with-unit">
+                          <input type="number" id="modMedidaListonPanel" value="80" min="20" max="250" step="1" oninput="onEditarMedidaListonPanel(this.value)">
+                          <span class="input-unit-tag">mm</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Listones Posteriores a Pared -->
+          <div class="p-switch-card">
+            <div class="p-switch-header">
+              <label class="switch-container">
+                <input type="checkbox" id="modTieneListonPost" class="switch-input" onchange="onToggleListonPost(this.checked)">
+                <span class="switch-slider"></span>
+                <span class="p-switch-title">Listones Posteriores (Fijación)</span>
+              </label>
+            </div>
+
+            <div id="badgeListonPostOmitidoPorMelamina" style="display: none; margin-top: 6px; padding: 4px 8px; background: rgba(59, 130, 246, 0.08); border-left: 3px solid var(--primary); border-radius: var(--radius-sm); font-size: 10px; color: var(--primary);">
+              Omitido: Fondo de melamina rígido actúa como amarre.
+            </div>
+
+            <div id="grpDetalleListonPost" style="display: none; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border-color);">
+              <div class="form-grid-3">
+                <div class="form-group">
+                  <label for="modOrientacionListonesPost">Orientación</label>
+                  <select id="modOrientacionListonesPost" onchange="onCambiarOrientacionListonesPost(this.value)">
+                    <option value="horizontal" selected>Horizontal</option>
+                    <option value="vertical">Vertical</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="modCantListonesPost">Cant.</label>
+                  <select id="modCantListonesPost" onchange="onEditarCantListonesPost(this.value)">
+                    <option value="1">1</option>
+                    <option value="2" selected>2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="modMedidaListonPost">Ancho</label>
+                  <div class="input-with-unit">
+                    <input type="number" id="modMedidaListonPost" value="80" min="10" step="1" oninput="onEditarMedidaListonPost(this.value)">
+                    <span class="input-unit-tag">mm</span>
+                  </div>
+                </div>
+              </div>
+              <span id="hintListonPostDistribucion" style="font-size: 9.5px; color: var(--text-muted); display: block; margin-top: 3px;">
+                Amarre para tornillos de anclaje a pared.
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUBTAB 3: EQUIPAMIENTO INTERIOR -->
+        <div id="subtab_interior" class="subtab-pane">
+          <div class="form-group" style="margin-bottom: 8px;">
+            <label for="modTipoInterior">Tipo de Equipamiento</label>
+            <select id="modTipoInterior" onchange="onCambiarTipoInterior(this.value)">
+              <option value="carcasa" selected>Carcasa Abierta (Sin divisiones)</option>
+              <option value="repisas">Parantes y Repisas</option>
+              <option value="cajonera">Cajonera (Correderas 26mm)</option>
+              <option value="puertas">Puertas Batientes</option>
             </select>
           </div>
 
-          <!-- Opciones para Fondo de MDF -->
-          <div id="grpDetalleFondoMdf" style="margin-top: 6px;">
-            <div class="form-group">
-              <label for="modPosicionFondoMdf" style="font-size: 11px;">Ubicación del MDF respecto al listón:</label>
-              <select id="modPosicionFondoMdf" onchange="onCambiarPosicionFondoMdf(this.value)">
-                <option value="delante_liston" selected>Delante del listón (Enranurado 4x8mm en laterales, piso y techo)</option>
-                <option value="detras_liston">Detrás del listón (Sobrepuesto / clavado)</option>
-              </select>
-              <span style="font-size: 9.5px; color: var(--text-muted); display: block; margin-top: 2px;">
-                Si va delante, se descuenta el listón (18mm) + MDF (3mm) de repisas y parantes.
-              </span>
+          <!-- Parantes y Repisas por Espacio -->
+          <div id="grpDetalleRepisas" style="display: none; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px; background: var(--bg-surface);">
+            <!-- Parantes -->
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+              <span style="font-weight: 700; font-size: 11px; color: var(--primary);">Parantes (Divisiones)</span>
+              <div style="display: flex; gap: 4px;">
+                <span id="badgeProfundidadRepisas" class="cota-badge">Prof: 459 mm</span>
+                <span id="badgeInfoParantesPermitidos" class="cota-badge">0 Parantes</span>
+              </div>
             </div>
+
+            <div class="form-grid-2" style="margin-bottom: 6px;">
+              <div class="form-group">
+                <label for="modParantesTipo">Orientación</label>
+                <select id="modParantesTipo" onchange="onCambiarOrientacionParantes(this.value)">
+                  <option value="ninguno">Ninguno (Vano Libre)</option>
+                  <option value="vertical">Verticales (Columnas)</option>
+                  <option value="horizontal">Horizontales (Niveles)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="modDescuentoFrontal">Retranqueo</label>
+                <div class="input-with-unit">
+                  <input type="number" id="modDescuentoFrontal" value="20" min="0" max="150" step="1" oninput="onEditarDescuentoFrontal(this.value)">
+                  <span class="input-unit-tag">mm</span>
+                </div>
+              </div>
+            </div>
+
+            <div id="contenedorConfigParantes" style="display: none;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <span id="lblSubtituloParantes" style="font-size: 10px; color: var(--text-muted);">Listado de Parantes:</span>
+                <button type="button" class="btn btn-secondary btn-xs" id="btnAgregarParante" onclick="onAgregarParante()">
+                  + Agregar Parante
+                </button>
+              </div>
+              <div id="listaParantesModulo" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px;"></div>
+            </div>
+
+            <hr style="border: none; border-top: 1px dashed var(--border-color); margin: 8px 0;">
+
+            <!-- Repisas -->
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+              <span style="font-weight: 700; font-size: 11px; color: var(--accent);">Repisas por Espacio</span>
+              <span id="badgeTotalRepisas" class="badge badge-success" style="font-size: 10px;">0 Repisas</span>
+            </div>
+
+            <div id="listaEspaciosRepisasModulo" style="display: flex; flex-direction: column; gap: 6px;"></div>
           </div>
 
-          <!-- Opciones para Fondo de Melamina -->
-          <div id="grpDetalleFondoMelamina" style="display: none; margin-top: 6px;">
-            <div class="form-group">
-              <label for="modPosicionFondoMelamina" style="font-size: 11px;">Montaje del Fondo de Melamina:</label>
-              <select id="modPosicionFondoMelamina" onchange="onCambiarPosicionFondoMelamina(this.value)">
-                <option value="embutido" selected>Embutido interior / Enranurado (Rígido)</option>
-                <option value="sobrepuesto">Sobrepuesto por detrás (Atornillado exterior)</option>
-              </select>
-              <span style="font-size: 9.5px; color: var(--text-muted); display: block; margin-top: 2px;">
-                Si va embutido, se descuenta el espesor de la melamina (18mm) de repisas y parantes.
-              </span>
-            </div>
+          <!-- Cajonera -->
+          <div id="grpDetalleCajonera" class="form-group" style="display: none; margin-top: 6px;">
+            <label for="modCantCajones">Cantidad de Cajones</label>
+            <input type="number" id="modCantCajones" value="3" min="2" max="5" oninput="onEditarCantCajones(this.value)">
           </div>
 
-          <!-- Badge interactivo de Descuento de Profundidad en Vivo -->
-          <div id="badgeDescuentoProfundidad" style="font-size: 10px; color: var(--primary); background: rgba(59, 130, 246, 0.1); border-left: 3px solid var(--primary); padding: 5px 8px; border-radius: var(--radius-sm); margin-top: 6px; line-height: 1.4;">
-            ★ <strong>Descuento de Profundidad en Repisas y Parantes:</strong>
+          <!-- Descuento Profundidad -->
+          <div id="badgeDescuentoProfundidad" style="font-size: 10px; color: var(--primary); background: rgba(59, 130, 246, 0.08); border-left: 3px solid var(--primary); padding: 5px 8px; border-radius: var(--radius-sm); margin-top: 8px; line-height: 1.35;">
+            ★ <strong>Descuento de Profundidad Útil:</strong>
             <div id="lblDescuentoProfDetalle" style="margin-top: 2px;">Calculando...</div>
           </div>
         </div>
 
-        <!-- EQUIPAMIENTO INTERIOR DEL MÓDULO -->
-        <div class="form-group" style="margin-top: 10px;">
-          <label for="modTipoInterior">Equipamiento Interior del Módulo</label>
-          <select id="modTipoInterior" onchange="onCambiarTipoInterior(this.value)">
-            <option value="carcasa" selected>Carcasa Abierta (Sin divisiones)</option>
-            <option value="repisas">Parantes y Repisas por Espacio</option>
-            <option value="cajonera">Cajonera (Gavetas con correderas de 26mm)</option>
-            <option value="puertas">Puertas Batientes (Bisagras de Cazoleta)</option>
-          </select>
+        <!-- SUBTAB 4: LÍMITES TÉCNICOS & PANDEO -->
+        <div id="subtab_limites" class="subtab-pane">
+          <div class="limites-table-card">
+            <table>
+              <thead>
+                <tr>
+                  <th>Elemento</th>
+                  <th>Mínimo</th>
+                  <th>Máximo</th>
+                  <th>Criterio Técnico</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Ancho Carcasa</strong></td>
+                  <td>150 mm</td>
+                  <td>1000 mm</td>
+                  <td>&lt;150mm atornillador. &gt;1000mm pandeo.</td>
+                </tr>
+                <tr>
+                  <td><strong>Alto Carcasa</strong></td>
+                  <td>150 mm</td>
+                  <td>2400 mm</td>
+                  <td>Largo útil de tablero comercial.</td>
+                </tr>
+                <tr>
+                  <td><strong>Profundidad</strong></td>
+                  <td>150 mm</td>
+                  <td>650 mm</td>
+                  <td>&lt;150mm inestable. &gt;650mm desperdicio.</td>
+                </tr>
+                <tr>
+                  <td><strong>Repisas 18mm</strong></td>
+                  <td>150 mm</td>
+                  <td>800 mm</td>
+                  <td>&gt;800mm requiere parante central.</td>
+                </tr>
+                <tr>
+                  <td><strong>Cajoneras</strong></td>
+                  <td>300 mm</td>
+                  <td>1000 mm</td>
+                  <td>Correderas: 25 a 55 cm. &gt;700mm Heavy Duty.</td>
+                </tr>
+                <tr>
+                  <td><strong>Puertas</strong></td>
+                  <td>250 mm</td>
+                  <td>600 mm</td>
+                  <td>&gt;600mm dividir en 2 hojas batientes.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <!-- DETALLE DE PARANTES Y REPISAS POR ESPACIO -->
-        <div id="grpDetalleRepisas" style="display: none; margin-top: 10px; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px; background: var(--bg-surface);">
-          
-          <!-- SECCIÓN: PARANTES (DIVISIONES) -->
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-            <div style="font-weight: 700; font-size: 11.5px; color: var(--primary); display: flex; align-items: center; gap: 6px;">
-              <svg class="svg-icon" style="width: 14px; height: 14px;"><use href="#icon-cubo"></use></svg>
-              <span>Parantes (Divisiones)</span>
-            </div>
-            <div style="display: flex; gap: 4px;">
-              <span id="badgeProfundidadRepisas" class="cota-badge">Prof. útil: 459 mm</span>
-              <span id="badgeInfoParantesPermitidos" class="cota-badge">0 Parantes</span>
-            </div>
-          </div>
-
-          <div class="form-grid-2" style="margin-bottom: 8px;">
-            <div class="form-group">
-              <label for="modParantesTipo" style="font-size: 11px;">Orientación de Parantes:</label>
-              <select id="modParantesTipo" onchange="onCambiarOrientacionParantes(this.value)">
-                <option value="ninguno">Ninguno (Vano Libre)</option>
-                <option value="vertical">Verticales (Columnas)</option>
-                <option value="horizontal">Horizontales (Niveles)</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="modDescuentoFrontal" style="font-size: 11px;">Retranqueo Frontal (mm):</label>
-              <input type="number" id="modDescuentoFrontal" value="20" min="0" max="150" step="1" oninput="onEditarDescuentoFrontal(this.value)">
-            </div>
-          </div>
-
-          <div id="contenedorConfigParantes" style="display: none;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <span id="lblSubtituloParantes" style="font-size: 10.5px; color: var(--text-muted);">Listado de Parantes:</span>
-              <button type="button" class="btn btn-secondary" id="btnAgregarParante" onclick="onAgregarParante()" style="padding: 2px 8px; font-size: 10.5px; height: 26px;">
-                + Agregar Parante
-              </button>
-            </div>
-            <div id="listaParantesModulo" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px;">
-              <!-- Se puebla dinámicamente con las tarjetas de cada parante -->
-            </div>
-          </div>
-
-          <hr style="border: none; border-top: 1px dashed var(--border-color); margin: 10px 0;">
-
-          <!-- SECCIÓN: REPISAS POR ESPACIO -->
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
-            <div style="font-weight: 700; font-size: 11.5px; color: var(--accent); display: flex; align-items: center; gap: 6px;">
-              <svg class="svg-icon" style="width: 14px; height: 14px;"><use href="#icon-regla"></use></svg>
-              <span>Repisas por Espacio</span>
-            </div>
-            <span id="badgeTotalRepisas" class="badge badge-success" style="font-size: 10px;">0 Repisas</span>
-          </div>
-          <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 8px;">
-            Configure las repisas dentro de cada compartimento de forma proporcional o con cota fija milimétrica:
-          </div>
-
-          <div id="listaEspaciosRepisasModulo" style="display: flex; flex-direction: column; gap: 8px;">
-            <!-- Se puebla dinámicamente con cada espacio y sus controles de repisas -->
-          </div>
-
-        </div>
-
-        <div id="grpDetalleCajonera" class="form-group" style="display: none; margin-top: 6px;">
-          <label for="modCantCajones">Cantidad de Cajones</label>
-          <input type="number" id="modCantCajones" value="3" min="2" max="5" oninput="onEditarCantCajones(this.value)">
-        </div>
-
-        <!-- ALERTAS TÉCNICAS Y REGLAS DE PANDEO EN TIEMPO REAL -->
-        <div id="alertasTecnicasModulo" style="margin-top: 10px;">
-          <!-- Poblado en tiempo real con alertas de pandeo, bisagras y correderas -->
-        </div>
       </div>
-
-      <!-- TARJETA 4: GUÍA OFICIAL DE MEDIDAS MÍNIMAS, MÁXIMAS Y REGLAS DE TALLER -->
-      <details class="card" style="cursor: pointer;">
-        <summary class="card-title" style="outline: none;">
-          <svg class="svg-icon"><use href="#icon-info"></use></svg> Tabla Oficial: Límites Industriales & Pandeo
-        </summary>
-        <div style="font-size: 11px; color: var(--text-secondary); margin-top: 10px; line-height: 1.5;">
-          <table style="width: 100%; border-collapse: collapse; font-size: 10.5px; margin-bottom: 8px;">
-            <tr style="background: var(--bg-hover); font-weight: bold;">
-              <th style="padding: 4px; border: 1px solid var(--border-color);">Elemento</th>
-              <th style="padding: 4px; border: 1px solid var(--border-color);">Mínimo</th>
-              <th style="padding: 4px; border: 1px solid var(--border-color);">Máximo</th>
-              <th style="padding: 4px; border: 1px solid var(--border-color);">Criterio Técnico</th>
-            </tr>
-            <tr>
-              <td style="padding: 4px; border: 1px solid var(--border-color);"><strong>Ancho Carcasa</strong></td>
-              <td style="padding: 4px; border: 1px solid var(--border-color);">150 mm</td>
-              <td style="padding: 4px; border: 1px solid var(--border-color);">1000 mm</td>
-              <td style="padding: 4px; border: 1px solid var(--border-color);">&lt;150mm no maniobra atornillador. &gt;1000mm genera pandeo.</td>
-            </tr>
-            <tr>
-              <td style="padding: 4px; border: 1px solid var(--border-color);"><strong>Alto Carcasa</strong></td>
-              <td style="padding: 4px; border: 1px solid var(--border-color);">150 mm</td>
-              <td style="padding: 4px; border: 1px solid var(--border-color);">2400 mm</td>
-              <td style="padding: 4px; border: 1px solid var(--border-color);">Altura útil de la plancha comercial sin empates.</td>
-            </tr>
-            <tr>
-              <td style="padding: 4px; border: 1px solid var(--border-color);"><strong>Profundidad</strong></td>
-              <td style="padding: 4px; border: 1px solid var(--border-color);">150 mm</td>
-              <td style="padding: 4px; border: 1px solid var(--border-color);">650 mm</td>
-              <td style="padding: 4px; border: 1px solid var(--border-color);">&lt;150mm inestable. &gt;650mm desperdicia tablero y dificulta alcance.</td>
-            </tr>
-            <tr>
-              <td style="padding: 4px; border: 1px solid var(--border-color);"><strong>Repisas 18mm</strong></td>
-              <td style="padding: 4px; border: 1px solid var(--border-color);">150 mm</td>
-              <td style="padding: 4px; border: 1px solid var(--border-color);">800 mm</td>
-              <td style="padding: 4px; border: 1px solid var(--border-color);">&gt;800mm OBLIGATORIO parante o listón de amarre horizontal.</td>
-            </tr>
-            <tr>
-              <td style="padding: 4px; border: 1px solid var(--border-color);"><strong>Cajoneras</strong></td>
-              <td style="padding: 4px; border: 1px solid var(--border-color);">300 mm</td>
-              <td style="padding: 4px; border: 1px solid var(--border-color);">1000 mm</td>
-              <td style="padding: 4px; border: 1px solid var(--border-color);">&gt;700mm requiere refuerzo y correderas Heavy Duty. Correderas: 25 a 55 cm.</td>
-            </tr>
-            <tr>
-              <td style="padding: 4px; border: 1px solid var(--border-color);"><strong>Puertas</strong></td>
-              <td style="padding: 4px; border: 1px solid var(--border-color);">250 mm</td>
-              <td style="padding: 4px; border: 1px solid var(--border-color);">600 mm</td>
-              <td style="padding: 4px; border: 1px solid var(--border-color);">&gt;600mm palanca excesiva en bisagras cazoleta 35mm (dividir en 2 hojas).</td>
-            </tr>
-          </table>
-          <p style="font-size: 10px; color: var(--text-muted);">
-            Planchas comerciales: 2140x2440 mm y 1830x2600 mm. Módulos bajos estándar: 580-600mm. Aéreos: 280-350mm. Roperos: 500-650mm.
-          </p>
-        </div>
-      </details>
 
     </aside>
 
@@ -511,24 +919,24 @@
 
       <!-- TOOLBAR SUPERIOR DEL VIEWPORT -->
       <div class="viewport-toolbar">
-        <!-- Vistas de Cámara -->
-        <div class="viewport-toolbar-group">
-          <button type="button" class="btn btn-xs btn-secondary" onclick="Preview3D.setView('iso')">3D Iso</button>
-          <button type="button" class="btn btn-xs btn-secondary" onclick="Preview3D.setView('front')">Frente 2D</button>
-          <button type="button" class="btn btn-xs btn-secondary" onclick="Preview3D.setView('top')">Planta</button>
-          <button type="button" class="btn btn-xs btn-secondary" onclick="Preview3D.setView('side')">Lateral</button>
+        <!-- Vistas de Cámara (Segmented Bar) -->
+        <div class="viewport-toolbar-group btn-group-segmented">
+          <button type="button" class="btn btn-xs" onclick="Preview3D.setView('iso')">3D Iso</button>
+          <button type="button" class="btn btn-xs" onclick="Preview3D.setView('front')">Frente 2D</button>
+          <button type="button" class="btn btn-xs" onclick="Preview3D.setView('top')">Planta</button>
+          <button type="button" class="btn btn-xs" onclick="Preview3D.setView('side')">Lateral</button>
         </div>
 
-        <!-- Modos de Renderizado y Cotas -->
-        <div class="viewport-toolbar-group">
-          <button type="button" class="btn btn-xs btn-outline" onclick="Preview3D.setRenderMode('solido')">Sólido</button>
-          <button type="button" class="btn btn-xs btn-outline" onclick="Preview3D.setRenderMode('alambre')">Alambre CAD</button>
-          <button type="button" class="btn btn-xs btn-outline" onclick="Preview3D.toggleCotas()">Cotas On/Off</button>
+        <!-- Modos de Renderizado y Cotas (Segmented Bar) -->
+        <div class="viewport-toolbar-group btn-group-segmented">
+          <button type="button" class="btn btn-xs" onclick="Preview3D.setRenderMode('solido')">Sólido</button>
+          <button type="button" class="btn btn-xs" onclick="Preview3D.setRenderMode('alambre')">Alambre CAD</button>
+          <button type="button" class="btn btn-xs" onclick="Preview3D.toggleCotas()">Cotas On/Off</button>
         </div>
 
         <!-- Botón Principal Destacado: Construir en SketchUp 3D -->
         <div class="viewport-toolbar-group">
-          <button type="button" class="btn btn-xs btn-primary" onclick="construirEnSketchup()" style="background: #16A34A; border-color: #15803D; font-weight: 700; padding: 6px 14px;">
+          <button type="button" class="btn-build-sketchup" onclick="construirEnSketchup()">
             <svg class="svg-icon"><use href="#icon-build"></use></svg> Construir en SketchUp 3D
           </button>
         </div>
@@ -536,6 +944,19 @@
 
       <!-- LIENZO CANVAS DE RENDERIZADO EN TIEMPO REAL -->
       <div class="viewport-canvas-container">
+        <!-- BARRA FLOTANTE DE CONTROL SOBRE LA IMAGEN (DISEÑO / MÓDULOS) -->
+        <div id="canvasModuleSelectorBar" class="canvas-module-selector-bar">
+          <button type="button" id="btnSelDiseno" class="canvas-selector-btn canvas-btn-diseno-fixed active" onclick="seleccionarModoDiseno()" title="Seleccionar todo el mueble y ver cotas generales">
+            <svg class="svg-icon"><use href="#icon-diseno"></use></svg>
+            <span>Diseño</span>
+          </button>
+          <button type="button" id="btnScrollCanvasModsLeft" class="canvas-scroll-arrow-btn" onclick="scrollCanvasModulos(-120)" title="Ver módulos anteriores" style="display: none;">‹</button>
+          <div id="canvasModuleButtonsContainer" class="canvas-module-buttons-group">
+            <!-- Botones dinámicos por módulo si se agregan 2 o más módulos -->
+          </div>
+          <button type="button" id="btnScrollCanvasModsRight" class="canvas-scroll-arrow-btn" onclick="scrollCanvasModulos(120)" title="Ver módulos siguientes" style="display: none;">›</button>
+        </div>
+
         <canvas id="preview3DCanvas"></canvas>
       </div>
 
@@ -589,10 +1010,100 @@
     </div>
   </div>
 
-  <!-- Scripts del Frontend -->
-  <script src="js/preview_3d.js"></script>
-  <script src="js/optimizer_canvas.js"></script>
-  <script src="js/app.js"></script>
+  <!-- =========================================================================
+       MODAL DE SUBDIVISIÓN DE MÓDULO (PRIMENG DIALOG)
+       ========================================================================= -->
+  <div id="modalSubdividirModulo" class="p-dialog-overlay" style="z-index: 1050;">
+    <div class="p-dialog-window" style="max-width: 500px;">
+      <div class="p-dialog-header">
+        <div class="p-dialog-title" style="display: flex; align-items: center; gap: 8px;">
+          <svg class="svg-icon" style="width: 16px; height: 16px; color: var(--accent);"><use href="#icon-stack"></use></svg>
+          <span>Subdividir Módulo (Horizontal o Vertical)</span>
+        </div>
+        <button type="button" class="p-dialog-close" onclick="cerrarModalSubdividirModulo()" title="Cerrar ventana">&times;</button>
+      </div>
+      <div class="p-dialog-content" style="padding: 18px 20px;">
+        
+        <!-- Info del Módulo Actual -->
+        <div class="mb-3" style="background: var(--bg-hover); padding: 10px 14px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+          <div style="display: flex; justify-content: space-between; font-size: 11.5px; margin-bottom: 5px;">
+            <span style="color: var(--text-secondary);">Módulo seleccionado:</span>
+            <span id="subdivModNombre" style="font-weight: 700; color: var(--text-primary);">-</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 11.5px;">
+            <span style="color: var(--text-secondary);" id="lblTituloDimensionDisponible">Dimensión a dividir:</span>
+            <span id="subdivModAltoTotal" style="font-weight: 700; color: var(--accent);">- mm</span>
+          </div>
+        </div>
+
+        <!-- 1. Preguntar Orientación: Horizontal (Apilados) o Vertical (Lado a lado) -->
+        <div class="form-group mb-3">
+          <label style="font-size: 12px; font-weight: 600; margin-bottom: 6px; display: block; color: var(--text-primary);">
+            Orientación de la subdivisión:
+          </label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <button type="button" class="btn btn-outline" id="btnOrientacionHoriz" onclick="seleccionarOrientacionSubdiv('horizontal')" style="display: flex; flex-direction: column; align-items: center; padding: 10px 8px; gap: 4px; border-radius: var(--radius-sm); border: 2px solid var(--primary); background: rgba(59, 130, 246, 0.12); cursor: pointer; transition: all 0.2s;">
+              <svg class="svg-icon" style="width: 20px; height: 20px; color: var(--primary);"><use href="#icon-stack"></use></svg>
+              <span style="font-size: 11.5px; font-weight: 700; color: var(--text-primary);">Horizontal (Apilados)</span>
+              <span style="font-size: 9.5px; color: var(--text-secondary); text-align: center;">Uno sobre otro (divide la altura)</span>
+            </button>
+            <button type="button" class="btn btn-outline" id="btnOrientacionVert" onclick="seleccionarOrientacionSubdiv('vertical')" style="display: flex; flex-direction: column; align-items: center; padding: 10px 8px; gap: 4px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: transparent; cursor: pointer; transition: all 0.2s;">
+              <svg class="svg-icon" style="width: 20px; height: 20px; color: var(--text-secondary);"><use href="#icon-layers"></use></svg>
+              <span style="font-size: 11.5px; font-weight: 700; color: var(--text-primary);">Vertical (Lado a lado)</span>
+              <span style="font-size: 9.5px; color: var(--text-secondary); text-align: center;">Uno al lado de otro (divide el ancho)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Preguntar Cantidad de Subdivisiones -->
+        <div class="form-group mb-3">
+          <label for="inpNumSubdivisiones" style="font-size: 12px; font-weight: 600; margin-bottom: 2px; display: block; color: var(--text-primary);">
+            ¿En cuántas subdivisiones deseas dividir el módulo?
+          </label>
+          <span style="font-size: 10.5px; color: var(--text-muted); display: block; margin-bottom: 6px;">
+            (2 subdivisiones = 2 submódulos, 3 subdivisiones = 3 submódulos, 4 subdivisiones = 4 submódulos)
+          </span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <button type="button" class="btn btn-secondary" onclick="ajustarNumSubdivisiones(-1)" style="width: 38px; height: 36px; font-weight: bold; font-size: 18px; display: flex; align-items: center; justify-content: center;">-</button>
+            <input type="number" id="inpNumSubdivisiones" min="2" max="10" value="2" oninput="onCambiarNumSubdivisiones(this.value)" style="text-align: center; font-size: 15px; font-weight: 700; height: 36px; flex: 1;">
+            <button type="button" class="btn btn-secondary" onclick="ajustarNumSubdivisiones(1)" style="width: 38px; height: 36px; font-weight: bold; font-size: 18px; display: flex; align-items: center; justify-content: center;">+</button>
+          </div>
+
+          <!-- Botones de selección rápida automática según la medida disponible -->
+          <div id="subdivSugerenciasRapidas" style="display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap;"></div>
+
+          <div style="display: flex; justify-content: space-between; font-size: 10.5px; color: var(--text-secondary); margin-top: 6px;">
+            <span>Mínimo permitido: <strong id="lblMinSubdivisiones" style="color: var(--text-primary);">2 subdivisiones</strong></span>
+            <span>Máximo permitido: <strong id="lblMaxSubdivisiones" style="color: var(--text-primary);">-</strong></span>
+          </div>
+        </div>
+
+        <!-- 3. Caja de Cálculo y Validación de Medidas Estándar en Tiempo Real -->
+        <div id="boxCalculoSubdivision" class="mb-3 p-3" style="border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-hover); font-size: 11.5px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+            <span style="color: var(--text-secondary);" id="lblTituloMedidaEstimada">Medida por cada submódulo:</span>
+            <span id="lblAlturaEstimadaSubdiv" style="font-weight: bold; color: var(--text-primary);">- mm</span>
+          </div>
+          <div id="lblEstadoEstandarSubdiv" style="font-size: 11px; padding: 6px 10px; border-radius: 4px; line-height: 1.4;">
+            Validando estándares técnicos comerciales...
+          </div>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px;">
+          <button type="button" class="btn btn-secondary" onclick="cerrarModalSubdividirModulo()" style="font-size: 12px; padding: 7px 15px;">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btnConfirmarSubdivision" onclick="confirmarSubdivisionModulo()" style="font-size: 12px; padding: 7px 18px; font-weight: 600;">
+            ✓ Confirmar Subdivisión
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts del Frontend (con control de versión para invalidar caché en CEF/SketchUp) -->
+  <script src="js/preview_3d.js?v=2.5.1"></script>
+  <script src="js/optimizer_canvas.js?v=2.5.1"></script>
+  <script src="js/app.js?v=2.5.1"></script>
 
 </body>
 </html>

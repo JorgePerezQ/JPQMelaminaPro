@@ -50,7 +50,8 @@ const Preview3D = (function() {
     prof_total: 0,
     espesor: 18,
     material: 'Pelikano Blanco Nieve 18mm',
-    modulo_activo: 0,
+    modo_seleccion: 'diseno',  // 'diseno' (todo el mueble) | 'modulo' (módulo individual)
+    modulo_activo: -1,
     modulos: []
   };
 
@@ -186,7 +187,8 @@ const Preview3D = (function() {
     const dy = e.clientY - camera.lastMouseY;
 
     camera.azimuth += dx * 0.01;
-    camera.elevation = Math.max(0.01, Math.min(Math.PI / 2.02, camera.elevation + dy * 0.01));
+    // Permite inclinar la cámara ligeramente hacia arriba (hasta -PI/6) para inspeccionar la parte inferior del zócalo
+    camera.elevation = Math.max(-Math.PI / 6, Math.min(Math.PI / 2.02, camera.elevation + dy * 0.01));
     camera.lastMouseX = e.clientX;
     camera.lastMouseY = e.clientY;
     render();
@@ -266,6 +268,219 @@ const Preview3D = (function() {
 
   /**
    * Genera los prismas geométricos [x, y, z, dx, dy, dz] para todos los módulos.
+  /**
+   * Calcula las coordenadas espaciales X y elevación Z (apilado vertical) para cada módulo/submódulo.
+   * Soporta submódulos apilados verticalmente y submódulos subdivididos uno al lado del otro en un nivel específico.
+   * @param {Array} modulos - Lista de módulos.
+   * @returns {Array<{ xPos: number, zBaseStack: number, wMod: number, hMod: number, colIdx: number, nivel: number, wCol: number }>}
+   */
+  function calcularGeometriaColumnasYApilado(modulos, dataOverride) {
+    const mapeo = [];
+    const columnasMap = new Map();
+    const d = dataOverride || currentData || {};
+    const tieneZocaloGlobal = (d.tiene_zocalo === true || d.tiene_zocalo === 'true');
+    const zocaloGlobalH = tieneZocaloGlobal ? (parseFloat(d.alto_zocalo) || 100) : 0;
+
+    modulos.forEach((m, idx) => {
+      const cIdx = (m.columna_idx !== undefined && m.columna_idx !== null) ? m.columna_idx : idx;
+      const nIdx = (m.nivel_apilado !== undefined && m.nivel_apilado !== null) ? m.nivel_apilado : 0;
+      const scIdx = (m.sub_col_idx !== undefined && m.sub_col_idx !== null) ? m.sub_col_idx : idx;
+      if (!columnasMap.has(cIdx)) {
+        columnasMap.set(cIdx, []);
+      }
+      columnasMap.get(cIdx).push({ m, originalIdx: idx, nivel: nIdx, subCol: scIdx });
+    });
+
+    const columnasOrdenadas = Array.from(columnasMap.entries()).sort((a, b) => a[0] - b[0]);
+
+    let xAcumulado = 0;
+    columnasOrdenadas.forEach(([cIdx, items]) => {
+      // Agrupar items de la columna por nivel_apilado
+      const nivelesMap = new Map();
+      items.forEach(item => {
+        const n = item.nivel;
+        if (!nivelesMap.has(n)) {
+          nivelesMap.set(n, []);
+        }
+        nivelesMap.get(n).push(item);
+      });
+
+      const nivelesOrdenados = Array.from(nivelesMap.entries()).sort((a, b) => a[0] - b[0]);
+
+      // Ancho total representativo de la columna: el mayor ancho ocupado por cualquiera de sus niveles
+      let wColMax = 0;
+      nivelesOrdenados.forEach(([n, subItems]) => {
+        const wNivel = subItems.reduce((sum, it) => sum + (it.m.ancho || 0), 0);
+        if (wNivel > wColMax) wColMax = wNivel;
+      });
+      if (wColMax <= 0) wColMax = 600;
+
+      let zAcumulado = tieneZocaloGlobal ? zocaloGlobalH : 0;
+      nivelesOrdenados.forEach(([n, subItems]) => {
+        // Ordenar submódulos del mismo nivel por su sub_col_idx o índice de creación
+        subItems.sort((a, b) => a.subCol - b.subCol);
+
+        const hNivel = (subItems[0].m.alto && subItems[0].m.alto > 0) ? subItems[0].m.alto : 2100;
+        let xEnNivel = 0;
+
+        subItems.forEach(item => {
+          const wMod = (item.m.ancho && item.m.ancho > 0) ? item.m.ancho : (wColMax / subItems.length);
+          const hMod = (item.m.alto && item.m.alto > 0) ? item.m.alto : hNivel;
+
+          mapeo[item.originalIdx] = {
+            xPos: xAcumulado + xEnNivel,
+            zBaseStack: zAcumulado,
+            wMod: wMod,
+            hMod: hMod,
+            colIdx: cIdx,
+            nivel: n,
+            wCol: wColMax
+          };
+          xEnNivel += wMod;
+        });
+
+        zAcumulado += hNivel;
+      });
+
+      xAcumulado += wColMax;
+    });
+
+    return mapeo;
+  }
+
+  /**
+   * Calcula la cantidad y ubicaciones exactas de los listones transversales de zócalo
+   * dividiendo el área interior del zócalo en partes proporcionales iguales y
+   * respetando la separación mínima permitida en carpintería industrial (>= 150mm libre)
+   * y la norma anti-pandeo (<= 600mm).
+   * 
+   * Por ejemplo:
+   * - 1 listón: divide el interior en 2 partes iguales (al centro, 1/2 c/u).
+   * - 2 listones: divide el interior en 3 partes iguales (a 1/3 y 2/3 c/u).
+   * - 3 listones: divide el interior en 4 partes iguales (a 1/4, 2/4 y 3/4 c/u).
+   * - N listones: divide el interior en N+1 partes iguales.
+   * @param {number} anchoTotal - Ancho total del mueble en mm.
+   * @param {number} profTotal - Profundidad total del mueble en mm.
+   * @param {Array} modulos - Módulos definidos en la composición.
+   * @param {number} t - Espesor de la melamina en mm.
+   * @param {number} altoZocalo - Altura del zócalo en mm.
+   * @param {number} retransZocalo - Retranqueo frontal en mm.
+   * @param {string|number} cantConfig - 'auto' o número manual de listones.
+   * @returns {Object} { listones, cantSugerida, cantActual, separacionMax, separacionMin, cantMaxPermitida, cumpleNorma, mensajeNorma, tipoAlerta }
+   */
+  function calcularListonesZocaloEstandar(anchoTotal, profTotal, modulos, t, altoZocalo, retransZocalo, cantConfig) {
+    anchoTotal = Math.max(0, parseFloat(anchoTotal) || 0);
+    profTotal = Math.max(0, parseFloat(profTotal) || 0);
+    t = Math.max(1, parseFloat(t) || 18);
+    retransZocalo = (retransZocalo !== undefined && retransZocalo !== null && retransZocalo !== '' && !isNaN(retransZocalo))
+      ? Math.max(0, parseFloat(retransZocalo))
+      : 35;
+
+    const SEPARACION_MINIMA_MM = 150; // Norma técnica de carpintería: separación libre mínima entre listones
+    const NORMA_LUZ_MAXIMA_MM = 600;  // Norma de flecha y pandeo en melamina
+
+    const profTrans = Math.max(0, profTotal - retransZocalo - (2 * t));
+    const anchoInterior = Math.max(0, anchoTotal - (2 * t));
+
+    if (anchoTotal <= 0 || profTotal <= 0 || profTrans <= 0 || anchoInterior <= 0) {
+      return {
+        listones: [],
+        cantSugerida: 0,
+        cantActual: 0,
+        separacionMax: 0,
+        separacionMin: 0,
+        cantMaxPermitida: 0,
+        cumpleNorma: true,
+        mensajeNorma: 'Dimensiones insuficientes para listones interiores.',
+        tipoAlerta: 'info'
+      };
+    }
+
+    // Cantidad máxima permitida manteniendo separación libre >= 150mm:
+    // (N + 1) * 150 + N * t <= anchoInterior => N * (150 + t) <= anchoInterior - 150
+    const cantMaxPermitida = Math.max(0, Math.floor((anchoInterior - SEPARACION_MINIMA_MM) / (SEPARACION_MINIMA_MM + t)));
+
+    // Cantidad sugerida según norma anti-pandeo (<= 600 mm)
+    const cantSugeridaAuto = Math.max(0, Math.ceil(anchoInterior / NORMA_LUZ_MAXIMA_MM) - 1);
+    const cantSugeridaFinal = Math.min(cantSugeridaAuto, cantMaxPermitida);
+
+    // Cantidad N seleccionada
+    let N = 0;
+    const esAuto = (cantConfig === 'auto' || cantConfig === undefined || cantConfig === null || cantConfig === '');
+    if (esAuto) {
+      N = cantSugeridaFinal;
+    } else {
+      N = Math.max(0, parseInt(cantConfig) || 0);
+    }
+
+    // Auditoría de cumplimiento: ¿La cantidad elegida deja separación < 150mm?
+    const partesIguales = N + 1;
+    const pasoProporcional = (N > 0) ? (anchoInterior / partesIguales) : anchoInterior;
+    const separacionLibre = (N > 0) ? Math.round(pasoProporcional - t) : anchoInterior;
+
+    const excedeMinima = (N > 0 && separacionLibre < SEPARACION_MINIMA_MM);
+    const excedeMaxima = (separacionLibre > NORMA_LUZ_MAXIMA_MM);
+
+    const listones = [];
+
+    if (N > 0) {
+      for (let k = 1; k <= N; k++) {
+        const xCentro = t + (k * pasoProporcional);
+        const xPos = Math.round(xCentro - (t / 2));
+
+        let nombreListon = `Listón Soporte Zócalo ${k}/${N} (Divide interior en ${partesIguales} partes)`;
+        if (N === 1) {
+          nombreListon = `Listón Soporte Zócalo Central (Divide interior en 2 partes)`;
+        }
+
+        listones.push({
+          x: xPos,
+          y: retransZocalo + t,
+          z: 0,
+          dx: t,
+          dy: profTrans,
+          dz: altoZocalo,
+          tipo: (N === 1) ? 'central' : 'proporcional',
+          nombre: nombreListon,
+          moduloIndex: -1,
+          esListonSoporteZocalo: true,
+          esZocaloBase: true
+        });
+      }
+    }
+
+    const cumpleNorma = !excedeMinima && !excedeMaxima;
+
+    let mensajeNorma = '';
+    let tipoAlerta = 'success';
+
+    if (excedeMinima) {
+      tipoAlerta = 'danger';
+      mensajeNorma = `⛔ NO PERMITIDO: ${N} listones en ${anchoTotal} mm deja una separación de solo ${separacionLibre} mm (mínimo reglamentario: ${SEPARACION_MINIMA_MM} mm). Máximo permitido para este ancho: ${cantMaxPermitida} listón(es).`;
+    } else if (excedeMaxima) {
+      tipoAlerta = 'warning';
+      mensajeNorma = `⚠️ Separación de ${separacionLibre} mm excede la norma de 600 mm para evitar pandeo. Se sugieren mín. ${cantSugeridaFinal} listón(es).`;
+    } else if (N === 0) {
+      mensajeNorma = `✓ Marco perimétrico base sin listones: luz interior de ${anchoInterior} mm ≤ 600 mm (estable sin refuerzos).`;
+    } else {
+      mensajeNorma = `✓ ${N} listón(es) dividen el interior en ${partesIguales} partes iguales de ~${Math.round(pasoProporcional)} mm (separación libre: ${separacionLibre} mm ≥ 150 mm). Cumple estándar técnico.`;
+    }
+
+    return {
+      listones,
+      cantSugerida: cantSugeridaFinal,
+      cantActual: N,
+      cantMaxPermitida,
+      separacionMax: separacionLibre,
+      separacionMin: separacionLibre,
+      cumpleNorma,
+      mensajeNorma,
+      tipoAlerta
+    };
+  }
+
+  /**
+   * Genera los prismas 3D de cada pieza de la composición paramétrica.
    * @param {Object} [dataOverride] - Datos opcionales para generación sin pasar por currentData.
    */
   function generarPrismasModulos(dataOverride) {
@@ -275,245 +490,580 @@ const Preview3D = (function() {
     const modulos = d.modulos || [];
     const prismas = [];
 
-    let xAcumulado = 0;
+    const geomMapeo = calcularGeometriaColumnasYApilado(modulos, d);
+
+    // ZÓCALO INFERIOR GLOBAL CONTINUO (ocupa todo el perímetro inferior del mueble)
+    const tieneZocaloGlobal = (d.tiene_zocalo === true || d.tiene_zocalo === 'true');
+    const zocaloGlobalH = tieneZocaloGlobal ? (parseFloat(d.alto_zocalo) || 100) : 0;
+
+    if (tieneZocaloGlobal && zocaloGlobalH > 0) {
+      const anchoTotal = d.ancho_total || (modulos.reduce((sum, it) => sum + (it.ancho || 0), 0)) || 2400;
+      const profTotal = d.prof_total || 600;
+      const retransZocalo = (d.retrans_zocalo !== undefined && d.retrans_zocalo !== null && d.retrans_zocalo !== '' && !isNaN(d.retrans_zocalo))
+        ? Math.max(0, parseFloat(d.retrans_zocalo))
+        : 35;
+      const cantConfig = d.cant_listones;
+      const profTrans = Math.max(10, profTotal - retransZocalo - (2 * t));
+
+      // 1. Zócalo Frontal Continuo (ABARCA TODO EL ANCHO DEL MUEBLE: X = 0 a X = AnchoTotal)
+      prismas.push({
+        x: 0, y: retransZocalo, z: 0,
+        dx: anchoTotal, dy: t, dz: zocaloGlobalH,
+        mat, name: 'Zócalo Frontal Continuo',
+        moduloIndex: -1,
+        esZocaloFrontal: true,
+        esZocaloBase: true
+      });
+
+      // 2. Zócalo Posterior Continuo (ABARCA TODO EL ANCHO DEL MUEBLE: X = 0 a X = AnchoTotal)
+      prismas.push({
+        x: 0, y: profTotal - t, z: 0,
+        dx: anchoTotal, dy: t, dz: zocaloGlobalH,
+        mat, name: 'Zócalo Posterior Continuo',
+        moduloIndex: -1,
+        esZocaloBase: true
+      });
+
+      // 3. Lateral Izquierdo de Zócalo (ENTRE frontal y posterior: Y = retransZocalo + t hasta profTotal - t)
+      prismas.push({
+        x: 0, y: retransZocalo + t, z: 0,
+        dx: t, dy: profTrans, dz: zocaloGlobalH,
+        mat, name: 'Zócalo Lateral Izquierdo',
+        moduloIndex: -1,
+        esZocaloBase: true
+      });
+
+      // 4. Lateral Derecho de Zócalo (ENTRE frontal y posterior: Y = retransZocalo + t hasta profTotal - t)
+      prismas.push({
+        x: anchoTotal - t, y: retransZocalo + t, z: 0,
+        dx: t, dy: profTrans, dz: zocaloGlobalH,
+        mat, name: 'Zócalo Lateral Derecho',
+        moduloIndex: -1,
+        esZocaloBase: true
+      });
+
+      // 5. Listones transversales interiores de soporte (ENTRE frontal y posterior)
+      const calculoListones = calcularListonesZocaloEstandar(
+        anchoTotal, profTotal, modulos, t, zocaloGlobalH, retransZocalo, cantConfig
+      );
+
+      calculoListones.listones.forEach(l => {
+        prismas.push({
+          x: l.x, y: l.y, z: l.z,
+          dx: l.dx, dy: l.dy, dz: l.dz,
+          mat, name: l.nombre,
+          moduloIndex: -1,
+          tipo: l.tipo,
+          esListonSoporteZocalo: true,
+          esNoPermitido: !calculoListones.cumpleNorma,
+          esZocaloBase: true
+        });
+      });
+    }
 
     modulos.forEach((m, idx) => {
-      const wMod = m.ancho || 600;
+      const geom = geomMapeo[idx] || { xPos: 0, zBaseStack: (tieneZocaloGlobal ? zocaloGlobalH : 0), wMod: m.ancho || 600, hMod: m.alto || d.alto_total || 2100 };
+      const wMod = geom.wMod;
       const hMod = m.alto || d.alto_total || 2100;
       const profMod = m.profundidad || d.prof_total || 600;
-      const xMod = xAcumulado;
+      const xMod = geom.xPos;
+      const zStack = geom.zBaseStack;
 
-      // 1. ZÓCALO Y LISTONES
-      const tieneZocalo = (m.tiene_zocalo === true || m.tiene_zocalo === 'true');
+      // 1. ZÓCALO Y CARCASA ESTRUCTURAL (Laterales, Piso y Techo)
+      // Si el zócalo es global, el módulo no duplica zócalo inferior individual
+      const tieneZocalo = !tieneZocaloGlobal && (m.tiene_zocalo === true || m.tiene_zocalo === 'true');
       const zocaloH = tieneZocalo ? (parseFloat(m.alto_zocalo) || 100) : 0;
-      const cantListones = m.cant_listones || 2;
+      const rawCantListones = parseInt(m.cant_listones);
+      const cantInternosZocalo = (m.cant_listones_internos !== undefined && m.cant_listones_internos !== null)
+        ? Math.max(0, parseInt(m.cant_listones_internos) || 0)
+        : (isNaN(rawCantListones) ? 0 : Math.max(0, rawCantListones));
       const retransZocalo = (m.retrans_zocalo !== undefined && m.retrans_zocalo !== '')
         ? parseFloat(m.retrans_zocalo)
         : (m.retransporte_zocalo !== undefined ? parseFloat(m.retransporte_zocalo) : 35);
 
-      if (tieneZocalo && zocaloH > 0) {
-        // Listón frontal
+      // Selector de Laterales (Costados): Si está desactivado, se retiran los laterales quedando vacío lateralmente
+      const tieneLaterales = (m.tiene_laterales !== false && m.tiene_laterales !== 'false');
+      const xOffsetInt = tieneLaterales ? t : 0;
+      const anchoInt = tieneLaterales ? (wMod - (2 * t)) : wMod;
+
+      // Piso y Techo de Carcasa (con soporte para listones de piso y techo)
+      const tienePiso = (m.tiene_piso !== false && m.tiene_piso !== 'false');
+      const usaAmarresPiso = tienePiso && (m.tiene_liston_piso === true || m.tiene_liston_piso === 'true');
+
+      const tieneTecho = (m.tiene_techo !== false && m.tiene_techo !== 'false');
+      const usaAmarresTecho = tieneTecho && ((m.tiene_liston_techo === true || m.tiene_liston_techo === 'true') ||
+        ((m.tiene_liston_amarre === true || m.tiene_liston_amarre === 'true') && (m.posicion_liston_amarre === 'techo' || m.posicion_liston_amarre === 'ambos')));
+
+      const techoSobreListon = usaAmarresTecho && (m.techo_sobre_liston === true || m.techo_sobre_liston === 'true');
+      const esDobleMelamina = m.techo_doble_melamina === true || m.techo_doble_melamina === 'true';
+      const hTecho = (tieneTecho && techoSobreListon) ? (esDobleMelamina ? (2 * t) : t) : 0;
+
+      // Zócalo Superior
+      const tieneZocaloSup = (m.tiene_zocalo_sup === true || m.tiene_zocalo_sup === 'true');
+      const zocaloSupH = tieneZocaloSup ? (parseFloat(m.alto_zocalo_sup) || 70) : 0;
+
+      // Los laterales (costados) van sobre el zócalo inferior (z = zBase) y continúan hasta el tope superior
+      const hLateral = hMod - zocaloH - hTecho;
+      const hCarcasa = hMod - zocaloH - hTecho - zocaloSupH;
+      const zBase = zStack + zocaloH;
+      const zIntBase = zBase + (tienePiso ? t : 0);
+
+      // Costados Izquierdo y Derecho (solo si tieneLaterales está activado)
+      if (tieneLaterales) {
         prismas.push({
-          x: xMod, y: retransZocalo, z: 0,
-          dx: wMod, dy: t, dz: zocaloH,
-          mat, name: `M${idx + 1} Zócalo Frontal`,
+          x: xMod, y: 0, z: zBase,
+          dx: t, dy: profMod, dz: hLateral,
+          mat, name: `M${idx + 1} Lateral Izq`,
           moduloIndex: idx
         });
 
-        // Listón posterior
         prismas.push({
-          x: xMod, y: profMod - t - retransZocalo, z: 0,
-          dx: wMod, dy: t, dz: zocaloH,
+          x: xMod + wMod - t, y: 0, z: zBase,
+          dx: t, dy: profMod, dz: hLateral,
+          mat, name: `M${idx + 1} Lateral Der`,
+          moduloIndex: idx
+        });
+      }
+
+      // Zócalo Inferior Perimétrico Base (rectángulo perimétrico + listones interiores)
+      if (tieneZocalo && zocaloH > 0) {
+        const largoLatZocalo = Math.max(50, profMod - retransZocalo);
+        // El ancho entre laterales propios del zócalo es siempre wMod - 2*t,
+        // independiente de si la carcasa superior lleva costados laterales o no.
+        const anchoZocaloPerim = Math.max(0, wMod - (2 * t));
+
+        // 1. Listón frontal (va entre los laterales de zócalo)
+        prismas.push({
+          x: xMod + t, y: retransZocalo, z: zStack,
+          dx: anchoZocaloPerim, dy: t, dz: zocaloH,
+          mat, name: `M${idx + 1} Zócalo Frontal`,
+          moduloIndex: idx,
+          esZocaloFrontal: true
+        });
+
+        // 2. Listón posterior (va entre los laterales de zócalo)
+        prismas.push({
+          x: xMod + t, y: profMod - t, z: zStack,
+          dx: anchoZocaloPerim, dy: t, dz: zocaloH,
           mat, name: `M${idx + 1} Zócalo Posterior`,
           moduloIndex: idx
         });
 
-        // Listón transversal central de refuerzo (si cant_listones >= 3 y hay espacio útil suficiente)
-        if (cantListones >= 3) {
-          const profTrans = profMod - (2 * retransZocalo) - (2 * t);
+        // 3. Lateral Izquierdo de Zócalo (cierra el perímetro)
+        prismas.push({
+          x: xMod, y: retransZocalo, z: zStack,
+          dx: t, dy: largoLatZocalo, dz: zocaloH,
+          mat, name: `M${idx + 1} Zócalo Lateral Izquierdo`,
+          moduloIndex: idx
+        });
+
+        // 4. Lateral Derecho de Zócalo (cierra el perímetro)
+        prismas.push({
+          x: xMod + wMod - t, y: retransZocalo, z: zStack,
+          dx: t, dy: largoLatZocalo, dz: zocaloH,
+          mat, name: `M${idx + 1} Zócalo Lateral Derecho`,
+          moduloIndex: idx
+        });
+
+        // 5. Listones transversales interiores de soporte del zócalo
+        // Proporcionan sustento directo en la base al mueble o divisiones situadas encima:
+        // - 1 listón: centrado en el bloque (wMod / 2).
+        // - 2 listones: dividen el bloque en 3 partes iguales (un tercio cada uno, a 1/3 y 2/3).
+        // - N listones: dividen el bloque en N + 1 partes iguales.
+        if (cantInternosZocalo > 0) {
+          const profTrans = profMod - retransZocalo - (2 * t);
           if (profTrans > 0) {
-            prismas.push({
-              x: xMod + (wMod / 2) - (t / 2), y: retransZocalo + t, z: 0,
-              dx: t, dy: profTrans, dz: zocaloH,
-              mat, name: `M${idx + 1} Listón Transversal`,
-              moduloIndex: idx
-            });
+            for (let k = 1; k <= cantInternosZocalo; k++) {
+              const frac = k / (cantInternosZocalo + 1);
+              const xTrans = xMod + (wMod * frac) - (t / 2);
+              const descNombre = (cantInternosZocalo === 1)
+                ? `M${idx + 1} Listón Soporte Zócalo Central`
+                : `M${idx + 1} Listón Soporte Zócalo ${k}/${cantInternosZocalo}`;
+
+              prismas.push({
+                x: xTrans, y: retransZocalo + t, z: zStack,
+                dx: t, dy: profTrans, dz: zocaloH,
+                mat, name: descNombre,
+                moduloIndex: idx,
+                esListonSoporteZocalo: true
+              });
+            }
           }
         }
       }
 
-      // 2. CARCASA ESTRUCTURAL (Laterales, Piso y Techo)
-      // Determinar si lleva listones de techo y techo sobrepuesto
-      const usaAmarresTecho = (m.tiene_liston_techo === true || m.tiene_liston_techo === 'true') ||
-        ((m.tiene_liston_amarre === true || m.tiene_liston_amarre === 'true') && (m.posicion_liston_amarre === 'techo' || m.posicion_liston_amarre === 'ambos'));
+      // Piso de la Carcasa (apoya sobre el zócalo a altura zBase)
+      if (tienePiso) {
+        if (usaAmarresPiso) {
+          const cantPiso = Math.max(1, parseInt(m.cant_listones_piso || 2));
+          const wUserPiso = parseFloat(m.ancho_liston_piso || m.medida_liston_piso);
+          const wListonPiso = (wUserPiso && wUserPiso > 0) ? wUserPiso : 80;
 
-      const techoSobreListon = usaAmarresTecho && (m.techo_sobre_liston === true || m.techo_sobre_liston === 'true');
-      const esDobleMelamina = m.techo_doble_melamina === true || m.techo_doble_melamina === 'true';
-      const hTecho = techoSobreListon ? (esDobleMelamina ? (2 * t) : t) : 0;
-
-      // Descontar la altura del techo de la altura de la carcasa (laterales) para mantener la altura total del módulo
-      const hCarcasa = hMod - zocaloH - hTecho;
-      const zBase = zocaloH;
-      const anchoInt = wMod - (2 * t);
-
-      // Costado Izquierdo
-      prismas.push({
-        x: xMod, y: 0, z: zBase,
-        dx: t, dy: profMod, dz: hCarcasa,
-        mat, name: `M${idx + 1} Lateral Izq`,
-        moduloIndex: idx
-      });
-
-      // Costado Derecho
-      prismas.push({
-        x: xMod + wMod - t, y: 0, z: zBase,
-        dx: t, dy: profMod, dz: hCarcasa,
-        mat, name: `M${idx + 1} Lateral Der`,
-        moduloIndex: idx
-      });
-
-      // Piso de la Carcasa
-      prismas.push({
-        x: xMod + t, y: 0, z: zBase,
-        dx: anchoInt, dy: profMod, dz: t,
-        mat, name: `M${idx + 1} Piso`,
-        moduloIndex: idx
-      });
-
-      // Techo de la Carcasa / Amarres de Techo con distribución milimétrica exacta sin solapamientos
-      if (usaAmarresTecho) {
-        const cantTecho = Math.max(1, parseInt(m.cant_listones_techo || m.cant_listones_amarre || 2));
-        const wUser = parseFloat(m.ancho_liston_techo || m.medida_liston_techo || m.alto_liston_amarre || m.ancho_liston);
-        const wListonTecho = (wUser && wUser > 0) ? wUser : 80;
-
-        if (cantTecho === 1) {
-          prismas.push({
-            x: xMod + t, y: 0, z: zBase + hCarcasa - t,
-            dx: anchoInt, dy: wListonTecho, dz: t,
-            mat, name: `M${idx + 1} Amarre Techo Frontal`,
-            moduloIndex: idx
-          });
-        } else {
-          const espacioGaps = Math.max(0, profMod - (cantTecho * wListonTecho));
-          const pasoGap = espacioGaps / (cantTecho - 1);
-
-          for (let k = 0; k < cantTecho; k++) {
-            const yPos = Math.round(k * (wListonTecho + pasoGap));
-            let nom = `M${idx + 1} Amarre Techo `;
-            if (k === 0) nom += 'Frontal';
-            else if (k === cantTecho - 1) nom += 'Posterior';
-            else nom += `Intermedio ${k}`;
-
+          if (cantPiso === 1) {
             prismas.push({
-              x: xMod + t, y: yPos, z: zBase + hCarcasa - t,
-              dx: anchoInt, dy: wListonTecho, dz: t,
-              mat, name: nom,
-              moduloIndex: idx
-            });
-          }
-        }
-
-        // Techo / Tapa sobrepuesta sobre los listones de amarre
-        if (techoSobreListon) {
-          if (esDobleMelamina) {
-            // Capa Inferior (18mm)
-            prismas.push({
-              x: xMod, y: 0, z: zBase + hCarcasa,
-              dx: wMod, dy: profMod, dz: t,
-              mat, name: `M${idx + 1} Techo Sobrepuesto Doble Melamina (Capa Inf. ${t}mm)`,
-              moduloIndex: idx
-            });
-            // Capa Superior (18mm engrosado)
-            prismas.push({
-              x: xMod, y: 0, z: zBase + hCarcasa + t,
-              dx: wMod, dy: profMod, dz: t,
-              mat, name: `M${idx + 1} Techo Sobrepuesto Doble Melamina (Capa Sup. ${t}mm)`,
+              x: xMod + xOffsetInt, y: 0, z: zBase,
+              dx: anchoInt, dy: wListonPiso, dz: t,
+              mat, name: `M${idx + 1} Amarre Piso Frontal`,
               moduloIndex: idx
             });
           } else {
+            const espacioGapsPiso = Math.max(0, profMod - (cantPiso * wListonPiso));
+            const pasoGapPiso = espacioGapsPiso / (cantPiso - 1);
+
+            for (let k = 0; k < cantPiso; k++) {
+              const yPos = Math.round(k * (wListonPiso + pasoGapPiso));
+              let nom = `M${idx + 1} Amarre Piso `;
+              if (k === 0) nom += 'Frontal';
+              else if (k === cantPiso - 1) nom += 'Posterior';
+              else nom += `Intermedio ${k}`;
+
+              prismas.push({
+                x: xMod + xOffsetInt, y: yPos, z: zBase,
+                dx: anchoInt, dy: wListonPiso, dz: t,
+                mat, name: nom,
+                moduloIndex: idx
+              });
+            }
+          }
+        } else {
+          // Piso Sólido Completo Estándar
+          prismas.push({
+            x: xMod + xOffsetInt, y: 0, z: zBase,
+            dx: anchoInt, dy: profMod, dz: t,
+            mat, name: `M${idx + 1} Piso Carcasa`,
+            moduloIndex: idx
+          });
+        }
+      }
+
+      // Techo de la Carcasa / Amarres de Techo con distribución milimétrica exacta sin solapamientos
+      if (tieneTecho) {
+        if (usaAmarresTecho) {
+          const cantTecho = Math.max(1, parseInt(m.cant_listones_techo || m.cant_listones_amarre || 2));
+          const wUser = parseFloat(m.ancho_liston_techo || m.medida_liston_techo || m.alto_liston_amarre || m.ancho_liston);
+          const wListonTecho = (wUser && wUser > 0) ? wUser : 80;
+
+          if (cantTecho === 1) {
             prismas.push({
-              x: xMod, y: 0, z: zBase + hCarcasa,
-              dx: wMod, dy: profMod, dz: t,
-              mat, name: `M${idx + 1} Tapa Techo Sobrepuesta Simple (${t}mm)`,
+              x: xMod + xOffsetInt, y: 0, z: zBase + hCarcasa - t,
+              dx: anchoInt, dy: wListonTecho, dz: t,
+              mat, name: `M${idx + 1} Amarre Techo Frontal`,
               moduloIndex: idx
             });
+          } else {
+            const espacioGaps = Math.max(0, profMod - (cantTecho * wListonTecho));
+            const pasoGap = espacioGaps / (cantTecho - 1);
+
+            for (let k = 0; k < cantTecho; k++) {
+              const yPos = Math.round(k * (wListonTecho + pasoGap));
+              let nom = `M${idx + 1} Amarre Techo `;
+              if (k === 0) nom += 'Frontal';
+              else if (k === cantTecho - 1) nom += 'Posterior';
+              else nom += `Intermedio ${k}`;
+
+              prismas.push({
+                x: xMod + xOffsetInt, y: yPos, z: zBase + hCarcasa - t,
+                dx: anchoInt, dy: wListonTecho, dz: t,
+                mat, name: nom,
+                moduloIndex: idx
+              });
+            }
           }
+
+          // Techo / Tapa sobrepuesta sobre los listones de amarre
+          if (techoSobreListon) {
+            if (esDobleMelamina) {
+              // Capa Inferior (18mm)
+              prismas.push({
+                x: xMod, y: 0, z: zBase + hCarcasa,
+                dx: wMod, dy: profMod, dz: t,
+                mat, name: `M${idx + 1} Techo Sobrepuesto Doble Melamina (Capa Inf. ${t}mm)`,
+                moduloIndex: idx
+              });
+              // Capa Superior (18mm engrosado)
+              prismas.push({
+                x: xMod, y: 0, z: zBase + hCarcasa + t,
+                dx: wMod, dy: profMod, dz: t,
+                mat, name: `M${idx + 1} Techo Sobrepuesto Doble Melamina (Capa Sup. ${t}mm)`,
+                moduloIndex: idx
+              });
+            } else {
+              prismas.push({
+                x: xMod, y: 0, z: zBase + hCarcasa,
+                dx: wMod, dy: profMod, dz: t,
+                mat, name: `M${idx + 1} Tapa Techo Sobrepuesta Simple (${t}mm)`,
+                moduloIndex: idx
+              });
+            }
+          }
+        } else {
+          // Techo Sólido Completo Estándar
+          prismas.push({
+            x: xMod + xOffsetInt, y: 0, z: zBase + hCarcasa - t,
+            dx: anchoInt, dy: profMod, dz: t,
+            mat, name: `M${idx + 1} Techo Carcasa Sólido`,
+            moduloIndex: idx
+          });
         }
-      } else {
-        // Techo Sólido Completo Estándar
+      }
+
+      // Zócalo Superior (Frontal de melamina en todo el ancho interior)
+      if (tieneZocaloSup && zocaloSupH > 0) {
         prismas.push({
-          x: xMod + t, y: 0, z: zBase + hCarcasa - t,
-          dx: anchoInt, dy: profMod, dz: t,
-          mat, name: `M${idx + 1} Techo Carcasa Sólido`,
+          x: xMod + xOffsetInt, y: 0, z: zBase + hCarcasa,
+          dx: anchoInt, dy: t, dz: zocaloSupH,
+          mat, name: `M${idx + 1} Frontal Zócalo Superior`,
           moduloIndex: idx
         });
       }
 
-      // Listones Posteriores de Amarre / Fijación a Pared con distribución milimétrica exacta
-      const usaAmarresPost = (m.tiene_liston_post === true || m.tiene_liston_post === 'true') ||
-        ((m.tiene_liston_amarre === true || m.tiene_liston_amarre === 'true') && (m.posicion_liston_amarre === 'posterior' || m.posicion_liston_amarre === 'ambos'));
+      // Determinar configuración de fondo del módulo
+      const tieneFondo = (m.tiene_fondo === true || m.tiene_fondo === 'true' || m.tiene_fondo_mdf === true || m.tiene_fondo_mdf === 'true');
+      const tipoFondo = tieneFondo ? (m.tipo_fondo || (m.tiene_fondo_mdf ? 'mdf' : 'mdf')) : 'ninguno';
+
+      // Identificar si el módulo carece de laterales, techo y piso (módulo abierto/vacío para panel completo)
+      const esModuloVacio = (!tieneLaterales && !tieneTecho && !tienePiso);
+
+      // Listones Posteriores de Amarre / Fijación a Pared (solo si lleva laterales y no es fondo melamina ni panel)
+      const usaAmarresPost = tieneLaterales && (tipoFondo !== 'melamina') && (tipoFondo !== 'panel') && (
+        (m.tiene_liston_post === true || m.tiene_liston_post === 'true') ||
+        ((m.tiene_liston_amarre === true || m.tiene_liston_amarre === 'true') && (m.posicion_liston_amarre === 'posterior' || m.posicion_liston_amarre === 'ambos'))
+      );
 
       if (usaAmarresPost) {
         const cantPost = Math.max(1, parseInt(m.cant_listones_post || m.cant_listones_amarre || 2));
-        const hUser = parseFloat(m.ancho_liston_post || m.medida_liston_post || m.alto_liston_amarre || m.ancho_liston);
-        const hListonPost = (hUser && hUser > 0) ? hUser : 80;
-        const hVanoUtilPost = hCarcasa - (2 * t);
+        const orientacionPost = m.orientacion_liston_post || m.orientacion_listones_post || 'horizontal';
+        const wUser = parseFloat(m.ancho_liston_post || m.medida_liston_post || m.alto_liston_amarre || m.ancho_liston);
+        const wListonPost = (wUser && wUser > 0) ? wUser : 80;
+        const hVanoUtilPost = Math.max(50, hCarcasa - (tienePiso ? t : 0) - (tieneTecho ? t : 0));
+        const zStartPost = zBase + (tienePiso ? t : 0);
 
-        if (cantPost === 1) {
-          prismas.push({
-            x: xMod + t, y: profMod - t, z: zBase + hCarcasa - t - hListonPost,
-            dx: anchoInt, dy: t, dz: hListonPost,
-            mat, name: `M${idx + 1} Listón Posterior Superior`,
-            moduloIndex: idx
-          });
-        } else {
-          const espacioGaps = Math.max(0, hVanoUtilPost - (cantPost * hListonPost));
-          const pasoGap = espacioGaps / (cantPost - 1);
-
-          for (let k = 0; k < cantPost; k++) {
-            const zPos = zBase + t + Math.round(k * (hListonPost + pasoGap));
-            let nom = `M${idx + 1} Listón Posterior `;
-            if (k === 0) nom += 'Inferior';
-            else if (k === cantPost - 1) nom += 'Superior';
-            else nom += `Intermedio ${k}`;
-
+        if (orientacionPost === 'vertical') {
+          // Listones VERTICALES en el fondo:
+          // Se extienden en Z cubriendo la altura del vano interior.
+          // Se distribuyen en X a lo ancho del módulo para fijación a pared.
+          if (cantPost === 1) {
+            const xPos = xMod + xOffsetInt + (anchoInt / 2) - (wListonPost / 2);
             prismas.push({
-              x: xMod + t, y: profMod - t, z: zPos,
-              dx: anchoInt, dy: t, dz: hListonPost,
-              mat, name: nom,
+              x: xPos, y: profMod - t, z: zStartPost,
+              dx: wListonPost, dy: t, dz: hVanoUtilPost,
+              mat, name: `M${idx + 1} Listón Fondo Vertical Central`,
               moduloIndex: idx
             });
+          } else {
+            const espacioGapsX = Math.max(0, anchoInt - (cantPost * wListonPost));
+            const pasoGapX = (cantPost > 1) ? espacioGapsX / (cantPost - 1) : 0;
+
+            for (let k = 0; k < cantPost; k++) {
+              const xPos = xMod + xOffsetInt + Math.round(k * (wListonPost + pasoGapX));
+              let nom = `M${idx + 1} Listón Fondo Vertical `;
+              if (k === 0) nom += 'Izquierdo';
+              else if (k === cantPost - 1) nom += 'Derecho';
+              else nom += `Intermedio ${k}`;
+
+              prismas.push({
+                x: xPos, y: profMod - t, z: zStartPost,
+                dx: wListonPost, dy: t, dz: hVanoUtilPost,
+                mat, name: nom,
+                moduloIndex: idx
+              });
+            }
+          }
+        } else {
+          // Listones HORIZONTALES en el fondo (repartidos a lo alto):
+          if (cantPost === 1) {
+            prismas.push({
+              x: xMod + xOffsetInt, y: profMod - t, z: zBase + hCarcasa - t - wListonPost,
+              dx: anchoInt, dy: t, dz: wListonPost,
+              mat, name: `M${idx + 1} Listón Posterior Superior`,
+              moduloIndex: idx
+            });
+          } else {
+            const espacioGaps = Math.max(0, hVanoUtilPost - (cantPost * wListonPost));
+            const pasoGap = espacioGaps / (cantPost - 1);
+
+            for (let k = 0; k < cantPost; k++) {
+              const zPos = zBase + t + Math.round(k * (wListonPost + pasoGap));
+              let nom = `M${idx + 1} Listón Posterior `;
+              if (k === 0) nom += 'Inferior';
+              else if (k === cantPost - 1) nom += 'Superior';
+              else nom += `Intermedio ${k}`;
+
+              prismas.push({
+                x: xMod + xOffsetInt, y: profMod - t, z: zPos,
+                dx: anchoInt, dy: t, dz: wListonPost,
+                mat, name: nom,
+                moduloIndex: idx
+              });
+            }
           }
         }
       }
 
-      // Fondo Posterior (MDF, Melamina o Ninguno)
-      const tipoFondo = m.tipo_fondo || (m.tiene_fondo_mdf !== false ? 'mdf' : 'ninguno');
+      // Fondo Posterior (Fondo Panel, MDF, Melamina o Ninguno)
       const posFondo = m.posicion_fondo_mdf || 'delante_liston';
-      const matMdf = 'MDF Fondo Blanco 3mm';
+      const grosorMdf = parseFloat(m.grosor_mdf) || 3;
+      const profRanura = (m.prof_ranura_mdf !== undefined) ? parseFloat(m.prof_ranura_mdf) : 8;
+      const distRanura = (m.dist_ranura_mdf !== undefined) ? Math.max(0, parseFloat(m.dist_ranura_mdf)) : 0;
+      const matMdf = `MDF Fondo Blanco ${grosorMdf}mm`;
 
-      if (tipoFondo === 'mdf') {
-        if (posFondo === 'delante_liston') {
-          // Fondo incrustado en ranura delante del listón (7mm de profundidad de ranura por lado)
+      if (tipoFondo === 'panel' || (esModuloVacio && tieneFondo)) {
+        const tieneListonesPared = (m.panel_tiene_listones_pared !== false && m.panel_tiene_listones_pared !== 'false');
+        const cantPanelList = Math.max(1, Math.min(4, parseInt(m.cant_listones_panel) || 2));
+        const hListonPanel = Math.max(20, parseFloat(m.medida_liston_panel) || 80);
+        const yListon = profMod - t;
+        const yPanel = tieneListonesPared ? Math.max(0, profMod - (2 * t)) : (profMod - t);
+
+        if (esModuloVacio) {
+          // REGLA: Si no tiene laterales ni techo ni piso, el fondo panel abarca TODA la dimensión completa (ancho y alto total) del módulo
           prismas.push({
-            x: xMod + t - 7, y: profMod - t - 3, z: zBase + t - 7,
-            dx: anchoInt + 14, dy: 3, dz: (hCarcasa - 2 * t) + 14,
-            mat: matMdf, name: `M${idx + 1} Fondo MDF Ranurado 3mm`,
+            x: xMod,
+            y: yPanel,
+            z: zStack,
+            dx: wMod,
+            dy: t,
+            dz: hMod,
+            mat,
+            name: `M${idx + 1} Fondo Panel Completo ${t}mm (${wMod}x${hMod}mm)`,
+            moduloIndex: idx
+          });
+
+          // Listones posteriores atornillados a pared (soporte / anclaje estructural)
+          if (tieneListonesPared) {
+            const orientacionPanelList = m.panel_orientacion_listones || 'horizontal';
+            if (orientacionPanelList === 'vertical') {
+              const altoListonPanel = Math.max(50, hMod - 60);
+              const zListon = zStack + 30;
+              const wListonPanel = hListonPanel;
+              const espacioGapsX = Math.max(0, (wMod - 60) - (cantPanelList * wListonPanel));
+              const pasoGapX = (cantPanelList > 1) ? espacioGapsX / (cantPanelList - 1) : 0;
+
+              for (let k = 0; k < cantPanelList; k++) {
+                const xPos = xMod + 30 + Math.round(k * (wListonPanel + pasoGapX));
+                prismas.push({
+                  x: xPos, y: yListon, z: zListon,
+                  dx: wListonPanel, dy: t, dz: altoListonPanel,
+                  mat, name: `M${idx + 1} Listón Vertical Anclaje Pared Panel ${k + 1}/${cantPanelList}`,
+                  moduloIndex: idx
+                });
+              }
+            } else {
+              const largoListonPanel = Math.max(50, wMod - 60); // Retranqueado 30mm por lado para quedar oculto
+              const xListon = xMod + 30;
+
+              for (let k = 0; k < cantPanelList; k++) {
+                let zListon = zStack + 50;
+                if (cantPanelList === 1) {
+                  zListon = zStack + hMod - hListonPanel - 50;
+                } else if (cantPanelList === 2) {
+                  zListon = (k === 0) ? (zStack + 50) : (zStack + hMod - hListonPanel - 50);
+                } else {
+                  zListon = zStack + 50 + k * ((hMod - 100 - hListonPanel) / (cantPanelList - 1));
+                }
+
+                prismas.push({
+                  x: xListon,
+                  y: yListon,
+                  z: zListon,
+                  dx: largoListonPanel,
+                  dy: t,
+                  dz: hListonPanel,
+                  mat,
+                  name: `M${idx + 1} Listón Anclaje Pared ${k + 1} (${largoListonPanel}x${hListonPanel}mm)`,
+                  moduloIndex: idx
+                });
+              }
+            }
+          }
+        } else {
+          // Fondo panel embutido de melamina
+          const hVanoUtilLocal = Math.max(0, hCarcasa - (tienePiso ? t : 0) - (tieneTecho ? t : 0));
+          prismas.push({
+            x: xMod + xOffsetInt,
+            y: yPanel,
+            z: zIntBase,
+            dx: anchoInt,
+            dy: t,
+            dz: Math.max(80, hVanoUtilLocal),
+            mat,
+            name: `M${idx + 1} Fondo Panel Melamina ${t}mm (${anchoInt}x${hVanoUtilLocal}mm)`,
+            moduloIndex: idx
+          });
+
+          if (tieneListonesPared) {
+            const largoListonPanel = anchoInt;
+            const xListon = xMod + xOffsetInt;
+
+            for (let k = 0; k < cantPanelList; k++) {
+              let zListon = zIntBase + 40;
+              if (cantPanelList === 1) {
+                zListon = zIntBase + hVanoUtilLocal - hListonPanel - 40;
+              } else if (cantPanelList === 2) {
+                zListon = (k === 0) ? (zIntBase + 40) : (zIntBase + hVanoUtilLocal - hListonPanel - 40);
+              } else {
+                zListon = zIntBase + 40 + k * ((hVanoUtilLocal - 80 - hListonPanel) / (cantPanelList - 1));
+              }
+
+              prismas.push({
+                x: xListon,
+                y: yListon,
+                z: zListon,
+                dx: largoListonPanel,
+                dy: t,
+                dz: hListonPanel,
+                mat,
+                name: `M${idx + 1} Listón Anclaje Pared ${k + 1} (${largoListonPanel}x${hListonPanel}mm)`,
+                moduloIndex: idx
+              });
+            }
+          }
+        }
+      } else if (tipoFondo === 'mdf') {
+        if (posFondo === 'delante_liston') {
+          // Fondo incrustado en ranura con retranqueo posterior (0mm = al borde posterior)
+          const hVanoPost = Math.max(0, hCarcasa - (tienePiso ? t : 0) - (tieneTecho ? t : 0));
+          const wMdf = anchoInt + (2 * profRanura) - 2;
+          const hMdf = hVanoPost + (2 * profRanura) - 2;
+          prismas.push({
+            x: xMod + xOffsetInt - profRanura + 1,
+            y: profMod - distRanura - grosorMdf,
+            z: zIntBase - profRanura + 1,
+            dx: wMdf, dy: grosorMdf, dz: hMdf,
+            mat: matMdf, name: `M${idx + 1} Fondo MDF Ranurado ${grosorMdf}mm (Prof. Post: ${distRanura}mm)`,
             moduloIndex: idx
           });
         } else {
-          // Fondo sobrepuesto por detrás del listón
+          // Fondo sobrepuesto por detrás con las medidas completas del módulo
           prismas.push({
-            x: xMod, y: profMod, z: zBase,
-            dx: wMod, dy: 3, dz: hCarcasa,
-            mat: matMdf, name: `M${idx + 1} Fondo MDF Sobrepuesto 3mm`,
+            x: xMod, y: profMod, z: zStack,
+            dx: wMod, dy: grosorMdf, dz: hMod,
+            mat: matMdf, name: `M${idx + 1} Fondo MDF Sobrepuesto ${grosorMdf}mm (${wMod}x${hMod}mm)`,
             moduloIndex: idx
           });
         }
       } else if (tipoFondo === 'melamina') {
-        const posMel = m.posicion_fondo_melamina || 'embutido';
-        const usaListonPost = (m.tiene_liston_posterior || m.tiene_liston_post || (m.tiene_liston_amarre && (m.posicion_liston_amarre === 'posterior' || m.posicion_liston_amarre === 'ambos')));
-        if (posMel === 'embutido') {
-          const yMel = profMod - t - (usaListonPost ? t : 0);
-          prismas.push({
-            x: xMod + t, y: yMel, z: zBase + t,
-            dx: anchoInt, dy: t, dz: hCarcasa - (2 * t),
-            mat, name: `M${idx + 1} Fondo Melamina Embutido ${t}mm`,
-            moduloIndex: idx
-          });
-        } else {
-          prismas.push({
-            x: xMod, y: profMod, z: zBase,
-            dx: wMod, dy: t, dz: hCarcasa,
-            mat, name: `M${idx + 1} Fondo Melamina Sobrepuesto ${t}mm`,
-            moduloIndex: idx
-          });
-        }
+        const hVanoUtilLocal = Math.max(0, hCarcasa - (tienePiso ? t : 0) - (tieneTecho ? t : 0));
+        const altoFondoMel = (m.alto_fondo_melamina !== null && m.alto_fondo_melamina !== undefined && parseFloat(m.alto_fondo_melamina) < hVanoUtilLocal)
+          ? Math.max(80, Math.min(hVanoUtilLocal, parseFloat(m.alto_fondo_melamina)))
+          : hVanoUtilLocal;
+        const distFondoMel = (m.dist_fondo_melamina !== undefined) ? Math.max(0, parseFloat(m.dist_fondo_melamina)) : 0;
+
+        // Se ajusta de arriba para abajo: anclado en zTop, desciende altoFondoMel
+        const zTopLocal = zIntBase + hVanoUtilLocal;
+        const zFondoMel = zTopLocal - altoFondoMel;
+        const yMel = profMod - distFondoMel - t;
+
+        prismas.push({
+          x: xMod + xOffsetInt, y: yMel, z: zFondoMel,
+          dx: anchoInt, dy: t, dz: altoFondoMel,
+          mat, name: `M${idx + 1} Fondo Melamina Embutido ${t}mm (${anchoInt}x${altoFondoMel}mm${distFondoMel > 0 ? `, Retranqueo: ${distFondoMel}mm` : ''})`,
+          moduloIndex: idx
+        });
       }
 
       // 3. COMPONENTES INTERIORES
       const tipoInt = m.tipo_interior || 'carcasa';
-      const hVanoUtil = hCarcasa - (2 * t);
+      const hVanoUtil = Math.max(0, hCarcasa - (tienePiso ? t : 0) - (tieneTecho ? t : 0));
 
       if (tipoInt === 'repisas') {
         const geo = (typeof window.calcularDivisionesYEspaciosModulo === 'function')
@@ -528,9 +1078,9 @@ const Preview3D = (function() {
           geo.parantes.forEach((p, pIdx) => {
             if (geo.limites.tipo === 'vertical') {
               prismas.push({
-                x: xMod + t + p.posicion,
+                x: xMod + xOffsetInt + p.posicion,
                 y: yStart,
-                z: zBase + t,
+                z: zIntBase,
                 dx: p.dx,
                 dy: dyRep,
                 dz: p.dz,
@@ -540,9 +1090,9 @@ const Preview3D = (function() {
               });
             } else if (geo.limites.tipo === 'horizontal') {
               prismas.push({
-                x: xMod + t,
+                x: xMod + xOffsetInt,
                 y: yStart,
-                z: zBase + t + p.posicion,
+                z: zIntBase + p.posicion,
                 dx: p.dx,
                 dy: dyRep,
                 dz: p.dz,
@@ -559,9 +1109,9 @@ const Preview3D = (function() {
             if (Array.isArray(esp.subParantes) && esp.subParantes.length > 0) {
               esp.subParantes.forEach((sp, spIdx) => {
                 prismas.push({
-                  x: xMod + t + sp.x,
+                  x: xMod + xOffsetInt + sp.x,
                   y: yStart,
-                  z: zBase + t + sp.z,
+                  z: zIntBase + sp.z,
                   dx: sp.dx,
                   dy: dyRep,
                   dz: sp.dz,
@@ -575,9 +1125,9 @@ const Preview3D = (function() {
             // Repisas en este espacio
             esp.repisas.forEach((rep) => {
               prismas.push({
-                x: xMod + t + rep.xStart,
+                x: xMod + xOffsetInt + rep.xStart,
                 y: yStart,
-                z: zBase + t + rep.zStart + rep.zRel,
+                z: zIntBase + rep.zStart + rep.zRel,
                 dx: rep.ancho,
                 dy: dyRep,
                 dz: rep.espesor,
@@ -599,9 +1149,9 @@ const Preview3D = (function() {
             const profRep = profInfoFallback.profUtil;
 
             for (let r = 1; r <= cantRep; r++) {
-              const zRep = zBase + t + (r * pasoRep);
+              const zRep = zIntBase + (r * pasoRep);
               prismas.push({
-                x: xMod + t, y: yRep, z: zRep,
+                x: xMod + xOffsetInt, y: yRep, z: zRep,
                 dx: anchoInt, dy: profRep, dz: t,
                 mat, name: `M${idx + 1} Repisa ${r}`,
                 moduloIndex: idx
@@ -614,9 +1164,9 @@ const Preview3D = (function() {
         const altoFr = (hVanoUtil - (cantCaj * 3)) / cantCaj;
 
         for (let c = 0; c < cantCaj; c++) {
-          const zFr = zBase + t + 3 + (c * (altoFr + 3));
+          const zFr = zIntBase + 3 + (c * (altoFr + 3));
           prismas.push({
-            x: xMod + t + 3, y: -2, z: zFr,
+            x: xMod + xOffsetInt + 3, y: -2, z: zFr,
             dx: anchoInt - 6, dy: t, dz: altoFr,
             mat: m.material_frentes || mat, name: `M${idx + 1} Frente Cajón ${c + 1}`,
             moduloIndex: idx
@@ -638,8 +1188,6 @@ const Preview3D = (function() {
           });
         }
       }
-
-      xAcumulado += wMod;
     });
 
     return prismas;
@@ -710,9 +1258,15 @@ const Preview3D = (function() {
     dibujarPisoYRejilla(ctx, proyectar, anchoTotal, profTotal, isDark);
 
     // =========================================================================
-    // ESTADO 2: DELINEADO (Rectángulo delineado según dimensiones ingresadas)
+    // ESTADO 2 / 3: DELINEADO Y/O ZÓCALO BASE EN TIEMPO REAL
     // =========================================================================
-    if (d.estado === 'delineado' || !d.modulos || d.modulos.length === 0) {
+    const tieneZocaloGlobal = (d.tiene_zocalo === true || d.tiene_zocalo === 'true');
+    const zocaloGlobalH = tieneZocaloGlobal ? (parseFloat(d.alto_zocalo) || 100) : 0;
+    const hayZocaloActivo = tieneZocaloGlobal && zocaloGlobalH > 0 && anchoTotal > 0 && profTotal > 0;
+    const sinModulos = (!d.modulos || d.modulos.length === 0);
+
+    // Si no hay módulos Y tampoco hay zócalo activo, trazar únicamente el marco delineado vacío
+    if (sinModulos && !hayZocaloActivo) {
       dibujarRectanguloDelineado(ctx, proyectar, anchoTotal, altoTotal, profTotal, isDark);
       if (renderOptions.mostrarCotas) {
         dibujarCotasGlobales(ctx, proyectar, anchoTotal, altoTotal, profTotal, isDark);
@@ -721,11 +1275,14 @@ const Preview3D = (function() {
       return;
     }
 
-    // =========================================================================
-    // ESTADO 3: MÓDULOS ARMADOS DENTRO DEL RECTÁNGULO DELINEADO
-    // =========================================================================
-    // 1. Dibujar el marco envolvente en trazo sutil de fondo
-    dibujarMarcoEnvolventeFondo(ctx, proyectar, anchoTotal, altoTotal, profTotal, isDark);
+    // Si hay zócalo pero aún no hay módulos configurados:
+    // Dibujar el marco delineado técnico para el volumen superior sobrante de los módulos
+    if (sinModulos && hayZocaloActivo) {
+      dibujarMarcoEnvolventeSuperior(ctx, proyectar, anchoTotal, zocaloGlobalH, altoTotal, profTotal, isDark);
+    } else {
+      // Dibujar el marco envolvente en trazo sutil de fondo cuando hay módulos
+      dibujarMarcoEnvolventeFondo(ctx, proyectar, anchoTotal, altoTotal, profTotal, isDark);
+    }
 
     // 2. Construir y proyectar todas las caras de melamina
     const prismas = generarPrismasModulos();
@@ -736,7 +1293,7 @@ const Preview3D = (function() {
     lightDir.x /= lLen; lightDir.y /= lLen; lightDir.z /= lLen;
 
     prismas.forEach(prisma => {
-      const { x, y, z, dx, dy, dz, mat, moduloIndex } = prisma;
+      const { x, y, z, dx, dy, dz, mat, moduloIndex, esZocaloFrontal, esListonSoporteZocalo, esZocaloBase } = prisma;
 
       const defCaras = [
         { norm: { x: 0, y: 0, z: 1 }, pts: [[x, y, z + dz], [x + dx, y, z + dz], [x + dx, y + dy, z + dz], [x, y + dy, z + dz]] },
@@ -765,12 +1322,19 @@ const Preview3D = (function() {
         const caraVisible = (renderOptions.modoRender === 'alambre') || (dotCam > 0.001);
 
         if (caraVisible) {
+          // Si es la cara frontal del zócalo frontal (la que mira hacia adelante al usuario),
+          // le aplicamos una leve prioridad de profundidad para evitar artefactos coplanares
+          const prioridadFrontal = (esZocaloFrontal && fc.norm.y < 0) ? -0.5 : 0;
           caras.push({
             puntos: fc.pts.map(p => proyectar(p[0], p[1], p[2])),
-            profundidadVista: projCentro.profundidadVista,
+            profundidadVista: projCentro.profundidadVista + prioridadFrontal,
             factorLuz,
             mat,
-            moduloIndex
+            moduloIndex,
+            esZocaloFrontal: !!esZocaloFrontal,
+            esListonSoporteZocalo: !!esListonSoporteZocalo,
+            esNoPermitido: !!prisma.esNoPermitido,
+            esZocaloBase: !!esZocaloBase
           });
         }
       });
@@ -786,9 +1350,23 @@ const Preview3D = (function() {
       const paleta = obtenerPaleta(cara.mat);
       const [r, g, b] = paleta.base;
       const f = cara.factorLuz;
-      const fill = `rgb(${Math.round(r * f)}, ${Math.round(g * f)}, ${Math.round(b * f)})`;
+      let fill = `rgb(${Math.round(r * f)}, ${Math.round(g * f)}, ${Math.round(b * f)})`;
 
-      const esActivo = (cara.moduloIndex === d.modulo_activo);
+      if (cara.esZocaloFrontal) {
+        // Zócalo frontal continuo: melamina sólida 100% opaca nítida
+        fill = `rgb(${Math.round(r * f)}, ${Math.round(g * f)}, ${Math.round(b * f)})`;
+      } else if (cara.esListonSoporteZocalo) {
+        // Listones internos de soporte: si violan la norma de 150mm, destacar en rojo advertencia
+        if (cara.esNoPermitido) {
+          fill = `rgb(${Math.round(239 * f)}, ${Math.round(68 * f)}, ${Math.round(68 * f)})`;
+        } else {
+          fill = `rgb(${Math.min(255, Math.round(r * 1.05 * f))}, ${Math.round(g * 0.95 * f)}, ${Math.round(b * 0.85 * f)})`;
+        }
+      }
+
+      const esActivo = (d.modo_seleccion === 'diseno' || d.modulo_activo === -1 || cara.esZocaloBase || sinModulos)
+        ? true
+        : (cara.moduloIndex === d.modulo_activo);
 
       ctx.beginPath();
       ctx.moveTo(cara.puntos[0].px, cara.puntos[0].py);
@@ -800,26 +1378,67 @@ const Preview3D = (function() {
       if (!modoAlambre) {
         ctx.fillStyle = fill;
         ctx.fill();
-        ctx.strokeStyle = esActivo ? '#2563EB' : paleta.border;
-        ctx.lineWidth = esActivo ? 1.5 : 0.8;
+        ctx.strokeStyle = cara.esZocaloFrontal
+          ? (isDark ? '#38BDF8' : '#1D4ED8')
+          : (cara.esListonSoporteZocalo 
+              ? (cara.esNoPermitido ? '#DC2626' : '#1E40AF') 
+              : (esActivo ? '#2563EB' : paleta.border));
+        ctx.lineWidth = (cara.esZocaloFrontal || cara.esListonSoporteZocalo) ? 1.6 : (esActivo ? 1.4 : 0.8);
         ctx.stroke();
       } else {
-        ctx.strokeStyle = esActivo ? '#2563EB' : (isDark ? '#38BDF8' : '#0284C7');
-        ctx.lineWidth = esActivo ? 1.8 : 1.0;
+        ctx.strokeStyle = cara.esZocaloFrontal 
+          ? '#38BDF8' 
+          : (cara.esListonSoporteZocalo 
+              ? (cara.esNoPermitido ? '#EF4444' : '#F59E0B') 
+              : (esActivo ? '#2563EB' : (isDark ? '#38BDF8' : '#0284C7')));
+        ctx.lineWidth = (cara.esZocaloFrontal || cara.esListonSoporteZocalo) ? 2.0 : (esActivo ? 1.8 : 1.0);
         ctx.stroke();
       }
     });
 
-    // 3. Resaltar Módulo Activo con marco envolvente brillante
-    dibujarResalteModuloActivo(ctx, proyectar, d, isDark);
+    // Si estamos en la etapa inicial de diseño con zócalo pero sin módulos aún
+    if (sinModulos && hayZocaloActivo) {
+      if (renderOptions.mostrarCotas) {
+        dibujarCotasGlobales(ctx, proyectar, anchoTotal, altoTotal, profTotal, isDark);
+      }
+      dibujarBadgeHUD(
+        "ZÓCALO EN DISEÑO (Base del Mueble)",
+        `${anchoTotal} x ${profTotal} x ${zocaloGlobalH} mm (Alto disponible módulos: ${altoTotal - zocaloGlobalH} mm)`,
+        isDark
+      );
+      return;
+    }
+
+    // 3. Resaltar Módulo Activo o Todo el Mueble según modo de selección
+    if (d.modo_seleccion === 'diseno' || d.modulo_activo === -1) {
+      dibujarResalteTodoElMueble(ctx, proyectar, d, isDark);
+    } else {
+      dibujarResalteModuloActivo(ctx, proyectar, d, isDark);
+    }
 
     // 4. Dibujar Cotas Milimétricas individuales por módulo y globales
     if (renderOptions.mostrarCotas) {
       dibujarCotasModulares(ctx, proyectar, d, isDark);
     }
 
-    // 5. HUD de estado en tiempo real
-    dibujarBadgeHUD(`MÓDULOS ARMADOS (${d.modulos.length} Módulos)`, `${anchoTotal} x ${altoTotal} x ${profTotal} mm | Melamina ${d.espesor}mm`, isDark);
+    // 4.1. Dibujar Cotas dimensionales del módulo o submódulo seleccionado activo
+    if (d.modo_seleccion !== 'diseno' && d.modulo_activo >= 0) {
+      dibujarCotasModuloSeleccionado(ctx, proyectar, d, isDark);
+    }
+
+    // 5. HUD de estado en tiempo real (esquina inferior izquierda)
+    if (d.modo_seleccion === 'diseno' || d.modulo_activo === -1) {
+      const cant = (d.modulos && d.modulos.length) || 0;
+      dibujarBadgeHUD(`DISEÑO GENERAL: TODO EL MUEBLE`, `${anchoTotal} x ${altoTotal} x ${profTotal} mm (${cant} Módulos | Melamina ${d.espesor}mm)`, isDark);
+    } else {
+      const idx = d.modulo_activo;
+      const m = d.modulos[idx];
+      const nomMod = (m && m.nombre) ? m.nombre : `Módulo ${idx + 1}`;
+      const wMod = m ? m.ancho : 0;
+      const hMod = m ? m.alto : altoTotal;
+      const pMod = m ? m.profundidad : profTotal;
+      dibujarBadgeHUD(`${nomMod.toUpperCase()} SELECCIONADO`, `${wMod} x ${hMod} x ${pMod} mm | Elemento ${idx + 1} de ${d.modulos.length}`, isDark);
+    }
   }
 
   /**
@@ -950,6 +1569,47 @@ const Preview3D = (function() {
   }
 
   /**
+   * Dibuja el marco envolvente técnico superior para el volumen libre sobre el zócalo en diseño inicial.
+   */
+  function dibujarMarcoEnvolventeSuperior(ctx, proyectar, W, ZBase, H, D, isDark) {
+    const pts = [
+      proyectar(0, 0, ZBase), proyectar(W, 0, ZBase),
+      proyectar(W, D, ZBase), proyectar(0, D, ZBase),
+      proyectar(0, 0, H), proyectar(W, 0, H),
+      proyectar(W, D, H), proyectar(0, D, H)
+    ];
+
+    const aristas = [
+      [0, 1], [1, 2], [2, 3], [3, 0], // Base sobre el zócalo
+      [4, 5], [5, 6], [6, 7], [7, 4], // Techo superior
+      [0, 4], [1, 5], [2, 6], [3, 7]  // Pilares verticales
+    ];
+
+    ctx.save();
+    ctx.setLineDash([7, 4]);
+    ctx.strokeStyle = isDark ? '#38BDF8' : '#0284C7';
+    ctx.lineWidth = 1.8;
+
+    aristas.forEach(([i, j]) => {
+      ctx.beginPath();
+      ctx.moveTo(pts[i].px, pts[i].py);
+      ctx.lineTo(pts[j].px, pts[j].py);
+      ctx.stroke();
+    });
+
+    // Marcadores de esquina tipo CAD
+    ctx.setLineDash([]);
+    ctx.fillStyle = isDark ? '#38BDF8' : '#0284C7';
+    pts.forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.px, p.py, 3.0, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    ctx.restore();
+  }
+
+  /**
    * Resalta visualmente el módulo actualmente activo/seleccionado en el formulario.
    */
   function dibujarResalteModuloActivo(ctx, proyectar, d, isDark) {
@@ -957,20 +1617,20 @@ const Preview3D = (function() {
     const modulos = d.modulos || [];
     if (idx < 0 || idx >= modulos.length) return;
 
-    let xOffset = 0;
-    for (let i = 0; i < idx; i++) {
-      xOffset += (modulos[i].ancho || 0);
-    }
+    const geomMapeo = calcularGeometriaColumnasYApilado(modulos);
+    const geom = geomMapeo[idx] || { xPos: 0, zBaseStack: 0, wMod: modulos[idx].ancho || 600 };
+    const xOffset = geom.xPos;
+    const zOffset = geom.zBaseStack;
 
     const m = modulos[idx];
-    const wMod = m.ancho || 600;
+    const wMod = geom.wMod;
     const hMod = m.alto || d.alto_total || 2100;
     const profMod = m.profundidad || d.prof_total || 600;
 
-    const p1 = proyectar(xOffset, 0, 0);
-    const p2 = proyectar(xOffset + wMod, 0, 0);
-    const p3 = proyectar(xOffset + wMod, 0, hMod);
-    const p4 = proyectar(xOffset, 0, hMod);
+    const p1 = proyectar(xOffset, 0, zOffset);
+    const p2 = proyectar(xOffset + wMod, 0, zOffset);
+    const p3 = proyectar(xOffset + wMod, 0, zOffset + hMod);
+    const p4 = proyectar(xOffset, 0, zOffset + hMod);
 
     ctx.save();
     ctx.strokeStyle = '#F59E0B'; // Ámbar PrimeNG
@@ -989,11 +1649,74 @@ const Preview3D = (function() {
     const midTopX = (p3.px + p4.px) / 2;
     const midTopY = (p3.py + p4.py) / 2 - 14;
 
+    const nomMod = (m && m.nombre) ? m.nombre : `Módulo ${idx + 1}`;
     ctx.setLineDash([]);
     ctx.fillStyle = '#F59E0B';
     ctx.font = 'bold 11px -apple-system, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(`★ MÓDULO ${idx + 1} ACTIVO (${wMod} mm)`, midTopX, midTopY);
+    ctx.fillText(`★ ${nomMod.toUpperCase()} ACTIVO (${wMod}x${hMod} mm)`, midTopX, midTopY);
+    ctx.restore();
+  }
+
+  /**
+   * Resalta visualmente TODO el mueble cuando está activo el modo "Diseño".
+   * Traza la caja delimitadora envolvente tridimensional con efecto técnico CAD y etiqueta.
+   */
+  function dibujarResalteTodoElMueble(ctx, proyectar, d, isDark) {
+    const w = d.ancho_total || 0;
+    const h = d.alto_total || 0;
+    const prof = d.prof_total || 0;
+    if (w <= 0 || h <= 0) return;
+
+    // Cara frontal envolvente
+    const p1 = proyectar(0, 0, 0);
+    const p2 = proyectar(w, 0, 0);
+    const p3 = proyectar(w, 0, h);
+    const p4 = proyectar(0, 0, h);
+
+    // Cara posterior envolvente
+    const p5 = proyectar(0, prof, 0);
+    const p6 = proyectar(w, prof, 0);
+    const p7 = proyectar(w, prof, h);
+    const p8 = proyectar(0, prof, h);
+
+    ctx.save();
+    const colorHighlight = isDark ? '#38BDF8' : '#2563EB';
+    ctx.strokeStyle = colorHighlight;
+    ctx.lineWidth = 2.0;
+    ctx.setLineDash([6, 4]);
+
+    // Marco frontal
+    ctx.beginPath();
+    ctx.moveTo(p1.px, p1.py);
+    ctx.lineTo(p2.px, p2.py);
+    ctx.lineTo(p3.px, p3.py);
+    ctx.lineTo(p4.px, p4.py);
+    ctx.closePath();
+    ctx.stroke();
+
+    // Aristas de profundidad
+    ctx.beginPath();
+    ctx.moveTo(p1.px, p1.py); ctx.lineTo(p5.px, p5.py);
+    ctx.moveTo(p2.px, p2.py); ctx.lineTo(p6.px, p6.py);
+    ctx.moveTo(p3.px, p3.py); ctx.lineTo(p7.px, p7.py);
+    ctx.moveTo(p4.px, p4.py); ctx.lineTo(p8.px, p8.py);
+    // Marco posterior
+    ctx.moveTo(p5.px, p5.py); ctx.lineTo(p6.px, p6.py);
+    ctx.lineTo(p7.px, p7.py); ctx.lineTo(p8.px, p8.py);
+    ctx.closePath();
+    ctx.stroke();
+
+    // Etiqueta flotante superior
+    const midTopX = (p3.px + p4.px) / 2;
+    const midTopY = Math.min(p3.py, p4.py) - 16;
+
+    ctx.setLineDash([]);
+    ctx.fillStyle = colorHighlight;
+    ctx.font = 'bold 11px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    const cantModsText = (d.modulos && d.modulos.length > 0) ? ` (${d.modulos.length} Módulos)` : '';
+    ctx.fillText(`★ DISEÑO GENERAL: TODO EL MUEBLE${cantModsText}`, midTopX, midTopY);
     ctx.restore();
   }
 
@@ -1041,18 +1764,19 @@ const Preview3D = (function() {
     ctx.strokeStyle = colorCota;
     ctx.lineWidth = 1.0;
 
-    let xAcum = 0;
     const modulos = d.modulos || [];
+    const geomMapeo = calcularGeometriaColumnasYApilado(modulos);
 
-    // Cotas de ancho individuales por módulo en la parte superior
+    // Cotas de ancho por columna única en la parte superior
+    const colsVistas = new Set();
     modulos.forEach((m, idx) => {
-      const wMod = m.ancho || 600;
-      const hMod = m.alto || d.alto_total || 2100;
-      const p1 = proyectar(xAcum, 0, hMod + 40);
-      const p2 = proyectar(xAcum + wMod, 0, hMod + 40);
+      const geom = geomMapeo[idx];
+      if (!geom || colsVistas.has(geom.colIdx)) return;
+      const wColCota = geom.wCol || geom.wMod;
+      const p1 = proyectar(geom.xPos, 0, d.alto_total + 40);
+      const p2 = proyectar(geom.xPos + wColCota, 0, d.alto_total + 40);
 
-      trazarLineaCota(ctx, p1.px, p1.py, p2.px, p2.py, `M${idx + 1}: ${wMod}`);
-      xAcum += wMod;
+      trazarLineaCota(ctx, p1.px, p1.py, p2.px, p2.py, `Col ${geom.colIdx + 1}: ${wColCota}`);
     });
 
     // Cota Total Global superior
@@ -1066,6 +1790,179 @@ const Preview3D = (function() {
     const pH2 = proyectar(-60, 0, d.alto_total);
     trazarLineaCota(ctx, pH1.px, pH1.py, pH2.px, pH2.py, `${d.alto_total} mm`);
 
+    // Cota de Zócalo Inferior si está activo
+    const tieneZocaloGlobal = (d.tiene_zocalo === true || d.tiene_zocalo === 'true');
+    const zocaloGlobalH = tieneZocaloGlobal ? (parseFloat(d.alto_zocalo) || 100) : 0;
+    if (tieneZocaloGlobal && zocaloGlobalH > 0) {
+      const pZ1 = proyectar(-25, 0, 0);
+      const pZ2 = proyectar(-25, 0, zocaloGlobalH);
+      trazarLineaCota(ctx, pZ1.px, pZ1.py, pZ2.px, pZ2.py, `Zócalo: ${zocaloGlobalH}`);
+    }
+
+    ctx.restore();
+  }
+
+  /**
+   * Dibuja las cotas específicas del módulo o submódulo seleccionado activo.
+   * Muestra las cotas exactas de Ancho (W), Alto (H) y Profundidad (D)
+   * del elemento seleccionado con estilo técnico ámbar / dorado destacado.
+   */
+  function dibujarCotasModuloSeleccionado(ctx, proyectar, d, isDark) {
+    const idx = d.modulo_activo;
+    const modulos = d.modulos || [];
+    if (idx < 0 || idx >= modulos.length) return;
+
+    const geomMapeo = calcularGeometriaColumnasYApilado(modulos);
+    const geom = geomMapeo[idx];
+    if (!geom) return;
+
+    const m = modulos[idx];
+    const x0 = geom.xPos;
+    const wMod = (m && m.ancho > 0) ? m.ancho : geom.wMod;
+    const x1 = x0 + wMod;
+
+    const z0 = geom.zBaseStack;
+    const hMod = (m && m.alto > 0) ? m.alto : geom.hMod;
+    const z1 = z0 + hMod;
+
+    const profMod = (m && m.profundidad > 0) ? m.profundidad : (d.prof_total || 600);
+    const y0 = 0;
+    const y1 = profMod;
+
+    const vista = camera.vistaActual || 'iso';
+    const colorSel = isDark ? '#FBBF24' : '#D97706'; // Ámbar PrimeNG
+
+    ctx.save();
+    ctx.font = 'bold 10px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // 1. COTA DE ANCHO (W) DEL MÓDULO O SUBMÓDULO SELECCIONADO
+    // Visible en vista isométrica, frontal y planta
+    if (vista !== 'side') {
+      const offZ = (z0 === 0) ? -28 : -20;
+      const pW1 = proyectar(x0, -12, z0 + offZ);
+      const pW2 = proyectar(x1, -12, z0 + offZ);
+
+      // Líneas de extensión tenues
+      const pOrigW1 = proyectar(x0, 0, z0);
+      const pOrigW2 = proyectar(x1, 0, z0);
+      ctx.save();
+      ctx.setLineDash([2, 3]);
+      ctx.lineWidth = 0.8;
+      ctx.strokeStyle = isDark ? 'rgba(251, 191, 36, 0.45)' : 'rgba(217, 119, 6, 0.45)';
+      ctx.beginPath();
+      ctx.moveTo(pOrigW1.px, pOrigW1.py); ctx.lineTo(pW1.px, pW1.py);
+      ctx.moveTo(pOrigW2.px, pOrigW2.py); ctx.lineTo(pW2.px, pW2.py);
+      ctx.stroke();
+      ctx.restore();
+
+      trazarLineaCotaDestacada(ctx, pW1.px, pW1.py, pW2.px, pW2.py, `${wMod} mm`, colorSel, isDark);
+    }
+
+    // 2. COTA DE ALTO (H) DEL MÓDULO O SUBMÓDULO SELECCIONADO
+    // Visible en vista isométrica, frontal y lateral
+    if (vista !== 'top') {
+      const alBordeDerecho = (x1 >= ((d.ancho_total || 1800) - 40));
+      const offX = alBordeDerecho ? -26 : 26;
+      const refX = alBordeDerecho ? x0 : x1;
+
+      const pH1 = proyectar(refX + offX, -10, z0);
+      const pH2 = proyectar(refX + offX, -10, z1);
+
+      // Líneas de extensión tenues
+      const pOrigH1 = proyectar(refX, 0, z0);
+      const pOrigH2 = proyectar(refX, 0, z1);
+      ctx.save();
+      ctx.setLineDash([2, 3]);
+      ctx.lineWidth = 0.8;
+      ctx.strokeStyle = isDark ? 'rgba(251, 191, 36, 0.45)' : 'rgba(217, 119, 6, 0.45)';
+      ctx.beginPath();
+      ctx.moveTo(pOrigH1.px, pOrigH1.py); ctx.lineTo(pH1.px, pH1.py);
+      ctx.moveTo(pOrigH2.px, pOrigH2.py); ctx.lineTo(pH2.px, pH2.py);
+      ctx.stroke();
+      ctx.restore();
+
+      trazarLineaCotaDestacada(ctx, pH1.px, pH1.py, pH2.px, pH2.py, `${hMod} mm`, colorSel, isDark);
+    }
+
+    // 3. COTA DE PROFUNDIDAD (D) DEL MÓDULO O SUBMÓDULO SELECCIONADO
+    // Visible en vista isométrica, planta y lateral
+    if (vista === 'iso' || vista === 'top' || vista === 'side') {
+      const pD1 = proyectar(x1 + 18, y0, z0);
+      const pD2 = proyectar(x1 + 18, y1, z0);
+
+      // Líneas de extensión tenues
+      const pOrigD1 = proyectar(x1, y0, z0);
+      const pOrigD2 = proyectar(x1, y1, z0);
+      ctx.save();
+      ctx.setLineDash([2, 3]);
+      ctx.lineWidth = 0.8;
+      ctx.strokeStyle = isDark ? 'rgba(251, 191, 36, 0.45)' : 'rgba(217, 119, 6, 0.45)';
+      ctx.beginPath();
+      ctx.moveTo(pOrigD1.px, pOrigD1.py); ctx.lineTo(pD1.px, pD1.py);
+      ctx.moveTo(pOrigD2.px, pOrigD2.py); ctx.lineTo(pD2.px, pD2.py);
+      ctx.stroke();
+      ctx.restore();
+
+      trazarLineaCotaDestacada(ctx, pD1.px, pD1.py, pD2.px, pD2.py, `Prof: ${profMod} mm`, colorSel, isDark);
+    }
+
+    ctx.restore();
+  }
+
+  /**
+   * Traza una cota destacada con terminaciones perpendiculares y badge flotante de alto contraste.
+   */
+  function trazarLineaCotaDestacada(ctx, x1, y1, x2, y2, texto, color, isDark) {
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.6;
+
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+
+    // Ticks transversales perpendiculares en los extremos
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const len = Math.sqrt(dx * dx + dy * dy);
+    if (len > 0) {
+      const nx = -dy / len * 5;
+      const ny = dx / len * 5;
+      ctx.beginPath();
+      ctx.moveTo(x1 + nx, y1 + ny); ctx.lineTo(x1 - nx, y1 - ny);
+      ctx.moveTo(x2 + nx, y2 + ny); ctx.lineTo(x2 - nx, y2 - ny);
+      ctx.stroke();
+    }
+
+    // Badge rectangular con fondo de alto contraste para máxima legibilidad
+    const midX = (x1 + x2) / 2;
+    const midY = (y1 + y2) / 2;
+    const textWidth = ctx.measureText(texto).width;
+    const padX = 6;
+    const padY = 3;
+    const badgeW = textWidth + (padX * 2);
+    const badgeH = 16;
+
+    ctx.fillStyle = isDark ? '#0F172A' : '#FFFFFF';
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.2;
+
+    const rx = midX - (badgeW / 2);
+    const ry = midY - (badgeH / 2);
+    ctx.beginPath();
+    if (typeof ctx.roundRect === 'function') {
+      ctx.roundRect(rx, ry, badgeW, badgeH, 4);
+    } else {
+      ctx.rect(rx, ry, badgeW, badgeH);
+    }
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = color;
+    ctx.fillText(texto, midX, midY);
     ctx.restore();
   }
 
@@ -1136,7 +2033,9 @@ const Preview3D = (function() {
   function dibujarBadgeHUD(titulo, subtitulo, isDark) {
     ctx.save();
     const x = 16;
-    const y = 16;
+    const { h } = sincronizarCanvas();
+    const boxH = 46;
+    const y = Math.max(16, h - boxH - 16);
 
     ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.85)' : 'rgba(255, 255, 255, 0.9)';
     ctx.strokeStyle = isDark ? '#334155' : '#E2E8F0';
@@ -1144,7 +2043,6 @@ const Preview3D = (function() {
 
     const pad = 10;
     const boxW = 280;
-    const boxH = 46;
 
     ctx.beginPath();
     ctx.roundRect ? ctx.roundRect(x, y, boxW, boxH, 8) : ctx.rect(x, y, boxW, boxH);
@@ -1173,26 +2071,35 @@ const Preview3D = (function() {
     const clickX = e.clientX - rect.left;
     const clickY = e.clientY - rect.top;
 
-    // En vista frontal (2D) o isométrica, proyectamos el punto central horizontal de cada módulo
     const d = currentData;
-    let xAcum = 0;
+    const geomMapeo = calcularGeometriaColumnasYApilado(d.modulos);
 
     for (let i = 0; i < d.modulos.length; i++) {
-      const wMod = d.modulos[i].ancho;
-      const xStart = xAcum;
-      const xEnd = xAcum + wMod;
-      xAcum += wMod;
+      const geom = geomMapeo[i];
+      if (!geom) continue;
 
-      // Estimación en coordenadas normalizadas de pantalla
-      const fraccionInicio = xStart / d.ancho_total;
-      const fraccionFin = xEnd / d.ancho_total;
+      const wMod = geom.wMod;
+      const hMod = d.modulos[i].alto || d.alto_total || 2100;
+      const xStart = geom.xPos;
+      const xEnd = geom.xPos + wMod;
+      const zStart = geom.zBaseStack;
+      const zEnd = geom.zBaseStack + hMod;
 
-      const pantallaInicio = rect.width * (0.2 + (fraccionInicio * 0.6));
-      const pantallaFin = rect.width * (0.2 + (fraccionFin * 0.6));
+      const fraccionInicioX = xStart / d.ancho_total;
+      const fraccionFinX = xEnd / d.ancho_total;
+      const pantallaInicioX = rect.width * (0.2 + (fraccionInicioX * 0.6));
+      const pantallaFinX = rect.width * (0.2 + (fraccionFinX * 0.6));
 
-      if (clickX >= pantallaInicio && clickX <= pantallaFin) {
-        onModuleSelectCallback(i);
-        break;
+      if (clickX >= pantallaInicioX && clickX <= pantallaFinX) {
+        const fz1 = zStart / d.alto_total;
+        const fz2 = zEnd / d.alto_total;
+        const pyTop = rect.height * (0.8 - (fz2 * 0.6));
+        const pyBottom = rect.height * (0.8 - (fz1 * 0.6));
+
+        if (clickY >= Math.min(pyTop, pyBottom) && clickY <= Math.max(pyTop, pyBottom)) {
+          onModuleSelectCallback(i);
+          return;
+        }
       }
     }
   }
@@ -1206,11 +2113,13 @@ const Preview3D = (function() {
     toggleCotas,
     resize: ajustarTamano,
     render,
-    generarPrismas: generarPrismasModulos
+    generarPrismas: generarPrismasModulos,
+    calcularListonesZocaloEstandar
   };
 
   if (typeof window !== 'undefined') {
     window.Preview3D = api;
+    window.calcularListonesZocaloEstandar = calcularListonesZocaloEstandar;
   }
 
   return api;
@@ -1219,6 +2128,7 @@ const Preview3D = (function() {
 // Asegurar disponibilidad en el objeto global window
 if (typeof window !== 'undefined') {
   window.Preview3D = Preview3D;
+  window.calcularListonesZocaloEstandar = Preview3D.calcularListonesZocaloEstandar;
 }
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = Preview3D;
