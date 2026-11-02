@@ -614,15 +614,15 @@ function armarEstructuraModularDesdePerfil(perfil) {
   const altoDisponible = h - (tieneZ ? altoZ : 0);
   const modulos = [];
 
-  const crearModulo = (idx, nombre, ancho, tipoInt, repisas = 0, cajones = 0, tienePiso = true, tieneTecho = true, tieneLaterales = true, tieneFondo = false) => {
+  const crearModulo = (idx, nombre, ancho, tipoInt, repisas = 0, cajones = 0, tienePiso = true, tieneTecho = true, tieneLaterales = true, tieneFondo = false, altoMod = null, profMod = null, colIdx = null, nivelApilado = 0) => {
     return {
       id: idx + 1,
       nombre: nombre || `Módulo ${idx + 1}`,
-      columna_idx: idx,
-      nivel_apilado: 0,
+      columna_idx: (colIdx !== null && colIdx !== undefined) ? colIdx : idx,
+      nivel_apilado: (nivelApilado !== null && nivelApilado !== undefined) ? nivelApilado : 0,
       ancho: ancho,
-      alto: altoDisponible,
-      profundidad: d,
+      alto: (altoMod && altoMod > 0) ? altoMod : altoDisponible,
+      profundidad: (profMod && profMod > 0) ? profMod : d,
       tiene_zocalo: false,
       alto_zocalo: 0,
       retrans_zocalo: AppState.retransZocalo || 35,
@@ -720,7 +720,11 @@ function armarEstructuraModularDesdePerfil(perfil) {
         ms.tiene_piso !== undefined ? ms.tiene_piso : true,
         ms.tiene_techo !== undefined ? ms.tiene_techo : true,
         ms.tiene_laterales !== undefined ? ms.tiene_laterales : true,
-        ms.tiene_fondo !== undefined ? ms.tiene_fondo : false
+        ms.tiene_fondo !== undefined ? ms.tiene_fondo : false,
+        ms.alto,
+        ms.profundidad,
+        ms.columna_idx,
+        ms.nivel_apilado
       ));
     });
   } else {

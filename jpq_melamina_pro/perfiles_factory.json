@@ -29,9 +29,30 @@
       "led_integrado": true,
       "led_ubicacion": "bajo_altos",
       "modulos_sugeridos": [
-        { "nombre": "Módulo Fregadero", "ancho_proporcional": 0.33, "tipo_interior": "puertas", "cant_repisas": 1, "tiene_piso": true, "tiene_techo": true },
-        { "nombre": "Cajonera Ollera 3C", "ancho_proporcional": 0.33, "tipo_interior": "cajonera", "cant_cajones": 3, "tiene_piso": true, "tiene_techo": true },
-        { "nombre": "Módulo Despensa", "ancho_proporcional": 0.34, "tipo_interior": "puertas", "cant_repisas": 2, "tiene_piso": true, "tiene_techo": true }
+        {
+          "nombre": "Módulo Fregadero",
+          "ancho_proporcional": 0.33,
+          "tipo_interior": "puertas",
+          "cant_repisas": 1,
+          "tiene_piso": true,
+          "tiene_techo": true
+        },
+        {
+          "nombre": "Cajonera Ollera 3C",
+          "ancho_proporcional": 0.33,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 3,
+          "tiene_piso": true,
+          "tiene_techo": true
+        },
+        {
+          "nombre": "Módulo Despensa",
+          "ancho_proporcional": 0.34,
+          "tipo_interior": "puertas",
+          "cant_repisas": 2,
+          "tiene_piso": true,
+          "tiene_techo": true
+        }
       ]
     },
     "bajo_cocina": {
@@ -51,9 +72,24 @@
       "cant_listones_zocalo": 2,
       "material_resistencia": "RH",
       "modulos_sugeridos": [
-        { "nombre": "Cajonera Ollera 3C", "ancho_proporcional": 0.33, "tipo_interior": "cajonera", "cant_cajones": 3 },
-        { "nombre": "Módulo Central Puertas", "ancho_proporcional": 0.33, "tipo_interior": "puertas", "cant_repisas": 1 },
-        { "nombre": "Módulo Der Puertas", "ancho_proporcional": 0.34, "tipo_interior": "puertas", "cant_repisas": 1 }
+        {
+          "nombre": "Cajonera Ollera 3C",
+          "ancho_proporcional": 0.33,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 3
+        },
+        {
+          "nombre": "Módulo Central Puertas",
+          "ancho_proporcional": 0.33,
+          "tipo_interior": "puertas",
+          "cant_repisas": 1
+        },
+        {
+          "nombre": "Módulo Der Puertas",
+          "ancho_proporcional": 0.34,
+          "tipo_interior": "puertas",
+          "cant_repisas": 1
+        }
       ]
     },
     "aereo_cocina": {
@@ -74,9 +110,27 @@
       "cant_listones_zocalo": 0,
       "material_resistencia": "RH",
       "modulos_sugeridos": [
-        { "nombre": "Aéreo Izq Puertas", "ancho_proporcional": 0.33, "tipo_interior": "puertas", "cant_repisas": 1, "tiene_fondo": true },
-        { "nombre": "Aéreo Cen Puertas", "ancho_proporcional": 0.33, "tipo_interior": "puertas", "cant_repisas": 1, "tiene_fondo": true },
-        { "nombre": "Aéreo Der Puertas", "ancho_proporcional": 0.34, "tipo_interior": "puertas", "cant_repisas": 1, "tiene_fondo": true }
+        {
+          "nombre": "Aéreo Izq Puertas",
+          "ancho_proporcional": 0.33,
+          "tipo_interior": "puertas",
+          "cant_repisas": 1,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Aéreo Cen Puertas",
+          "ancho_proporcional": 0.33,
+          "tipo_interior": "puertas",
+          "cant_repisas": 1,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Aéreo Der Puertas",
+          "ancho_proporcional": 0.34,
+          "tipo_interior": "puertas",
+          "cant_repisas": 1,
+          "tiene_fondo": true
+        }
       ]
     },
     "alacena": {
@@ -96,7 +150,13 @@
       "cant_listones_zocalo": 1,
       "material_resistencia": "RH",
       "modulos_sugeridos": [
-        { "nombre": "Torre Alacena 5 Repisas", "ancho_proporcional": 1.0, "tipo_interior": "repisas", "cant_repisas": 4, "tiene_fondo": true }
+        {
+          "nombre": "Torre Alacena 5 Repisas",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "repisas",
+          "cant_repisas": 4,
+          "tiene_fondo": true
+        }
       ]
     },
     "isla_cocina": {
@@ -116,8 +176,20 @@
       "cant_listones_zocalo": 2,
       "material_resistencia": "RH",
       "modulos_sugeridos": [
-        { "nombre": "Cajonera Utensilios Isla", "ancho_proporcional": 0.5, "tipo_interior": "cajonera", "cant_cajones": 3, "tiene_fondo": true },
-        { "nombre": "Módulo Puertas Almacén", "ancho_proporcional": 0.5, "tipo_interior": "puertas", "cant_repisas": 1, "tiene_fondo": true }
+        {
+          "nombre": "Cajonera Utensilios Isla",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 3,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Módulo Puertas Almacén",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "puertas",
+          "cant_repisas": 1,
+          "tiene_fondo": true
+        }
       ]
     },
     "bano_vanitorio_flotante": {
@@ -147,7 +219,14 @@
       "led_integrado": true,
       "led_ubicacion": "espejo",
       "modulos_sugeridos": [
-        { "nombre": "Vanitorio Sifón U", "ancho_proporcional": 1.0, "tipo_interior": "puertas", "cant_repisas": 1, "tiene_piso": true, "tiene_techo": true }
+        {
+          "nombre": "Vanitorio Sifón U",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "puertas",
+          "cant_repisas": 1,
+          "tiene_piso": true,
+          "tiene_techo": true
+        }
       ]
     },
     "vanitorio": {
@@ -167,7 +246,12 @@
       "cant_listones_zocalo": 0,
       "material_resistencia": "RH",
       "modulos_sugeridos": [
-        { "nombre": "Cuerpo Vanitorio 2 Puertas", "ancho_proporcional": 1.0, "tipo_interior": "puertas", "cant_repisas": 0 }
+        {
+          "nombre": "Cuerpo Vanitorio 2 Puertas",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "puertas",
+          "cant_repisas": 0
+        }
       ]
     },
     "columna_bano": {
@@ -187,7 +271,12 @@
       "cant_listones_zocalo": 0,
       "material_resistencia": "RH",
       "modulos_sugeridos": [
-        { "nombre": "Columna Flotante 4 Repisas", "ancho_proporcional": 1.0, "tipo_interior": "puertas", "cant_repisas": 3 }
+        {
+          "nombre": "Columna Flotante 4 Repisas",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "puertas",
+          "cant_repisas": 3
+        }
       ]
     },
     "botiquin": {
@@ -207,7 +296,13 @@
       "cant_listones_zocalo": 0,
       "material_resistencia": "RH",
       "modulos_sugeridos": [
-        { "nombre": "Botiquín Espejo 3 Niveles", "ancho_proporcional": 1.0, "tipo_interior": "puertas", "cant_repisas": 2, "tiene_fondo": true }
+        {
+          "nombre": "Botiquín Espejo 3 Niveles",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "puertas",
+          "cant_repisas": 2,
+          "tiene_fondo": true
+        }
       ]
     },
     "lavanderia_despensa_rh": {
@@ -239,8 +334,23 @@
       "led_integrado": true,
       "led_ubicacion": "bajo_altos",
       "modulos_sugeridos": [
-        { "nombre": "Nicho Lavadora y Aéreo", "ancho_proporcional": 0.55, "tipo_interior": "carcasa", "cant_repisas": 1, "tiene_piso": false, "tiene_techo": true },
-        { "nombre": "Armario Escobero / Jabones", "ancho_proporcional": 0.45, "tipo_interior": "puertas", "cant_repisas": 3, "tiene_piso": true, "tiene_techo": true, "tiene_fondo": true }
+        {
+          "nombre": "Nicho Lavadora y Aéreo",
+          "ancho_proporcional": 0.55,
+          "tipo_interior": "carcasa",
+          "cant_repisas": 1,
+          "tiene_piso": false,
+          "tiene_techo": true
+        },
+        {
+          "nombre": "Armario Escobero / Jabones",
+          "ancho_proporcional": 0.45,
+          "tipo_interior": "puertas",
+          "cant_repisas": 3,
+          "tiene_piso": true,
+          "tiene_techo": true,
+          "tiene_fondo": true
+        }
       ]
     },
     "lavanderia_auxiliar": {
@@ -260,8 +370,18 @@
       "cant_listones_zocalo": 2,
       "material_resistencia": "RH",
       "modulos_sugeridos": [
-        { "nombre": "Canastos Ropa Sucia", "ancho_proporcional": 0.5, "tipo_interior": "puertas", "cant_repisas": 1 },
-        { "nombre": "Cajones Ropa y Plancha", "ancho_proporcional": 0.5, "tipo_interior": "cajonera", "cant_cajones": 3 }
+        {
+          "nombre": "Canastos Ropa Sucia",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "puertas",
+          "cant_repisas": 1
+        },
+        {
+          "nombre": "Cajones Ropa y Plancha",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 3
+        }
       ]
     },
     "closet_vestidor": {
@@ -293,9 +413,27 @@
       "led_integrado": true,
       "led_ubicacion": "repi_closet",
       "modulos_sugeridos": [
-        { "nombre": "Columna Ropa Larga y Maletero", "ancho_proporcional": 0.33, "tipo_interior": "repisas", "cant_repisas": 2, "tiene_fondo": true },
-        { "nombre": "Cajonera Doble y Camisas", "ancho_proporcional": 0.34, "tipo_interior": "cajonera", "cant_cajones": 4, "tiene_fondo": true },
-        { "nombre": "Columna Ropa Corta y Pantalones", "ancho_proporcional": 0.33, "tipo_interior": "repisas", "cant_repisas": 3, "tiene_fondo": true }
+        {
+          "nombre": "Columna Ropa Larga y Maletero",
+          "ancho_proporcional": 0.33,
+          "tipo_interior": "repisas",
+          "cant_repisas": 2,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Cajonera Doble y Camisas",
+          "ancho_proporcional": 0.34,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 4,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Columna Ropa Corta y Pantalones",
+          "ancho_proporcional": 0.33,
+          "tipo_interior": "repisas",
+          "cant_repisas": 3,
+          "tiene_fondo": true
+        }
       ]
     },
     "ropero_puertas_corredizas": {
@@ -327,8 +465,20 @@
       "led_integrado": false,
       "led_ubicacion": "ninguno",
       "modulos_sugeridos": [
-        { "nombre": "Cuerpo Izq Colgado", "ancho_proporcional": 0.5, "tipo_interior": "carcasa", "cant_repisas": 1, "tiene_fondo": true },
-        { "nombre": "Cuerpo Der Cajones y Repisas", "ancho_proporcional": 0.5, "tipo_interior": "cajonera", "cant_cajones": 3, "tiene_fondo": true }
+        {
+          "nombre": "Cuerpo Izq Colgado",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "carcasa",
+          "cant_repisas": 1,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Cuerpo Der Cajones y Repisas",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 3,
+          "tiene_fondo": true
+        }
       ]
     },
     "ropero": {
@@ -348,9 +498,27 @@
       "cant_listones_zocalo": 3,
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
-        { "nombre": "Cuerpo Repisas A", "ancho_proporcional": 0.33, "tipo_interior": "repisas", "cant_repisas": 4, "tiene_fondo": true },
-        { "nombre": "Colgado Central", "ancho_proporcional": 0.34, "tipo_interior": "carcasa", "cant_repisas": 1, "tiene_fondo": true },
-        { "nombre": "Cajonera y Camisas", "ancho_proporcional": 0.33, "tipo_interior": "cajonera", "cant_cajones": 3, "tiene_fondo": true }
+        {
+          "nombre": "Cuerpo Repisas A",
+          "ancho_proporcional": 0.33,
+          "tipo_interior": "repisas",
+          "cant_repisas": 4,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Colgado Central",
+          "ancho_proporcional": 0.34,
+          "tipo_interior": "carcasa",
+          "cant_repisas": 1,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Cajonera y Camisas",
+          "ancho_proporcional": 0.33,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 3,
+          "tiene_fondo": true
+        }
       ]
     },
     "cama_cabecera_integrada": {
@@ -380,9 +548,27 @@
       "led_integrado": true,
       "led_ubicacion": "bajo_altos",
       "modulos_sugeridos": [
-        { "nombre": "Velador Izquierdo Flotante", "ancho_fijo": 450, "tipo_interior": "cajonera", "cant_cajones": 2, "tiene_fondo": true },
-        { "nombre": "Panel Central Cabecera", "ancho_proporcional": 1.0, "tipo_interior": "carcasa", "cant_repisas": 0, "tiene_fondo": true },
-        { "nombre": "Velador Derecho Flotante", "ancho_fijo": 450, "tipo_interior": "cajonera", "cant_cajones": 2, "tiene_fondo": true }
+        {
+          "nombre": "Velador Izquierdo Flotante",
+          "ancho_fijo": 450,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 2,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Panel Central Cabecera",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "carcasa",
+          "cant_repisas": 0,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Velador Derecho Flotante",
+          "ancho_fijo": 450,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 2,
+          "tiene_fondo": true
+        }
       ]
     },
     "comoda_chifonier": {
@@ -414,7 +600,13 @@
       "led_integrado": false,
       "led_ubicacion": "ninguno",
       "modulos_sugeridos": [
-        { "nombre": "Torre Chifonier 6 Cajones", "ancho_proporcional": 1.0, "tipo_interior": "cajonera", "cant_cajones": 6, "tiene_fondo": true }
+        {
+          "nombre": "Torre Chifonier 6 Cajones",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 6,
+          "tiene_fondo": true
+        }
       ]
     },
     "comoda": {
@@ -434,7 +626,13 @@
       "cant_listones_zocalo": 1,
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
-        { "nombre": "Cuerpo Cómoda 4 Cajones", "ancho_proporcional": 1.0, "tipo_interior": "cajonera", "cant_cajones": 4, "tiene_fondo": true }
+        {
+          "nombre": "Cuerpo Cómoda 4 Cajones",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 4,
+          "tiene_fondo": true
+        }
       ]
     },
     "comoda_doble": {
@@ -454,8 +652,20 @@
       "cant_listones_zocalo": 2,
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
-        { "nombre": "Columna Cajones Izq", "ancho_proporcional": 0.5, "tipo_interior": "cajonera", "cant_cajones": 4, "tiene_fondo": true },
-        { "nombre": "Columna Cajones Der", "ancho_proporcional": 0.5, "tipo_interior": "cajonera", "cant_cajones": 4, "tiene_fondo": true }
+        {
+          "nombre": "Columna Cajones Izq",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 4,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Columna Cajones Der",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 4,
+          "tiene_fondo": true
+        }
       ]
     },
     "velador": {
@@ -475,7 +685,13 @@
       "cant_listones_zocalo": 0,
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
-        { "nombre": "Cuerpo Velador 2 Cajones", "ancho_proporcional": 1.0, "tipo_interior": "cajonera", "cant_cajones": 2, "tiene_fondo": true }
+        {
+          "nombre": "Cuerpo Velador 2 Cajones",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 2,
+          "tiene_fondo": true
+        }
       ]
     },
     "zapatera": {
@@ -495,7 +711,13 @@
       "cant_listones_zocalo": 1,
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
-        { "nombre": "Zapatera 4 Repisas", "ancho_proporcional": 1.0, "tipo_interior": "repisas", "cant_repisas": 4, "tiene_fondo": true }
+        {
+          "nombre": "Zapatera 4 Repisas",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "repisas",
+          "cant_repisas": 4,
+          "tiene_fondo": true
+        }
       ]
     },
     "cabecero": {
@@ -515,7 +737,13 @@
       "cant_listones_zocalo": 0,
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
-        { "nombre": "Panel Cabecero con Repisa", "ancho_proporcional": 1.0, "tipo_interior": "carcasa", "cant_repisas": 1, "tiene_fondo": true }
+        {
+          "nombre": "Panel Cabecero con Repisa",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "carcasa",
+          "cant_repisas": 1,
+          "tiene_fondo": true
+        }
       ]
     },
     "senior_accesibilidad": {
@@ -547,8 +775,20 @@
       "led_integrado": true,
       "led_ubicacion": "bajo_altos",
       "modulos_sugeridos": [
-        { "nombre": "Cajonera Elevada Cero Agache", "ancho_proporcional": 0.5, "tipo_interior": "cajonera", "cant_cajones": 3, "tiene_fondo": true },
-        { "nombre": "Repisas Visibles con Puertas", "ancho_proporcional": 0.5, "tipo_interior": "puertas", "cant_repisas": 3, "tiene_fondo": true }
+        {
+          "nombre": "Cajonera Elevada Cero Agache",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 3,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Repisas Visibles con Puertas",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "puertas",
+          "cant_repisas": 3,
+          "tiene_fondo": true
+        }
       ]
     },
     "infantil_montessori": {
@@ -580,8 +820,20 @@
       "led_integrado": false,
       "led_ubicacion": "ninguno",
       "modulos_sugeridos": [
-        { "nombre": "Exhibidor Cuentacuentos Frontal", "ancho_proporcional": 0.5, "tipo_interior": "repisas", "cant_repisas": 2, "tiene_fondo": true },
-        { "nombre": "Gavetas Jugueteras Montessori", "ancho_proporcional": 0.5, "tipo_interior": "cajonera", "cant_cajones": 2, "tiene_fondo": true }
+        {
+          "nombre": "Exhibidor Cuentacuentos Frontal",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "repisas",
+          "cant_repisas": 2,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Gavetas Jugueteras Montessori",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 2,
+          "tiene_fondo": true
+        }
       ]
     },
     "infantil_estudio_creativo": {
@@ -593,12 +845,12 @@
       "icono": "🎨",
       "descripcion": "Mesa de estudio a altura adaptada (650mm), organizadores laterales de útiles escolares, panel para corcho/pizarra y cajones livianos.",
       "editable": false,
-      "ancho_sugerido": 1200,
-      "alto_sugerido": 1500,
-      "prof_baja": 550,
+      "ancho_sugerido": 1100,
+      "alto_sugerido": 680,
+      "prof_baja": 500,
       "prof_media": 250,
       "prof_alta": 300,
-      "altura_zocalo": 70,
+      "altura_zocalo": 60,
       "retrans_zocalo": 30,
       "cant_listones_zocalo": 1,
       "tipo_montaje": "exterior",
@@ -613,8 +865,21 @@
       "led_integrado": true,
       "led_ubicacion": "bajo_altos",
       "modulos_sugeridos": [
-        { "nombre": "Cajonera Útiles Liviana", "ancho_fijo": 380, "tipo_interior": "cajonera", "cant_cajones": 3, "tiene_fondo": true },
-        { "nombre": "Vano Mesa Dibujo y Repisas", "ancho_proporcional": 1.0, "tipo_interior": "carcasa", "cant_repisas": 1, "tiene_piso": false, "tiene_fondo": true }
+        {
+          "nombre": "Cajonera Útiles Liviana",
+          "ancho_fijo": 380,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 3,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Vano Mesa Dibujo y Repisas",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "carcasa",
+          "cant_repisas": 1,
+          "tiene_piso": false,
+          "tiene_fondo": true
+        }
       ]
     },
     "infantil_ropero_autonomia": {
@@ -634,41 +899,65 @@
       "cant_listones_zocalo": 1,
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
-        { "nombre": "Colgador Ropa Infantil Baja", "ancho_proporcional": 0.5, "tipo_interior": "puertas", "cant_repisas": 1, "tiene_fondo": true },
-        { "nombre": "Gavetas Accesibles", "ancho_proporcional": 0.5, "tipo_interior": "cajonera", "cant_cajones": 3, "tiene_fondo": true }
+        {
+          "nombre": "Colgador Ropa Infantil Baja",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "puertas",
+          "cant_repisas": 1,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Gavetas Accesibles",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 3,
+          "tiene_fondo": true
+        }
       ]
     },
     "tocador_juvenil": {
       "id": "tocador_juvenil",
-      "nombre": "Tocador Makeup Juvenil con Espejo LED",
+      "nombre": "Tocador Makeup Juvenil con Cajonera y Joyero",
       "categoria": "Infantil y Juvenil",
       "ambiente": "Ambiente Juvenil",
       "edad_genero": "Juvenil señoritas",
       "icono": "💄",
-      "descripcion": "Espejo con ranura LED perimetral neutra 4000K, cajón joyero de baja altura con rejilla organizadora y torre skincare.",
+      "descripcion": "Mesa tocador de altura ergonómica (780mm) para sentarse frente al espejo: cajonera lateral de 4 gavetas para cosméticos/skincare y vano libre para las piernas con cajón joyero superior.",
       "editable": false,
-      "ancho_sugerido": 1200,
-      "alto_sugerido": 1600,
-      "prof_baja": 500,
-      "prof_media": 300,
-      "prof_alta": 500,
+      "ancho_sugerido": 1100,
+      "alto_sugerido": 780,
+      "prof_baja": 450,
       "altura_zocalo": 80,
       "retrans_zocalo": 35,
-      "cant_listones_zocalo": 1,
-      "tipo_montaje": "exterior",
-      "luz_frentes": 2,
-      "tipo_corredera": "oculta",
-      "mdf_metodo": "ranura",
-      "distancia_ranura": 18,
-      "cant_amarres": 2,
+      "cant_listones_zocalo": 2,
       "material_resistencia": "Normal",
       "tapacanto_frentes": "Grueso_2mm",
       "tapacanto_interior": "Delgado_0.5mm",
       "led_integrado": true,
       "led_ubicacion": "espejo",
       "modulos_sugeridos": [
-        { "nombre": "Cajonera Skincare y Cremas", "ancho_fijo": 380, "tipo_interior": "cajonera", "cant_cajones": 4, "tiene_fondo": true },
-        { "nombre": "Mesa con Cajón Joyero", "ancho_proporcional": 1.0, "tipo_interior": "carcasa", "cant_repisas": 0, "tiene_piso": false, "tiene_fondo": true }
+        {
+          "nombre": "Cajonera Skincare (4 Cajones)",
+          "ancho_fijo": 380,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 4,
+          "cant_repisas": 0,
+          "tiene_piso": true,
+          "tiene_techo": true,
+          "tiene_laterales": true,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Mesa Tocador con Vano Piernas",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "carcasa",
+          "cant_cajones": 0,
+          "cant_repisas": 0,
+          "tiene_piso": false,
+          "tiene_techo": true,
+          "tiene_laterales": true,
+          "tiene_fondo": false
+        }
       ]
     },
     "closet_juvenil_estudio": {
@@ -688,8 +977,20 @@
       "cant_listones_zocalo": 2,
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
-        { "nombre": "Estantería Libros / Trofeos", "ancho_fijo": 500, "tipo_interior": "repisas", "cant_repisas": 4, "tiene_fondo": true },
-        { "nombre": "Ropero Juvenil 2 Cuerpos", "ancho_proporcional": 1.0, "tipo_interior": "puertas", "cant_repisas": 2, "tiene_fondo": true }
+        {
+          "nombre": "Estantería Libros / Trofeos",
+          "ancho_fijo": 500,
+          "tipo_interior": "repisas",
+          "cant_repisas": 4,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Ropero Juvenil 2 Cuerpos",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "puertas",
+          "cant_repisas": 2,
+          "tiene_fondo": true
+        }
       ]
     },
     "cama_juvenil_cajones": {
@@ -709,8 +1010,20 @@
       "cant_listones_zocalo": 0,
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
-        { "nombre": "Cajonera Frontal Cama A", "ancho_proporcional": 0.5, "tipo_interior": "cajonera", "cant_cajones": 2, "tiene_fondo": true },
-        { "nombre": "Cajonera Frontal Cama B", "ancho_proporcional": 0.5, "tipo_interior": "cajonera", "cant_cajones": 2, "tiene_fondo": true }
+        {
+          "nombre": "Cajonera Frontal Cama A",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 2,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Cajonera Frontal Cama B",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 2,
+          "tiene_fondo": true
+        }
       ]
     },
     "escritorio_gamer": {
@@ -722,7 +1035,7 @@
       "icono": "🎮",
       "descripcion": "Mesa engrosada de 36mm para soportar pantallas ultrawide, cámara de cables trasera retraída a 60mm, exhibición de CPU sobre mesa y ventilación técnica.",
       "editable": false,
-      "ancho_sugerido": 1800,
+      "ancho_sugerido": 1600,
       "alto_sugerido": 750,
       "prof_baja": 700,
       "prof_media": 300,
@@ -742,8 +1055,21 @@
       "led_integrado": true,
       "led_ubicacion": "bajo_altos",
       "modulos_sugeridos": [
-        { "nombre": "Torre Gabinete Gamer / 3C", "ancho_fijo": 450, "tipo_interior": "cajonera", "cant_cajones": 3, "tiene_fondo": false },
-        { "nombre": "Vano Battlestation Ultrawide", "ancho_proporcional": 1.0, "tipo_interior": "carcasa", "cant_repisas": 0, "tiene_piso": false, "tiene_fondo": false }
+        {
+          "nombre": "Torre Gabinete Gamer / 3C",
+          "ancho_fijo": 450,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 3,
+          "tiene_fondo": false
+        },
+        {
+          "nombre": "Vano Battlestation Ultrawide",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "carcasa",
+          "cant_repisas": 0,
+          "tiene_piso": false,
+          "tiene_fondo": false
+        }
       ]
     },
     "setup_gamer_pro": {
@@ -763,9 +1089,28 @@
       "cant_listones_zocalo": 2,
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
-        { "nombre": "Vitrina Coleccionables RGB", "ancho_fijo": 550, "tipo_interior": "repisas", "cant_repisas": 4, "tiene_fondo": true },
-        { "nombre": "Vano Escritorio 2 Pantallas", "ancho_proporcional": 1.0, "tipo_interior": "carcasa", "cant_repisas": 1, "tiene_piso": false, "tiene_fondo": false },
-        { "nombre": "Pedestal Gabinete y Cables", "ancho_fijo": 450, "tipo_interior": "cajonera", "cant_cajones": 3, "tiene_fondo": true }
+        {
+          "nombre": "Vitrina Coleccionables RGB",
+          "ancho_fijo": 550,
+          "tipo_interior": "repisas",
+          "cant_repisas": 4,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Vano Escritorio 2 Pantallas",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "carcasa",
+          "cant_repisas": 1,
+          "tiene_piso": false,
+          "tiene_fondo": false
+        },
+        {
+          "nombre": "Pedestal Gabinete y Cables",
+          "ancho_fijo": 450,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 3,
+          "tiene_fondo": true
+        }
       ]
     },
     "repisero_gamer_coleccionables": {
@@ -785,7 +1130,13 @@
       "cant_listones_zocalo": 0,
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
-        { "nombre": "Torre Repisas Figuras y Juegos", "ancho_proporcional": 1.0, "tipo_interior": "repisas", "cant_repisas": 4, "tiene_fondo": true }
+        {
+          "nombre": "Torre Repisas Figuras y Juegos",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "repisas",
+          "cant_repisas": 4,
+          "tiene_fondo": true
+        }
       ]
     },
     "home_office_ejecutivo": {
@@ -817,9 +1168,28 @@
       "led_integrado": true,
       "led_ubicacion": "bajo_altos",
       "modulos_sugeridos": [
-        { "nombre": "Pedestal Archivo Carpetas", "ancho_fijo": 480, "tipo_interior": "cajonera", "cant_cajones": 3, "tiene_fondo": true },
-        { "nombre": "Vano Ergonomía Silla", "ancho_proporcional": 1.0, "tipo_interior": "carcasa", "cant_repisas": 1, "tiene_piso": false, "tiene_fondo": true },
-        { "nombre": "Torre Archivador Papeles", "ancho_fijo": 480, "tipo_interior": "puertas", "cant_repisas": 4, "tiene_fondo": true }
+        {
+          "nombre": "Pedestal Archivo Carpetas",
+          "ancho_fijo": 480,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 3,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Vano Ergonomía Silla",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "carcasa",
+          "cant_repisas": 1,
+          "tiene_piso": false,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Torre Archivador Papeles",
+          "ancho_fijo": 480,
+          "tipo_interior": "puertas",
+          "cant_repisas": 4,
+          "tiene_fondo": true
+        }
       ]
     },
     "escritorio": {
@@ -839,8 +1209,21 @@
       "cant_listones_zocalo": 0,
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
-        { "nombre": "Cajonera Pedestal 3C", "ancho_fijo": 400, "tipo_interior": "cajonera", "cant_cajones": 3, "tiene_fondo": false },
-        { "nombre": "Vano Libre Piernas ISO", "ancho_proporcional": 1.0, "tipo_interior": "carcasa", "cant_repisas": 0, "tiene_piso": false, "tiene_fondo": false }
+        {
+          "nombre": "Cajonera Pedestal 3C",
+          "ancho_fijo": 400,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 3,
+          "tiene_fondo": false
+        },
+        {
+          "nombre": "Vano Libre Piernas ISO",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "carcasa",
+          "cant_repisas": 0,
+          "tiene_piso": false,
+          "tiene_fondo": false
+        }
       ]
     },
     "credencia": {
@@ -860,8 +1243,20 @@
       "cant_listones_zocalo": 2,
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
-        { "nombre": "Cajonera Archivador", "ancho_proporcional": 0.5, "tipo_interior": "cajonera", "cant_cajones": 3, "tiene_fondo": true },
-        { "nombre": "Módulo Puertas Auxiliar", "ancho_proporcional": 0.5, "tipo_interior": "puertas", "cant_repisas": 1, "tiene_fondo": true }
+        {
+          "nombre": "Cajonera Archivador",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 3,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Módulo Puertas Auxiliar",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "puertas",
+          "cant_repisas": 1,
+          "tiene_fondo": true
+        }
       ]
     },
     "cajonera_movil": {
@@ -881,7 +1276,13 @@
       "cant_listones_zocalo": 0,
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
-        { "nombre": "Pedestal Rodante 3 Cajones", "ancho_proporcional": 1.0, "tipo_interior": "cajonera", "cant_cajones": 3, "tiene_fondo": true }
+        {
+          "nombre": "Pedestal Rodante 3 Cajones",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 3,
+          "tiene_fondo": true
+        }
       ]
     },
     "librero_biblioteca_32mm": {
@@ -913,9 +1314,27 @@
       "led_integrado": true,
       "led_ubicacion": "laterales_librero",
       "modulos_sugeridos": [
-        { "nombre": "Columna Libros A", "ancho_proporcional": 0.33, "tipo_interior": "repisas", "cant_repisas": 4, "tiene_fondo": true },
-        { "nombre": "Columna Libros B", "ancho_proporcional": 0.34, "tipo_interior": "repisas", "cant_repisas": 4, "tiene_fondo": true },
-        { "nombre": "Columna Libros C", "ancho_proporcional": 0.33, "tipo_interior": "repisas", "cant_repisas": 4, "tiene_fondo": true }
+        {
+          "nombre": "Columna Libros A",
+          "ancho_proporcional": 0.33,
+          "tipo_interior": "repisas",
+          "cant_repisas": 4,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Columna Libros B",
+          "ancho_proporcional": 0.34,
+          "tipo_interior": "repisas",
+          "cant_repisas": 4,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Columna Libros C",
+          "ancho_proporcional": 0.33,
+          "tipo_interior": "repisas",
+          "cant_repisas": 4,
+          "tiene_fondo": true
+        }
       ]
     },
     "librero": {
@@ -935,8 +1354,20 @@
       "cant_listones_zocalo": 1,
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
-        { "nombre": "Columna Libros Izq", "ancho_proporcional": 0.5, "tipo_interior": "repisas", "cant_repisas": 4, "tiene_fondo": true },
-        { "nombre": "Columna Libros Der", "ancho_proporcional": 0.5, "tipo_interior": "repisas", "cant_repisas": 4, "tiene_fondo": true }
+        {
+          "nombre": "Columna Libros Izq",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "repisas",
+          "cant_repisas": 4,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Columna Libros Der",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "repisas",
+          "cant_repisas": 4,
+          "tiene_fondo": true
+        }
       ]
     },
     "estanteria_libros": {
@@ -956,7 +1387,13 @@
       "cant_listones_zocalo": 1,
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
-        { "nombre": "Estantería Alta 5 Repisas", "ancho_proporcional": 1.0, "tipo_interior": "repisas", "cant_repisas": 5, "tiene_fondo": true }
+        {
+          "nombre": "Estantería Alta 5 Repisas",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "repisas",
+          "cant_repisas": 5,
+          "tiene_fondo": true
+        }
       ]
     },
     "repisero_cubos": {
@@ -976,7 +1413,13 @@
       "cant_listones_zocalo": 0,
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
-        { "nombre": "Matriz Cubos Decorativos", "ancho_proporcional": 1.0, "tipo_interior": "repisas", "cant_repisas": 3, "tiene_fondo": true }
+        {
+          "nombre": "Matriz Cubos Decorativos",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "repisas",
+          "cant_repisas": 3,
+          "tiene_fondo": true
+        }
       ]
     },
     "centro_entretenimiento": {
@@ -1008,9 +1451,27 @@
       "led_integrado": true,
       "led_ubicacion": "nicho_tv",
       "modulos_sugeridos": [
-        { "nombre": "Lateral Izq Audio", "ancho_fijo": 550, "tipo_interior": "puertas", "cant_repisas": 1, "tiene_fondo": true },
-        { "nombre": "Centro Consolas y TV", "ancho_proporcional": 1.0, "tipo_interior": "repisas", "cant_repisas": 1, "tiene_fondo": true },
-        { "nombre": "Lateral Der Almacén", "ancho_fijo": 550, "tipo_interior": "puertas", "cant_repisas": 1, "tiene_fondo": true }
+        {
+          "nombre": "Lateral Izq Audio",
+          "ancho_fijo": 550,
+          "tipo_interior": "puertas",
+          "cant_repisas": 1,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Centro Consolas y TV",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "repisas",
+          "cant_repisas": 1,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Lateral Der Almacén",
+          "ancho_fijo": 550,
+          "tipo_interior": "puertas",
+          "cant_repisas": 1,
+          "tiene_fondo": true
+        }
       ]
     },
     "rack_tv_bajo": {
@@ -1030,8 +1491,20 @@
       "cant_listones_zocalo": 2,
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
-        { "nombre": "Cajones Consolas", "ancho_proporcional": 0.5, "tipo_interior": "cajonera", "cant_cajones": 2, "tiene_fondo": true },
-        { "nombre": "Vanos Receptores", "ancho_proporcional": 0.5, "tipo_interior": "repisas", "cant_repisas": 1, "tiene_fondo": true }
+        {
+          "nombre": "Cajones Consolas",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 2,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Vanos Receptores",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "repisas",
+          "cant_repisas": 1,
+          "tiene_fondo": true
+        }
       ]
     },
     "recibidor_zapatera": {
@@ -1063,8 +1536,20 @@
       "led_integrado": false,
       "led_ubicacion": "ninguno",
       "modulos_sugeridos": [
-        { "nombre": "Zapatera Inclinada", "ancho_proporcional": 0.5, "tipo_interior": "repisas", "cant_repisas": 3, "tiene_fondo": true },
-        { "nombre": "Perchero y Espejo", "ancho_proporcional": 0.5, "tipo_interior": "carcasa", "cant_repisas": 1, "tiene_fondo": true }
+        {
+          "nombre": "Zapatera Inclinada",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "repisas",
+          "cant_repisas": 3,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Perchero y Espejo",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "carcasa",
+          "cant_repisas": 1,
+          "tiene_fondo": true
+        }
       ]
     },
     "repisa": {
@@ -1084,7 +1569,13 @@
       "cant_listones_zocalo": 0,
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
-        { "nombre": "Repisa Flotante", "ancho_proporcional": 1.0, "tipo_interior": "repisas", "cant_repisas": 1, "tiene_fondo": true }
+        {
+          "nombre": "Repisa Flotante",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "repisas",
+          "cant_repisas": 1,
+          "tiene_fondo": true
+        }
       ]
     },
     "estanteria": {
@@ -1104,7 +1595,13 @@
       "cant_listones_zocalo": 1,
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
-        { "nombre": "Estantería Modular", "ancho_proporcional": 1.0, "tipo_interior": "repisas", "cant_repisas": 4, "tiene_fondo": true }
+        {
+          "nombre": "Estantería Modular",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "repisas",
+          "cant_repisas": 4,
+          "tiene_fondo": true
+        }
       ]
     },
     "mesa_centro": {
@@ -1124,7 +1621,14 @@
       "cant_listones_zocalo": 0,
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
-        { "nombre": "Mesa Centro con Nicho", "ancho_proporcional": 1.0, "tipo_interior": "carcasa", "cant_repisas": 1, "tiene_piso": true, "tiene_techo": true }
+        {
+          "nombre": "Mesa Centro con Nicho",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "carcasa",
+          "cant_repisas": 1,
+          "tiene_piso": true,
+          "tiene_techo": true
+        }
       ]
     },
     "aparador": {
@@ -1144,9 +1648,27 @@
       "cant_listones_zocalo": 2,
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
-        { "nombre": "Módulo Vajilla Izq", "ancho_fijo": 450, "tipo_interior": "puertas", "cant_repisas": 1, "tiene_fondo": true },
-        { "nombre": "Cajonera Cubiertos Centro", "ancho_proporcional": 1.0, "tipo_interior": "cajonera", "cant_cajones": 4, "tiene_fondo": true },
-        { "nombre": "Módulo Mantelería Der", "ancho_fijo": 450, "tipo_interior": "puertas", "cant_repisas": 1, "tiene_fondo": true }
+        {
+          "nombre": "Módulo Vajilla Izq",
+          "ancho_fijo": 450,
+          "tipo_interior": "puertas",
+          "cant_repisas": 1,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Cajonera Cubiertos Centro",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 4,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Módulo Mantelería Der",
+          "ancho_fijo": 450,
+          "tipo_interior": "puertas",
+          "cant_repisas": 1,
+          "tiene_fondo": true
+        }
       ]
     },
     "vitrina": {
@@ -1166,7 +1688,13 @@
       "cant_listones_zocalo": 1,
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
-        { "nombre": "Vitrina Cristalería", "ancho_proporcional": 1.0, "tipo_interior": "puertas", "cant_repisas": 4, "tiene_fondo": true }
+        {
+          "nombre": "Vitrina Cristalería",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "puertas",
+          "cant_repisas": 4,
+          "tiene_fondo": true
+        }
       ]
     },
     "bar_mural": {
@@ -1186,7 +1714,13 @@
       "cant_listones_zocalo": 0,
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
-        { "nombre": "Cava y Copero Mural", "ancho_proporcional": 1.0, "tipo_interior": "repisas", "cant_repisas": 2, "tiene_fondo": true }
+        {
+          "nombre": "Cava y Copero Mural",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "repisas",
+          "cant_repisas": 2,
+          "tiene_fondo": true
+        }
       ]
     },
     "comercial_mostrador_recepcion": {
@@ -1218,8 +1752,20 @@
       "led_integrado": true,
       "led_ubicacion": "bajo_altos",
       "modulos_sugeridos": [
-        { "nombre": "Caja y Gaveta Seguridad", "ancho_fijo": 550, "tipo_interior": "cajonera", "cant_cajones": 3, "tiene_fondo": true },
-        { "nombre": "Atención al Público y Bolso", "ancho_proporcional": 1.0, "tipo_interior": "repisas", "cant_repisas": 2, "tiene_fondo": true }
+        {
+          "nombre": "Caja y Gaveta Seguridad",
+          "ancho_fijo": 550,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 3,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Atención al Público y Bolso",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "repisas",
+          "cant_repisas": 2,
+          "tiene_fondo": true
+        }
       ]
     },
     "comercial_vitrina_exhibidora": {
@@ -1251,7 +1797,13 @@
       "led_integrado": true,
       "led_ubicacion": "laterales_librero",
       "modulos_sugeridos": [
-        { "nombre": "Exhibidor Central Iluminado", "ancho_proporcional": 1.0, "tipo_interior": "repisas", "cant_repisas": 4, "tiene_fondo": true }
+        {
+          "nombre": "Exhibidor Central Iluminado",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "repisas",
+          "cant_repisas": 4,
+          "tiene_fondo": true
+        }
       ]
     },
     "mostrador_caja": {
@@ -1271,8 +1823,20 @@
       "cant_listones_zocalo": 2,
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
-        { "nombre": "Módulo Cajón Dinero", "ancho_proporcional": 0.5, "tipo_interior": "cajonera", "cant_cajones": 2, "tiene_fondo": true },
-        { "nombre": "Repisas Atención Mostrador", "ancho_proporcional": 0.5, "tipo_interior": "repisas", "cant_repisas": 2, "tiene_fondo": true }
+        {
+          "nombre": "Módulo Cajón Dinero",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 2,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Repisas Atención Mostrador",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "repisas",
+          "cant_repisas": 2,
+          "tiene_fondo": true
+        }
       ]
     },
     "gondola_exhibidora": {
@@ -1292,8 +1856,581 @@
       "cant_listones_zocalo": 2,
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
-        { "nombre": "Góndola Cara A", "ancho_proporcional": 0.5, "tipo_interior": "repisas", "cant_repisas": 3, "tiene_fondo": true },
-        { "nombre": "Góndola Cara B", "ancho_proporcional": 0.5, "tipo_interior": "repisas", "cant_repisas": 3, "tiene_fondo": true }
+        {
+          "nombre": "Góndola Cara A",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "repisas",
+          "cant_repisas": 3,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Góndola Cara B",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "repisas",
+          "cant_repisas": 3,
+          "tiene_fondo": true
+        }
+      ]
+    },
+    "tocador_hollywood_led": {
+      "id": "tocador_hollywood_led",
+      "nombre": "Tocador Hollywood con Luces LED y Torre Cosméticos",
+      "categoria": "Infantil y Juvenil",
+      "ambiente": "Ambiente Juvenil",
+      "edad_genero": "Juvenil señoritas",
+      "icono": "✨",
+      "descripcion": "Tocador profesional de maquillaje con 5 cajones organizadores, cubierta engrosada de 36mm para espejo y repisa de perfumes.",
+      "editable": false,
+      "ancho_sugerido": 1200,
+      "alto_sugerido": 800,
+      "prof_baja": 480,
+      "altura_zocalo": 80,
+      "retrans_zocalo": 35,
+      "cant_listones_zocalo": 2,
+      "material_resistencia": "Normal",
+      "modulos_sugeridos": [
+        {
+          "nombre": "Torre Cosméticos 5C",
+          "ancho_fijo": 400,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 5,
+          "tiene_piso": true,
+          "tiene_techo": true,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Mesa y Vano Banqueta",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "carcasa",
+          "tiene_piso": false,
+          "tiene_techo": true,
+          "tiene_fondo": false
+        }
+      ]
+    },
+    "ropero_1_cuerpo": {
+      "id": "ropero_1_cuerpo",
+      "nombre": "Ropero 1 Cuerpo (Columna Soltero / Ropero Angosto)",
+      "categoria": "Dormitorio y Clóset",
+      "ambiente": "Dormitorio",
+      "edad_genero": "Universal",
+      "icono": "🚪",
+      "descripcion": "Ropero compacto de 1 cuerpo (550x2100x580mm): maletero superior, vano para colgado y 2 cajones inferiores.",
+      "editable": false,
+      "ancho_sugerido": 550,
+      "alto_sugerido": 2100,
+      "prof_baja": 580,
+      "altura_zocalo": 80,
+      "retrans_zocalo": 35,
+      "cant_listones_zocalo": 1,
+      "material_resistencia": "Normal",
+      "modulos_sugeridos": [
+        {
+          "nombre": "Cuerpo 1: Colgado & 2 Cajones",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 2,
+          "cant_repisas": 2,
+          "tiene_piso": true,
+          "tiene_techo": true,
+          "tiene_laterales": true,
+          "tiene_fondo": true
+        }
+      ]
+    },
+    "ropero_2_cuerpos": {
+      "id": "ropero_2_cuerpos",
+      "nombre": "Ropero 2 Cuerpos (Colgado y Cajonera Doble)",
+      "categoria": "Dormitorio y Clóset",
+      "ambiente": "Dormitorio",
+      "edad_genero": "Universal",
+      "icono": "👔",
+      "descripcion": "Ropero estándar de 2 cuerpos (1100x2100x580mm): cuerpo izquierdo de colgado largo con maletero y cuerpo derecho con cajonera de 3 cajones y repisas.",
+      "editable": false,
+      "ancho_sugerido": 1100,
+      "alto_sugerido": 2100,
+      "prof_baja": 580,
+      "altura_zocalo": 80,
+      "retrans_zocalo": 35,
+      "cant_listones_zocalo": 2,
+      "material_resistencia": "Normal",
+      "modulos_sugeridos": [
+        {
+          "nombre": "Cuerpo 1: Colgado Largo y Maletero",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "repisas",
+          "cant_repisas": 2,
+          "tiene_piso": true,
+          "tiene_techo": true,
+          "tiene_laterales": true,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Cuerpo 2: Cajonera 3C y Repisas",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 3,
+          "cant_repisas": 2,
+          "tiene_piso": true,
+          "tiene_techo": true,
+          "tiene_laterales": true,
+          "tiene_fondo": true
+        }
+      ]
+    },
+    "ropero_3_cuerpos": {
+      "id": "ropero_3_cuerpos",
+      "nombre": "Ropero 3 Cuerpos (Familiar con Maletero Continuo)",
+      "categoria": "Dormitorio y Clóset",
+      "ambiente": "Dormitorio",
+      "edad_genero": "Familiar",
+      "icono": "👔",
+      "descripcion": "Ropero de 3 cuerpos (1650x2100x580mm): columna de repisas para ropa doblada, vano central de colgado para vestidos/trajes y columna con 3 cajones y colgado de camisas.",
+      "editable": false,
+      "ancho_sugerido": 1650,
+      "alto_sugerido": 2100,
+      "prof_baja": 580,
+      "altura_zocalo": 80,
+      "retrans_zocalo": 35,
+      "cant_listones_zocalo": 3,
+      "material_resistencia": "Normal",
+      "modulos_sugeridos": [
+        {
+          "nombre": "Cuerpo 1: Columna Repisas Ropa Doblada",
+          "ancho_proporcional": 0.33,
+          "tipo_interior": "repisas",
+          "cant_repisas": 4,
+          "tiene_piso": true,
+          "tiene_techo": true,
+          "tiene_laterales": true,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Cuerpo 2: Colgado Central Vestidos",
+          "ancho_proporcional": 0.34,
+          "tipo_interior": "carcasa",
+          "cant_repisas": 1,
+          "tiene_piso": true,
+          "tiene_techo": true,
+          "tiene_laterales": true,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Cuerpo 3: Cajonera 3C y Camisas",
+          "ancho_proporcional": 0.33,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 3,
+          "cant_repisas": 1,
+          "tiene_piso": true,
+          "tiene_techo": true,
+          "tiene_laterales": true,
+          "tiene_fondo": true
+        }
+      ]
+    },
+    "ropero_4_cuerpos": {
+      "id": "ropero_4_cuerpos",
+      "nombre": "Ropero 4 Cuerpos (Master Matrimonial Walk-in)",
+      "categoria": "Dormitorio y Clóset",
+      "ambiente": "Dormitorio",
+      "edad_genero": "Matrimonial",
+      "icono": "👗",
+      "descripcion": "Gran ropero master matrimonial de 4 cuerpos (2200x2200x600mm): zonificación simétrica para él y ella con 8 cajones totales, 2 zonas de colgado y maleteros dobles.",
+      "editable": false,
+      "ancho_sugerido": 2200,
+      "alto_sugerido": 2200,
+      "prof_baja": 600,
+      "altura_zocalo": 100,
+      "retrans_zocalo": 35,
+      "cant_listones_zocalo": 3,
+      "material_resistencia": "Normal",
+      "modulos_sugeridos": [
+        {
+          "nombre": "Cuerpo 1: Colgado Largo Dama & Maletero",
+          "ancho_proporcional": 0.25,
+          "tipo_interior": "repisas",
+          "cant_repisas": 2,
+          "tiene_piso": true,
+          "tiene_techo": true,
+          "tiene_laterales": true,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Cuerpo 2: Cajonera Dama 4 Cajones",
+          "ancho_proporcional": 0.25,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 4,
+          "cant_repisas": 1,
+          "tiene_piso": true,
+          "tiene_techo": true,
+          "tiene_laterales": true,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Cuerpo 3: Cajonera Varón 4 Cajones",
+          "ancho_proporcional": 0.25,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 4,
+          "cant_repisas": 1,
+          "tiene_piso": true,
+          "tiene_techo": true,
+          "tiene_laterales": true,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Cuerpo 4: Colgado Trajes Varón & Maletero",
+          "ancho_proporcional": 0.25,
+          "tipo_interior": "repisas",
+          "cant_repisas": 2,
+          "tiene_piso": true,
+          "tiene_techo": true,
+          "tiene_laterales": true,
+          "tiene_fondo": true
+        }
+      ]
+    },
+    "cocina_1_modulo": {
+      "id": "cocina_1_modulo",
+      "nombre": "Bajo Cocina 1 Módulo (Fregadero Simple o Hornos)",
+      "categoria": "Cocina y Baño",
+      "ambiente": "Cocina",
+      "edad_genero": "Universal",
+      "icono": "🍳",
+      "descripcion": "Módulo bajo individual de cocina de 600mm para espacios compactos o lavaplatos individual en Melamina RH.",
+      "editable": false,
+      "ancho_sugerido": 600,
+      "alto_sugerido": 850,
+      "prof_baja": 580,
+      "altura_zocalo": 100,
+      "retrans_zocalo": 50,
+      "cant_listones_zocalo": 1,
+      "material_resistencia": "RH",
+      "modulos_sugeridos": [
+        {
+          "nombre": "Módulo 1: Fregadero / Puertas",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "puertas",
+          "cant_repisas": 1,
+          "tiene_piso": true,
+          "tiene_techo": true
+        }
+      ]
+    },
+    "cocina_2_modulos": {
+      "id": "cocina_2_modulos",
+      "nombre": "Bajo Cocina 2 Módulos (Cajonera Ollera y Fregadero)",
+      "categoria": "Cocina y Baño",
+      "ambiente": "Cocina",
+      "edad_genero": "Familiar",
+      "icono": "🍳",
+      "descripcion": "Bajo cocina de 1200mm (2 módulos de 600mm): cajonera de cacerolas/ollas y mueble de lavaplatos.",
+      "editable": false,
+      "ancho_sugerido": 1200,
+      "alto_sugerido": 850,
+      "prof_baja": 580,
+      "altura_zocalo": 100,
+      "retrans_zocalo": 50,
+      "cant_listones_zocalo": 2,
+      "material_resistencia": "RH",
+      "modulos_sugeridos": [
+        {
+          "nombre": "Módulo 1: Cajonera Ollera 3C",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 3,
+          "tiene_piso": true,
+          "tiene_techo": true
+        },
+        {
+          "nombre": "Módulo 2: Fregadero Lavaplatos",
+          "ancho_proporcional": 0.5,
+          "tipo_interior": "puertas",
+          "cant_repisas": 1,
+          "tiene_piso": true,
+          "tiene_techo": true
+        }
+      ]
+    },
+    "cocina_3_modulos": {
+      "id": "cocina_3_modulos",
+      "nombre": "Bajo Cocina 3 Módulos (Cajonera + Fregadero + Despensa)",
+      "categoria": "Cocina y Baño",
+      "ambiente": "Cocina",
+      "edad_genero": "Familiar",
+      "icono": "🍳",
+      "descripcion": "Bajo cocina estándar de 1800mm (3 módulos de 600mm): zonificación ergonómica de preparación, lavado y almacenaje.",
+      "editable": false,
+      "ancho_sugerido": 1800,
+      "alto_sugerido": 850,
+      "prof_baja": 580,
+      "altura_zocalo": 100,
+      "retrans_zocalo": 50,
+      "cant_listones_zocalo": 2,
+      "material_resistencia": "RH",
+      "modulos_sugeridos": [
+        {
+          "nombre": "Módulo 1: Cajonera Ollera 3C",
+          "ancho_proporcional": 0.33,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 3
+        },
+        {
+          "nombre": "Módulo 2: Fregadero Lavaplatos",
+          "ancho_proporcional": 0.33,
+          "tipo_interior": "puertas",
+          "cant_repisas": 1
+        },
+        {
+          "nombre": "Módulo 3: Despensa y Vajilla",
+          "ancho_proporcional": 0.34,
+          "tipo_interior": "puertas",
+          "cant_repisas": 2
+        }
+      ]
+    },
+    "cocina_4_modulos": {
+      "id": "cocina_4_modulos",
+      "nombre": "Bajo Cocina 4 Módulos (Línea Completa de Preparación)",
+      "categoria": "Cocina y Baño",
+      "ambiente": "Cocina",
+      "edad_genero": "Familiar",
+      "icono": "🍳",
+      "descripcion": "Bajo cocina lineal de 2400mm (4 módulos de 600mm): cajonera cubiertera, zona anafe/cocción, lavaplatos y despensa.",
+      "editable": false,
+      "ancho_sugerido": 2400,
+      "alto_sugerido": 850,
+      "prof_baja": 580,
+      "altura_zocalo": 100,
+      "retrans_zocalo": 50,
+      "cant_listones_zocalo": 3,
+      "material_resistencia": "RH",
+      "modulos_sugeridos": [
+        {
+          "nombre": "Módulo 1: Cajonera Cubiertos y Ollera",
+          "ancho_proporcional": 0.25,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 3
+        },
+        {
+          "nombre": "Módulo 2: Módulo Cocina / Anafe",
+          "ancho_proporcional": 0.25,
+          "tipo_interior": "puertas",
+          "cant_repisas": 1
+        },
+        {
+          "nombre": "Módulo 3: Fregadero Lavaplatos",
+          "ancho_proporcional": 0.25,
+          "tipo_interior": "puertas",
+          "cant_repisas": 1
+        },
+        {
+          "nombre": "Módulo 4: Despensa de Ollas y Vajilla",
+          "ancho_proporcional": 0.25,
+          "tipo_interior": "puertas",
+          "cant_repisas": 2
+        }
+      ]
+    },
+    "cocina_5_modulos": {
+      "id": "cocina_5_modulos",
+      "nombre": "Bajo Cocina 5 Módulos Master (Mesón Extendido de Chef)",
+      "categoria": "Cocina y Baño",
+      "ambiente": "Cocina",
+      "edad_genero": "Familiar",
+      "icono": "🍳",
+      "descripcion": "Bajo cocina de alta gama de 3000mm (5 módulos de 600mm): 6 cajones telescópicos y 3 zonas de puertas en Melamina RH.",
+      "editable": false,
+      "ancho_sugerido": 3000,
+      "alto_sugerido": 850,
+      "prof_baja": 580,
+      "altura_zocalo": 100,
+      "retrans_zocalo": 50,
+      "cant_listones_zocalo": 3,
+      "material_resistencia": "RH",
+      "modulos_sugeridos": [
+        {
+          "nombre": "Módulo 1: Cajonera Cubiertos & Accesorios",
+          "ancho_proporcional": 0.2,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 4
+        },
+        {
+          "nombre": "Módulo 2: Cajonera Ollera Doble Cacerola",
+          "ancho_proporcional": 0.2,
+          "tipo_interior": "cajonera",
+          "cant_cajones": 2
+        },
+        {
+          "nombre": "Módulo 3: Fregadero Central Lavaplatos",
+          "ancho_proporcional": 0.2,
+          "tipo_interior": "puertas",
+          "cant_repisas": 1
+        },
+        {
+          "nombre": "Módulo 4: Módulo Basurero y Despensa",
+          "ancho_proporcional": 0.2,
+          "tipo_interior": "puertas",
+          "cant_repisas": 1
+        },
+        {
+          "nombre": "Módulo 5: Torre / Despensa de Alimentos",
+          "ancho_proporcional": 0.2,
+          "tipo_interior": "puertas",
+          "cant_repisas": 2
+        }
+      ]
+    },
+    "centro_tv_40_pulgadas": {
+      "id": "centro_tv_40_pulgadas",
+      "nombre": "Centro TV 40\" (Nicho 1050mm con Rack y Librero)",
+      "categoria": "Sala y Estar",
+      "ambiente": "Sala de Estar & TV",
+      "edad_genero": "Familiar",
+      "icono": "📺",
+      "descripcion": "Diseñado para Smart TV de 40 pulgadas (pantalla de 920mm): nicho central libre de 1050mm, base para consola/decodificador y columna librero de 500mm.",
+      "editable": false,
+      "ancho_sugerido": 1550,
+      "alto_sugerido": 1500,
+      "prof_baja": 400,
+      "altura_zocalo": 70,
+      "retrans_zocalo": 35,
+      "cant_listones_zocalo": 2,
+      "material_resistencia": "Normal",
+      "modulos_sugeridos": [
+        {
+          "nombre": "Torre Librero / Adornos",
+          "ancho_fijo": 500,
+          "tipo_interior": "repisas",
+          "cant_repisas": 3,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Nicho TV 40\" y Consolas",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "repisas",
+          "cant_repisas": 1,
+          "tiene_fondo": true
+        }
+      ]
+    },
+    "centro_tv_48_pulgadas": {
+      "id": "centro_tv_48_pulgadas",
+      "nombre": "Centro TV 48\" (Nicho 1250mm con Paneles y Consolas)",
+      "categoria": "Sala y Estar",
+      "ambiente": "Sala de Estar & TV",
+      "edad_genero": "Familiar",
+      "icono": "📺",
+      "descripcion": "Para pantallas de 48 pulgadas (pantalla de 1080mm): vano central de 1250mm con soporte de barra de sonido y 2 columnas laterales simétricas de 300mm.",
+      "editable": false,
+      "ancho_sugerido": 1850,
+      "alto_sugerido": 1600,
+      "prof_baja": 400,
+      "altura_zocalo": 70,
+      "retrans_zocalo": 35,
+      "cant_listones_zocalo": 2,
+      "material_resistencia": "Normal",
+      "modulos_sugeridos": [
+        {
+          "nombre": "Columna Izquierda Repisas",
+          "ancho_fijo": 300,
+          "tipo_interior": "repisas",
+          "cant_repisas": 3,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Nicho Central TV 48\" & Soundbar",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "repisas",
+          "cant_repisas": 1,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Columna Derecha Puertas",
+          "ancho_fijo": 300,
+          "tipo_interior": "puertas",
+          "cant_repisas": 2,
+          "tiene_fondo": true
+        }
+      ]
+    },
+    "centro_tv_55_pulgadas": {
+      "id": "centro_tv_55_pulgadas",
+      "nombre": "Centro TV 55\" (Nicho 1400mm Home Theater LED)",
+      "categoria": "Sala y Estar",
+      "ambiente": "Sala de Estar & TV",
+      "edad_genero": "Familiar",
+      "icono": "📺",
+      "descripcion": "Optimizado para televisores de 55 pulgadas (pantalla de 1240mm): nicho central de 1400mm, estantes para consola PS5/Xbox y columnas simétricas de 400mm con puertas y vitrina.",
+      "editable": false,
+      "ancho_sugerido": 2200,
+      "alto_sugerido": 1750,
+      "prof_baja": 420,
+      "altura_zocalo": 80,
+      "retrans_zocalo": 35,
+      "cant_listones_zocalo": 2,
+      "material_resistencia": "Normal",
+      "modulos_sugeridos": [
+        {
+          "nombre": "Columna Izquierda Audio & Juegos",
+          "ancho_fijo": 400,
+          "tipo_interior": "puertas",
+          "cant_repisas": 3,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Nicho Central TV 55\" & Consolas",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "repisas",
+          "cant_repisas": 1,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Columna Derecha Vitrina Iluminada",
+          "ancho_fijo": 400,
+          "tipo_interior": "repisas",
+          "cant_repisas": 3,
+          "tiene_fondo": true
+        }
+      ]
+    },
+    "centro_tv_65_pulgadas": {
+      "id": "centro_tv_65_pulgadas",
+      "nombre": "Centro TV 65\" Master (Nicho 1650mm con Vitrinas Laterales)",
+      "categoria": "Sala y Estar",
+      "ambiente": "Sala de Estar & TV",
+      "edad_genero": "Familiar",
+      "icono": "📺",
+      "descripcion": "Home Theater Master para pantallas de 65 pulgadas (pantalla de 1460mm): vano central amplio de 1650mm con panel pasacables y vitrinas laterales dobles para cristalería y colecciones.",
+      "editable": false,
+      "ancho_sugerido": 2600,
+      "alto_sugerido": 1900,
+      "prof_baja": 450,
+      "altura_zocalo": 80,
+      "retrans_zocalo": 35,
+      "cant_listones_zocalo": 3,
+      "material_resistencia": "Normal",
+      "modulos_sugeridos": [
+        {
+          "nombre": "Vitrina Lateral Izq Cristalería",
+          "ancho_fijo": 475,
+          "tipo_interior": "puertas",
+          "cant_repisas": 4,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Nicho Central Master TV 65\"",
+          "ancho_proporcional": 1.0,
+          "tipo_interior": "repisas",
+          "cant_repisas": 1,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Vitrina Lateral Der Almacén",
+          "ancho_fijo": 475,
+          "tipo_interior": "puertas",
+          "cant_repisas": 4,
+          "tiene_fondo": true
+        }
       ]
     }
   }

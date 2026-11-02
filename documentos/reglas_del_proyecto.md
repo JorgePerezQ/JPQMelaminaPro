@@ -431,6 +431,27 @@ Cada perfil en el archivo JSON puede definir su matriz modular interna sin recur
   4. Al pulsar **✓ Aplicar** con el check activo, los módulos y divisiones se generan automáticamente a partir de `modulos_sugeridos`.
   5. Se provee un botón **🔄 Recargar JSON** en la interfaz para refrescar el catálogo en caliente sin reiniciar la ventana.
 
+#### D. Familias Estandarizadas de Roperos, Cocinas, Centros TV y Tocadores
+1. **Roperos Modulares por Cantidad de Cuerpos**:
+   - `ropero_1_cuerpo` (550 × 2100 × 580 mm): 1 columna con maletero, colgado y 2 cajones inferiores.
+   - `ropero_2_cuerpos` (1100 × 2100 × 580 mm): 2 cuerpos (colgado largo y cajonera triple con repisas).
+   - `ropero_3_cuerpos` (1650 × 2100 × 580 mm): 3 cuerpos (columna repisas, colgado central y cajonera con camisas).
+   - `ropero_4_cuerpos` (2200 × 2200 × 600 mm): 4 cuerpos master matrimonial (8 cajones, doble colgado simétrico y maleteros).
+2. **Bajos de Cocina Modulares por Cantidad de Módulos (Módulos de 600 mm en Melamina RH)**:
+   - `cocina_1_modulo` (600 × 850 × 580 mm): Módulo fregadero individual o torre horno.
+   - `cocina_2_modulos` (1200 × 850 × 580 mm): Cajonera ollera 3C + Módulo fregadero lavaplatos.
+   - `cocina_3_modulos` (1800 × 850 × 580 mm): Cajonera ollera 3C + Fregadero + Despensa vajilla.
+   - `cocina_4_modulos` (2400 × 850 × 580 mm): Línea completa: ollera, zona cocción/anafe, lavaplatos y despensa.
+   - `cocina_5_modulos` (3000 × 850 × 580 mm): Línea master de chef: 6 cajones telescópicos y 3 zonas de puertas.
+3. **Centros de Entretenimiento Específicos por Tamaño de Pantalla (Pulgadas)**:
+   - `centro_tv_40_pulgadas` (1550 × 1500 × 400 mm): Nicho central de 1050 mm para TV 40" (pantalla 920 mm) con librero de 500 mm.
+   - `centro_tv_48_pulgadas` (1850 × 1600 × 400 mm): Nicho central de 1250 mm para TV 48" (pantalla 1080 mm) con columnas laterales simétricas.
+   - `centro_tv_55_pulgadas` (2200 × 1750 × 420 mm): Nicho central de 1400 mm para TV 55" (pantalla 1240 mm) con repisa soundbar y vitrinas.
+   - `centro_tv_65_pulgadas` (2600 × 1900 × 450 mm): Nicho central master de 1650 mm para TV 65" (pantalla 1460 mm) con vitrinas laterales dobles.
+4. **Tocadores de Maquillaje Ergonómicos para Señoritas**:
+   - `tocador_juvenil` (1100 × 780 × 450 mm): Altura ergonómica de mesa (780 mm con zócalo 80 mm) y fondo de 450 mm para alcance óptimo al espejo. Incluye cajonera lateral de 4 gavetas para skincare y vano ergonómico para sentarse con cajón joyero superior.
+   - `tocador_hollywood_led` (1200 × 800 × 480 mm): Modelo amplio con torre de 5 cajones cosméticos y cubierta engrosada.
+
 ---
 
 ## 📌 4. RESUMEN DE CONSTANTES MAESTRAS DE TALLER
