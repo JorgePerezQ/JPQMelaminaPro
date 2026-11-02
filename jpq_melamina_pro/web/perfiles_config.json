@@ -35,7 +35,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Altillo 1: Cajonera Superior Puerta Telescópica",
@@ -45,7 +50,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "superior",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ]
     },
@@ -84,7 +94,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Altillo 1: Puerta Telescópica Pistón",
@@ -94,7 +109,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "superior",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Aéreo 2: Módulo Campana / Especiero",
@@ -104,7 +124,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Altillo 2: Puerta Telescópica Pistón",
@@ -114,7 +139,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "superior",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ]
     },
@@ -153,7 +183,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Altillo 1: Puerta Telescópica Pistón",
@@ -163,7 +198,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "superior",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Aéreo 2: Módulo Campana Extractora",
@@ -173,7 +213,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Altillo 2: Puerta Telescópica Pistón",
@@ -183,7 +228,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "superior",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Aéreo 3: Alacena Vajilla y Vasos",
@@ -193,7 +243,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Altillo 3: Puerta Telescópica Pistón",
@@ -203,7 +258,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "superior",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ]
     },
@@ -242,7 +302,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Altillo 1: Puerta Telescópica Pistón",
@@ -252,7 +317,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "superior",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Aéreo 2: Vajillero Escurridor",
@@ -262,7 +332,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Altillo 2: Puerta Telescópica Pistón",
@@ -272,7 +347,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "superior",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Aéreo 3: Extractor y Campana",
@@ -282,7 +362,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Altillo 3: Puerta Telescópica Pistón",
@@ -292,7 +377,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "superior",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Aéreo 4: Cristalería y Copero",
@@ -302,7 +392,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Altillo 4: Puerta Telescópica Pistón",
@@ -312,7 +407,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "superior",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ]
     },
@@ -351,7 +451,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Altillo 1: Puerta Telescópica Pistón",
@@ -361,7 +466,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "superior",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Aéreo 2: Alacena Almacén Diario",
@@ -371,7 +481,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Altillo 2: Puerta Telescópica Pistón",
@@ -381,7 +496,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "superior",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Aéreo 3: Módulo Campana / Cocción",
@@ -391,7 +511,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Altillo 3: Puerta Telescópica Pistón",
@@ -401,7 +526,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "superior",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Aéreo 4: Vajillero y Cristalería",
@@ -411,7 +541,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Altillo 4: Puerta Telescópica Pistón",
@@ -421,7 +556,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "superior",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Aéreo 5: Alacena Extremo Derecho",
@@ -431,7 +571,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Altillo 5: Puerta Telescópica Pistón",
@@ -441,7 +586,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "superior",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ]
     },
@@ -468,7 +618,12 @@
           "tipo_interior": "puertas",
           "cant_repisas": 1,
           "tiene_piso": true,
-          "tiene_techo": true
+          "tiene_techo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ]
     },
@@ -495,7 +650,11 @@
           "tipo_interior": "cajonera",
           "cant_cajones": 3,
           "tiene_piso": true,
-          "tiene_techo": true
+          "tiene_techo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         },
         {
           "nombre": "Módulo 2: Fregadero Lavaplatos",
@@ -503,7 +662,12 @@
           "tipo_interior": "puertas",
           "cant_repisas": 1,
           "tiene_piso": true,
-          "tiene_techo": true
+          "tiene_techo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ]
     },
@@ -528,19 +692,33 @@
           "nombre": "Módulo 1: Cajonera Ollera 3C",
           "ancho_proporcional": 0.33,
           "tipo_interior": "cajonera",
-          "cant_cajones": 3
+          "cant_cajones": 3,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         },
         {
           "nombre": "Módulo 2: Fregadero Lavaplatos",
           "ancho_proporcional": 0.33,
           "tipo_interior": "puertas",
-          "cant_repisas": 1
+          "cant_repisas": 1,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "derecha",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Módulo 3: Despensa y Vajilla",
           "ancho_proporcional": 0.34,
           "tipo_interior": "puertas",
-          "cant_repisas": 2
+          "cant_repisas": 2,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "derecha",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ]
     },
@@ -565,25 +743,44 @@
           "nombre": "Módulo 1: Cajonera Cubiertos y Ollera",
           "ancho_proporcional": 0.25,
           "tipo_interior": "cajonera",
-          "cant_cajones": 3
+          "cant_cajones": 3,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         },
         {
           "nombre": "Módulo 2: Módulo Cocina / Anafe",
           "ancho_proporcional": 0.25,
           "tipo_interior": "puertas",
-          "cant_repisas": 1
+          "cant_repisas": 1,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "derecha",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Módulo 3: Fregadero Lavaplatos",
           "ancho_proporcional": 0.25,
           "tipo_interior": "puertas",
-          "cant_repisas": 1
+          "cant_repisas": 1,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "derecha",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Módulo 4: Despensa de Ollas y Vajilla",
           "ancho_proporcional": 0.25,
           "tipo_interior": "puertas",
-          "cant_repisas": 2
+          "cant_repisas": 2,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "derecha",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ]
     },
@@ -608,31 +805,54 @@
           "nombre": "Módulo 1: Cajonera Cubiertos & Accesorios",
           "ancho_proporcional": 0.2,
           "tipo_interior": "cajonera",
-          "cant_cajones": 4
+          "cant_cajones": 4,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         },
         {
           "nombre": "Módulo 2: Cajonera Ollera Doble Cacerola",
           "ancho_proporcional": 0.2,
           "tipo_interior": "cajonera",
-          "cant_cajones": 2
+          "cant_cajones": 2,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         },
         {
           "nombre": "Módulo 3: Fregadero Central Lavaplatos",
           "ancho_proporcional": 0.2,
           "tipo_interior": "puertas",
-          "cant_repisas": 1
+          "cant_repisas": 1,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "derecha",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Módulo 4: Módulo Basurero y Despensa",
           "ancho_proporcional": 0.2,
           "tipo_interior": "puertas",
-          "cant_repisas": 1
+          "cant_repisas": 1,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "derecha",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Módulo 5: Torre / Despensa de Alimentos",
           "ancho_proporcional": 0.2,
           "tipo_interior": "puertas",
-          "cant_repisas": 2
+          "cant_repisas": 2,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "derecha",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ]
     },
@@ -658,14 +878,23 @@
           "ancho_proporcional": 0.5,
           "tipo_interior": "cajonera",
           "cant_cajones": 3,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         },
         {
           "nombre": "Módulo Puertas Almacén",
           "ancho_proporcional": 0.5,
           "tipo_interior": "puertas",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ],
       "mdf_metodo": "ranura",
@@ -694,7 +923,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "repisas",
           "cant_repisas": 4,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ],
       "mdf_metodo": "ranura",
@@ -733,7 +967,11 @@
           "ancho_fijo": 450,
           "tipo_interior": "cajonera",
           "cant_cajones": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         },
         {
           "nombre": "Panel Central Cabecera",
@@ -747,7 +985,11 @@
           "ancho_fijo": 450,
           "tipo_interior": "cajonera",
           "cant_cajones": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         }
       ]
     },
@@ -788,7 +1030,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "repisas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Maletero Superior Cuerpo 1",
@@ -798,7 +1045,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "superior",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Cuerpo 2: Cajonera Doble y Camisas",
@@ -809,7 +1061,11 @@
           "tipo_interior": "cajonera",
           "cant_cajones": 4,
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         },
         {
           "nombre": "Maletero Superior Cuerpo 2",
@@ -819,7 +1075,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "superior",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Cuerpo 3: Ropa Corta y Pantalones",
@@ -829,7 +1090,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "repisas",
           "cant_repisas": 3,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Maletero Superior Cuerpo 3",
@@ -839,7 +1105,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "superior",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ]
     },
@@ -877,7 +1148,11 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "cajonera",
           "cant_cajones": 6,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         }
       ]
     },
@@ -903,7 +1178,11 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "cajonera",
           "cant_cajones": 4,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         }
       ],
       "mdf_metodo": "ranura",
@@ -932,14 +1211,22 @@
           "ancho_proporcional": 0.5,
           "tipo_interior": "cajonera",
           "cant_cajones": 4,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         },
         {
           "nombre": "Columna Cajones Der",
           "ancho_proporcional": 0.5,
           "tipo_interior": "cajonera",
           "cant_cajones": 4,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         }
       ],
       "mdf_metodo": "ranura",
@@ -980,14 +1267,23 @@
           "ancho_proporcional": 0.5,
           "tipo_interior": "cajonera",
           "cant_cajones": 3,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         },
         {
           "nombre": "Repisas Visibles con Puertas",
           "ancho_proporcional": 0.5,
           "tipo_interior": "puertas",
           "cant_repisas": 3,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ]
     },
@@ -1055,7 +1351,11 @@
           "tipo_interior": "cajonera",
           "cant_cajones": 2,
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         },
         {
           "nombre": "Maletero Superior (Altillo 1 Puerta)",
@@ -1065,7 +1365,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "superior",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ]
     },
@@ -1103,7 +1408,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "repisas",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Maletero Superior Cuerpo 1",
@@ -1113,7 +1423,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "superior",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Cuerpo 2: Cajonera 3C y Camisas",
@@ -1124,7 +1439,11 @@
           "tipo_interior": "cajonera",
           "cant_cajones": 3,
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         },
         {
           "nombre": "Maletero Superior Cuerpo 2",
@@ -1134,7 +1453,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "superior",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ],
       "cant_listones_zocalo": 1
@@ -1176,7 +1500,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "carcasa",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Maletero Superior Corredizo Izq",
@@ -1186,7 +1515,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "superior",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Cuerpo Der Cajones y Repisas",
@@ -1197,7 +1531,11 @@
           "tipo_interior": "cajonera",
           "cant_cajones": 3,
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         },
         {
           "nombre": "Maletero Superior Corredizo Der",
@@ -1207,7 +1545,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "superior",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ]
     },
@@ -1245,7 +1588,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "repisas",
           "cant_repisas": 4,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Maletero Superior Cuerpo 1",
@@ -1255,7 +1603,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "superior",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Cuerpo 2: Colgado Central Sacos y Vestidos",
@@ -1265,7 +1618,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "carcasa",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Maletero Superior Cuerpo 2",
@@ -1275,7 +1633,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "superior",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Cuerpo 3: Cajonera 3C y Camisas",
@@ -1286,7 +1649,11 @@
           "tipo_interior": "cajonera",
           "cant_cajones": 3,
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         },
         {
           "nombre": "Maletero Superior Cuerpo 3",
@@ -1296,7 +1663,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "superior",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ],
       "cant_listones_zocalo": 2
@@ -1335,7 +1707,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "repisas",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Maletero Superior Cuerpo 1",
@@ -1345,7 +1722,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "superior",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Cuerpo 2: Cajonera Dama 4 Cajones",
@@ -1356,7 +1738,11 @@
           "tipo_interior": "cajonera",
           "cant_cajones": 4,
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         },
         {
           "nombre": "Maletero Superior Cuerpo 2",
@@ -1366,7 +1752,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "superior",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Cuerpo 3: Cajonera Varón 4 Cajones",
@@ -1377,7 +1768,11 @@
           "tipo_interior": "cajonera",
           "cant_cajones": 4,
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         },
         {
           "nombre": "Maletero Superior Cuerpo 3",
@@ -1387,7 +1782,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "superior",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Cuerpo 4: Colgado Trajes Varón & Pantalonero",
@@ -1397,7 +1797,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "repisas",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Maletero Superior Cuerpo 4",
@@ -1407,7 +1812,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "superior",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ],
       "cant_listones_zocalo": 3
@@ -1434,7 +1844,11 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "cajonera",
           "cant_cajones": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         }
       ],
       "mdf_metodo": "ranura",
@@ -1542,7 +1956,12 @@
           "ancho_fijo": 300,
           "tipo_interior": "puertas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ],
       "mdf_metodo": "ranura",
@@ -1571,7 +1990,12 @@
           "ancho_fijo": 400,
           "tipo_interior": "puertas",
           "cant_repisas": 3,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Nicho Central TV 55\" & Consolas",
@@ -1614,7 +2038,12 @@
           "ancho_fijo": 475,
           "tipo_interior": "puertas",
           "cant_repisas": 4,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Nicho Central Master TV 65\"",
@@ -1628,7 +2057,12 @@
           "ancho_fijo": 475,
           "tipo_interior": "puertas",
           "cant_repisas": 4,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ],
       "mdf_metodo": "ranura",
@@ -1713,7 +2147,11 @@
           "ancho_proporcional": 0.5,
           "tipo_interior": "cajonera",
           "cant_cajones": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         },
         {
           "nombre": "Vanos Receptores",
@@ -1835,7 +2273,11 @@
           "ancho_fijo": 450,
           "tipo_interior": "cajonera",
           "cant_cajones": 3,
-          "tiene_fondo": false
+          "tiene_fondo": false,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         },
         {
           "nombre": "Vano Battlestation Ultrawide",
@@ -1942,7 +2384,11 @@
           "cant_cajones": 3,
           "tiene_piso": true,
           "tiene_techo": true,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         }
       ],
       "mdf_metodo": "ranura",
@@ -1971,14 +2417,22 @@
           "ancho_proporcional": 0.5,
           "tipo_interior": "cajonera",
           "cant_cajones": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         },
         {
           "nombre": "Cajonera Frontal Cama B",
           "ancho_proporcional": 0.5,
           "tipo_interior": "cajonera",
           "cant_cajones": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         }
       ],
       "mdf_metodo": "ranura",
@@ -2007,14 +2461,24 @@
           "ancho_fijo": 500,
           "tipo_interior": "repisas",
           "cant_repisas": 4,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Ropero Juvenil 2 Cuerpos",
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ],
       "mdf_metodo": "ranura",
@@ -2045,7 +2509,11 @@
           "cant_cajones": 5,
           "tiene_piso": true,
           "tiene_techo": true,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         },
         {
           "nombre": "Mesa y Vano Banqueta",
@@ -2090,7 +2558,11 @@
           "tiene_piso": true,
           "tiene_techo": true,
           "tiene_laterales": true,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         },
         {
           "nombre": "Mesa Tocador con Vano Piernas",
@@ -2142,7 +2614,11 @@
           "ancho_fijo": 380,
           "tipo_interior": "cajonera",
           "cant_cajones": 3,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         },
         {
           "nombre": "Vano Mesa Dibujo y Repisas",
@@ -2195,7 +2671,11 @@
           "ancho_proporcional": 0.5,
           "tipo_interior": "cajonera",
           "cant_cajones": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         }
       ]
     },
@@ -2221,14 +2701,23 @@
           "ancho_proporcional": 0.5,
           "tipo_interior": "puertas",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Gavetas Accesibles",
           "ancho_proporcional": 0.5,
           "tipo_interior": "cajonera",
           "cant_cajones": 3,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         }
       ],
       "mdf_metodo": "ranura",
@@ -2257,7 +2746,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ],
       "mdf_metodo": "ranura",
@@ -2285,7 +2779,12 @@
           "nombre": "Columna Flotante 4 Repisas",
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
-          "cant_repisas": 3
+          "cant_repisas": 3,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ]
     },
@@ -2322,7 +2821,12 @@
           "tipo_interior": "puertas",
           "cant_repisas": 1,
           "tiene_piso": true,
-          "tiene_techo": true
+          "tiene_techo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ]
     },
@@ -2347,7 +2851,12 @@
           "nombre": "Cuerpo Vanitorio 2 Puertas",
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
-          "cant_repisas": 0
+          "cant_repisas": 0,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ]
     },
@@ -2519,7 +3028,11 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "cajonera",
           "cant_cajones": 3,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         }
       ],
       "mdf_metodo": "ranura",
@@ -2548,14 +3061,23 @@
           "ancho_proporcional": 0.5,
           "tipo_interior": "cajonera",
           "cant_cajones": 3,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         },
         {
           "nombre": "Módulo Puertas Auxiliar",
           "ancho_proporcional": 0.5,
           "tipo_interior": "puertas",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ],
       "mdf_metodo": "ranura",
@@ -2584,7 +3106,11 @@
           "ancho_fijo": 400,
           "tipo_interior": "cajonera",
           "cant_cajones": 3,
-          "tiene_fondo": false
+          "tiene_fondo": false,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         },
         {
           "nombre": "Vano Libre Piernas ISO",
@@ -2636,7 +3162,11 @@
           "cant_cajones": 3,
           "tiene_piso": true,
           "tiene_techo": true,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         },
         {
           "nombre": "Mesa Escritorio Ejecutivo Ergonómico",
@@ -2674,7 +3204,12 @@
           "cant_repisas": 4,
           "tiene_piso": true,
           "tiene_techo": true,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ]
     },
@@ -2700,21 +3235,35 @@
           "ancho_fijo": 450,
           "tipo_interior": "puertas",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Cajonera Cubiertos Centro",
           "ancho_proporcional": 1.0,
           "tipo_interior": "cajonera",
           "cant_cajones": 4,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         },
         {
           "nombre": "Módulo Mantelería Der",
           "ancho_fijo": 450,
           "tipo_interior": "puertas",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ],
       "mdf_metodo": "ranura",
@@ -2772,7 +3321,12 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 4,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ],
       "mdf_metodo": "ranura",
@@ -2800,13 +3354,22 @@
           "nombre": "Canastos Ropa Sucia",
           "ancho_proporcional": 0.5,
           "tipo_interior": "puertas",
-          "cant_repisas": 1
+          "cant_repisas": 1,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         },
         {
           "nombre": "Cajones Ropa y Plancha",
           "ancho_proporcional": 0.5,
           "tipo_interior": "cajonera",
-          "cant_cajones": 3
+          "cant_cajones": 3,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         }
       ]
     },
@@ -2854,7 +3417,12 @@
           "cant_repisas": 3,
           "tiene_piso": true,
           "tiene_techo": true,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "derecha",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ]
     },
@@ -2928,7 +3496,11 @@
           "ancho_fijo": 550,
           "tipo_interior": "cajonera",
           "cant_cajones": 3,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         },
         {
           "nombre": "Atención al Público y Bolso",
@@ -2961,7 +3533,11 @@
           "ancho_proporcional": 0.5,
           "tipo_interior": "cajonera",
           "cant_cajones": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "cajones_montaje": "exterior",
+          "cajones_tipo_corredera": "telescopica",
+          "cajones_posicion_corredera": "baja",
+          "cajones_luz": 2.0
         },
         {
           "nombre": "Repisas Atención Mostrador",
@@ -3010,7 +3586,12 @@
           "tipo_interior": "repisas",
           "cant_repisas": 4,
           "tiene_fondo": true,
-          "parantes_verticales": 1
+          "parantes_verticales": 1,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "doble",
+          "puertas_cant_bisagras": "auto",
+          "puertas_luz": 2.0
         }
       ]
     }

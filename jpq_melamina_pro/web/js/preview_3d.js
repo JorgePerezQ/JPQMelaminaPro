@@ -36,7 +36,8 @@ const Preview3D = (function() {
     modoRender: 'solido',      // 'solido' (melamina con luz) o 'alambre' (CAD técnico)
     mostrarCotas: true,        // Cotas milimétricas visibles
     mostrarEjes: true,         // Eje Rojo / Verde de SketchUp
-    mostrarRejilla: true       // Retícula milimétrica
+    mostrarRejilla: true,      // Retícula milimétrica
+    aperturaAnim: 0.0          // Simulación de apertura cinemática (0.0 cerrado a 1.0 abierto)
   };
 
   // Callback cuando se hace clic sobre un módulo en el lienzo
@@ -73,6 +74,10 @@ const Preview3D = (function() {
     'Vesto Linosa 18mm': { base: [183, 169, 152], border: '#7E6E5A', edge: '#A69680' },
     'Vesto Blanco Frost 18mm': { base: [242, 244, 245], border: '#CBD5E1', edge: '#E2E8F0' },
     'Melamina Blanca 18mm': { base: [245, 247, 250], border: '#94A3B8', edge: '#E2E8F0' },
+    'Melamina Blanca 15mm': { base: [248, 250, 252], border: '#94A3B8', edge: '#E2E8F0' },
+    'MDF Fondo Blanco 3mm': { base: [241, 245, 249], border: '#94A3B8', edge: '#CBD5E1' },
+    'Herraje Metal Satinado': { base: [148, 163, 184], border: '#475569', edge: '#64748B' },
+    'Cazoleta Perforacion': { base: [30, 41, 59], border: '#0F172A', edge: '#1E293B' },
     'Melamina Roble Natural 18mm': { base: [214, 166, 117], border: '#8C5B32', edge: '#B87A40' },
     'Melamina Nogal Terracota 18mm': { base: [110, 70, 49], border: '#422414', edge: '#663B23' },
     'Melamina Gris Antracita 18mm': { base: [56, 62, 68], border: '#1E293B', edge: '#334155' }
@@ -255,6 +260,24 @@ const Preview3D = (function() {
   function toggleCotas(mostrar) {
     renderOptions.mostrarCotas = (mostrar !== undefined) ? mostrar : !renderOptions.mostrarCotas;
     render();
+  }
+
+  /**
+   * Modifica el nivel de apertura cinemática (0.0 cerrado a 1.0 completamente abierto).
+   * Desplaza los cajones hacia adelante y abate/eleva las puertas según sus bisagras.
+   * @param {number} val - Nivel de apertura entre 0.0 y 1.0.
+   */
+  function setAperturaAnim(val) {
+    renderOptions.aperturaAnim = Math.max(0, Math.min(1.0, parseFloat(val) || 0));
+    render();
+  }
+
+  /**
+   * Obtiene el nivel actual de apertura cinemática.
+   * @returns {number} Valor entre 0.0 y 1.0.
+   */
+  function getAperturaAnim() {
+    return renderOptions.aperturaAnim || 0;
   }
 
   /**
@@ -480,6 +503,76 @@ const Preview3D = (function() {
   }
 
   /**
+   * Genera las 6 caras de un prisma cartesiano con soporte para rotación angular sobre un eje/pivote.
+   * Calcula normales exactas por producto cruz para iluminación y descarte de caras posteriores.
+   */
+  function generarCarasPrismaRotado(x, y, z, dx, dy, dz, rot) {
+    const rawPts = [
+      [x, y, z],
+      [x + dx, y, z],
+      [x + dx, y + dy, z],
+      [x, y + dy, z],
+      [x, y, z + dz],
+      [x + dx, y, z + dz],
+      [x + dx, y + dy, z + dz],
+      [x, y + dy, z + dz]
+    ];
+
+    let pts = rawPts;
+    if (rot && Math.abs(rot.anguloRad || 0) > 0.0001) {
+      const a = rot.anguloRad;
+      const cosT = Math.cos(a);
+      const sinT = Math.sin(a);
+      const px = rot.pivotX || 0;
+      const py = rot.pivotY || 0;
+      const pz = rot.pivotZ || 0;
+
+      if (rot.eje === 'X') {
+        pts = rawPts.map(([vx, vy, vz]) => {
+          const dy0 = vy - py;
+          const dz0 = vz - pz;
+          return [
+            vx,
+            py + (dy0 * cosT) - (dz0 * sinT),
+            pz + (dy0 * sinT) + (dz0 * cosT)
+          ];
+        });
+      } else if (rot.eje === 'Z') {
+        pts = rawPts.map(([vx, vy, vz]) => {
+          const dx0 = vx - px;
+          const dy0 = vy - py;
+          return [
+            px + (dx0 * cosT) - (dy0 * sinT),
+            py + (dx0 * sinT) + (dy0 * cosT),
+            vz
+          ];
+        });
+      }
+    }
+
+    function calcCara(indices, extra) {
+      const pList = indices.map(i => pts[i]);
+      const p0 = pList[0], p1 = pList[1], p2 = pList[2];
+      const ux = p1[0] - p0[0], uy = p1[1] - p0[1], uz = p1[2] - p0[2];
+      const vx = p2[0] - p0[0], vy = p2[1] - p0[1], vz = p2[2] - p0[2];
+      let nx = (uy * vz) - (uz * vy);
+      let ny = (uz * vx) - (ux * vz);
+      let nz = (ux * vy) - (uy * vx);
+      const len = Math.sqrt((nx * nx) + (ny * ny) + (nz * nz)) || 1;
+      return Object.assign({ norm: { x: nx / len, y: ny / len, z: nz / len }, pts: pList }, extra || {});
+    }
+
+    return [
+      calcCara([4, 5, 6, 7]), // Top (+Z)
+      calcCara([0, 1, 5, 4]), // Front (-Y)
+      calcCara([3, 7, 6, 2]), // Back (+Y)
+      calcCara([0, 4, 7, 3]), // Left (-X)
+      calcCara([1, 2, 6, 5]), // Right (+X)
+      calcCara([0, 3, 2, 1])  // Bottom (-Z)
+    ];
+  }
+
+  /**
    * Genera los prismas 3D de cada pieza de la composición paramétrica.
    * @param {Object} [dataOverride] - Datos opcionales para generación sin pasar por currentData.
    */
@@ -581,6 +674,13 @@ const Preview3D = (function() {
         ? parseFloat(m.retrans_zocalo)
         : (m.retransporte_zocalo !== undefined ? parseFloat(m.retransporte_zocalo) : 35);
 
+      // Descuento de profundidad de carcasa si lleva frente exterior (puerta o tapa de cajón sobrepuesta)
+      const dimCarcasa = (typeof window.calcularDimensionesCarcasa === 'function')
+        ? window.calcularDimensionesCarcasa(m, t)
+        : { profCarcasa: profMod, yCarcasaStart: 0, descuentaFrente: false };
+      const profCarcasa = dimCarcasa.profCarcasa;
+      const yCarcasaStart = dimCarcasa.yCarcasaStart;
+
       // Selector de Laterales (Costados): Si está desactivado, se retiran los laterales quedando vacío lateralmente
       const tieneLaterales = (m.tiene_laterales !== false && m.tiene_laterales !== 'false');
       const xOffsetInt = tieneLaterales ? t : 0;
@@ -611,15 +711,15 @@ const Preview3D = (function() {
       // Costados Izquierdo y Derecho (solo si tieneLaterales está activado)
       if (tieneLaterales) {
         prismas.push({
-          x: xMod, y: 0, z: zBase,
-          dx: t, dy: profMod, dz: hLateral,
+          x: xMod, y: yCarcasaStart, z: zBase,
+          dx: t, dy: profCarcasa, dz: hLateral,
           mat, name: `M${idx + 1} Lateral Izq`,
           moduloIndex: idx
         });
 
         prismas.push({
-          x: xMod + wMod - t, y: 0, z: zBase,
-          dx: t, dy: profMod, dz: hLateral,
+          x: xMod + wMod - t, y: yCarcasaStart, z: zBase,
+          dx: t, dy: profCarcasa, dz: hLateral,
           mat, name: `M${idx + 1} Lateral Der`,
           moduloIndex: idx
         });
@@ -627,14 +727,12 @@ const Preview3D = (function() {
 
       // Zócalo Inferior Perimétrico Base (rectángulo perimétrico + listones interiores)
       if (tieneZocalo && zocaloH > 0) {
-        const largoLatZocalo = Math.max(50, profMod - retransZocalo);
-        // El ancho entre laterales propios del zócalo es siempre wMod - 2*t,
-        // independiente de si la carcasa superior lleva costados laterales o no.
+        const largoLatZocalo = Math.max(50, profCarcasa - retransZocalo);
         const anchoZocaloPerim = Math.max(0, wMod - (2 * t));
 
         // 1. Listón frontal (va entre los laterales de zócalo)
         prismas.push({
-          x: xMod + t, y: retransZocalo, z: zStack,
+          x: xMod + t, y: yCarcasaStart + retransZocalo, z: zStack,
           dx: anchoZocaloPerim, dy: t, dz: zocaloH,
           mat, name: `M${idx + 1} Zócalo Frontal`,
           moduloIndex: idx,
@@ -643,7 +741,7 @@ const Preview3D = (function() {
 
         // 2. Listón posterior (va entre los laterales de zócalo)
         prismas.push({
-          x: xMod + t, y: profMod - t, z: zStack,
+          x: xMod + t, y: yCarcasaStart + profCarcasa - t, z: zStack,
           dx: anchoZocaloPerim, dy: t, dz: zocaloH,
           mat, name: `M${idx + 1} Zócalo Posterior`,
           moduloIndex: idx
@@ -651,7 +749,7 @@ const Preview3D = (function() {
 
         // 3. Lateral Izquierdo de Zócalo (cierra el perímetro)
         prismas.push({
-          x: xMod, y: retransZocalo, z: zStack,
+          x: xMod, y: yCarcasaStart + retransZocalo, z: zStack,
           dx: t, dy: largoLatZocalo, dz: zocaloH,
           mat, name: `M${idx + 1} Zócalo Lateral Izquierdo`,
           moduloIndex: idx
@@ -659,19 +757,15 @@ const Preview3D = (function() {
 
         // 4. Lateral Derecho de Zócalo (cierra el perímetro)
         prismas.push({
-          x: xMod + wMod - t, y: retransZocalo, z: zStack,
+          x: xMod + wMod - t, y: yCarcasaStart + retransZocalo, z: zStack,
           dx: t, dy: largoLatZocalo, dz: zocaloH,
           mat, name: `M${idx + 1} Zócalo Lateral Derecho`,
           moduloIndex: idx
         });
 
         // 5. Listones transversales interiores de soporte del zócalo
-        // Proporcionan sustento directo en la base al mueble o divisiones situadas encima:
-        // - 1 listón: centrado en el bloque (wMod / 2).
-        // - 2 listones: dividen el bloque en 3 partes iguales (un tercio cada uno, a 1/3 y 2/3).
-        // - N listones: dividen el bloque en N + 1 partes iguales.
         if (cantInternosZocalo > 0) {
-          const profTrans = profMod - retransZocalo - (2 * t);
+          const profTrans = profCarcasa - retransZocalo - (2 * t);
           if (profTrans > 0) {
             for (let k = 1; k <= cantInternosZocalo; k++) {
               const frac = k / (cantInternosZocalo + 1);
@@ -681,7 +775,7 @@ const Preview3D = (function() {
                 : `M${idx + 1} Listón Soporte Zócalo ${k}/${cantInternosZocalo}`;
 
               prismas.push({
-                x: xTrans, y: retransZocalo + t, z: zStack,
+                x: xTrans, y: yCarcasaStart + retransZocalo + t, z: zStack,
                 dx: t, dy: profTrans, dz: zocaloH,
                 mat, name: descNombre,
                 moduloIndex: idx,
@@ -701,17 +795,17 @@ const Preview3D = (function() {
 
           if (cantPiso === 1) {
             prismas.push({
-              x: xMod + xOffsetInt, y: 0, z: zBase,
+              x: xMod + xOffsetInt, y: yCarcasaStart, z: zBase,
               dx: anchoInt, dy: wListonPiso, dz: t,
               mat, name: `M${idx + 1} Amarre Piso Frontal`,
               moduloIndex: idx
             });
           } else {
-            const espacioGapsPiso = Math.max(0, profMod - (cantPiso * wListonPiso));
+            const espacioGapsPiso = Math.max(0, profCarcasa - (cantPiso * wListonPiso));
             const pasoGapPiso = espacioGapsPiso / (cantPiso - 1);
 
             for (let k = 0; k < cantPiso; k++) {
-              const yPos = Math.round(k * (wListonPiso + pasoGapPiso));
+              const yPos = yCarcasaStart + Math.round(k * (wListonPiso + pasoGapPiso));
               let nom = `M${idx + 1} Amarre Piso `;
               if (k === 0) nom += 'Frontal';
               else if (k === cantPiso - 1) nom += 'Posterior';
@@ -728,8 +822,8 @@ const Preview3D = (function() {
         } else {
           // Piso Sólido Completo Estándar
           prismas.push({
-            x: xMod + xOffsetInt, y: 0, z: zBase,
-            dx: anchoInt, dy: profMod, dz: t,
+            x: xMod + xOffsetInt, y: yCarcasaStart, z: zBase,
+            dx: anchoInt, dy: profCarcasa, dz: t,
             mat, name: `M${idx + 1} Piso Carcasa`,
             moduloIndex: idx
           });
@@ -745,17 +839,17 @@ const Preview3D = (function() {
 
           if (cantTecho === 1) {
             prismas.push({
-              x: xMod + xOffsetInt, y: 0, z: zBase + hCarcasa - t,
+              x: xMod + xOffsetInt, y: yCarcasaStart, z: zBase + hCarcasa - t,
               dx: anchoInt, dy: wListonTecho, dz: t,
               mat, name: `M${idx + 1} Amarre Techo Frontal`,
               moduloIndex: idx
             });
           } else {
-            const espacioGaps = Math.max(0, profMod - (cantTecho * wListonTecho));
+            const espacioGaps = Math.max(0, profCarcasa - (cantTecho * wListonTecho));
             const pasoGap = espacioGaps / (cantTecho - 1);
 
             for (let k = 0; k < cantTecho; k++) {
-              const yPos = Math.round(k * (wListonTecho + pasoGap));
+              const yPos = yCarcasaStart + Math.round(k * (wListonTecho + pasoGap));
               let nom = `M${idx + 1} Amarre Techo `;
               if (k === 0) nom += 'Frontal';
               else if (k === cantTecho - 1) nom += 'Posterior';
@@ -775,22 +869,22 @@ const Preview3D = (function() {
             if (esDobleMelamina) {
               // Capa Inferior (18mm)
               prismas.push({
-                x: xMod, y: 0, z: zBase + hCarcasa,
-                dx: wMod, dy: profMod, dz: t,
+                x: xMod, y: yCarcasaStart, z: zBase + hCarcasa,
+                dx: wMod, dy: profCarcasa, dz: t,
                 mat, name: `M${idx + 1} Techo Sobrepuesto Doble Melamina (Capa Inf. ${t}mm)`,
                 moduloIndex: idx
               });
               // Capa Superior (18mm engrosado)
               prismas.push({
-                x: xMod, y: 0, z: zBase + hCarcasa + t,
-                dx: wMod, dy: profMod, dz: t,
+                x: xMod, y: yCarcasaStart, z: zBase + hCarcasa + t,
+                dx: wMod, dy: profCarcasa, dz: t,
                 mat, name: `M${idx + 1} Techo Sobrepuesto Doble Melamina (Capa Sup. ${t}mm)`,
                 moduloIndex: idx
               });
             } else {
               prismas.push({
-                x: xMod, y: 0, z: zBase + hCarcasa,
-                dx: wMod, dy: profMod, dz: t,
+                x: xMod, y: yCarcasaStart, z: zBase + hCarcasa,
+                dx: wMod, dy: profCarcasa, dz: t,
                 mat, name: `M${idx + 1} Tapa Techo Sobrepuesta Simple (${t}mm)`,
                 moduloIndex: idx
               });
@@ -799,8 +893,8 @@ const Preview3D = (function() {
         } else {
           // Techo Sólido Completo Estándar
           prismas.push({
-            x: xMod + xOffsetInt, y: 0, z: zBase + hCarcasa - t,
-            dx: anchoInt, dy: profMod, dz: t,
+            x: xMod + xOffsetInt, y: yCarcasaStart, z: zBase + hCarcasa - t,
+            dx: anchoInt, dy: profCarcasa, dz: t,
             mat, name: `M${idx + 1} Techo Carcasa Sólido`,
             moduloIndex: idx
           });
@@ -810,7 +904,7 @@ const Preview3D = (function() {
       // Zócalo Superior (Frontal de melamina en todo el ancho interior)
       if (tieneZocaloSup && zocaloSupH > 0) {
         prismas.push({
-          x: xMod + xOffsetInt, y: 0, z: zBase + hCarcasa,
+          x: xMod + xOffsetInt, y: yCarcasaStart, z: zBase + hCarcasa,
           dx: anchoInt, dy: t, dz: zocaloSupH,
           mat, name: `M${idx + 1} Frontal Zócalo Superior`,
           moduloIndex: idx
@@ -839,13 +933,11 @@ const Preview3D = (function() {
         const zStartPost = zBase + (tienePiso ? t : 0);
 
         if (orientacionPost === 'vertical') {
-          // Listones VERTICALES en el fondo:
-          // Se extienden en Z cubriendo la altura del vano interior.
-          // Se distribuyen en X a lo ancho del módulo para fijación a pared.
+          // Listones VERTICALES en el fondo
           if (cantPost === 1) {
             const xPos = xMod + xOffsetInt + (anchoInt / 2) - (wListonPost / 2);
             prismas.push({
-              x: xPos, y: profMod - t, z: zStartPost,
+              x: xPos, y: yCarcasaStart + profCarcasa - t, z: zStartPost,
               dx: wListonPost, dy: t, dz: hVanoUtilPost,
               mat, name: `M${idx + 1} Listón Fondo Vertical Central`,
               moduloIndex: idx
@@ -862,7 +954,7 @@ const Preview3D = (function() {
               else nom += `Intermedio ${k}`;
 
               prismas.push({
-                x: xPos, y: profMod - t, z: zStartPost,
+                x: xPos, y: yCarcasaStart + profCarcasa - t, z: zStartPost,
                 dx: wListonPost, dy: t, dz: hVanoUtilPost,
                 mat, name: nom,
                 moduloIndex: idx
@@ -870,10 +962,10 @@ const Preview3D = (function() {
             }
           }
         } else {
-          // Listones HORIZONTALES en el fondo (repartidos a lo alto):
+          // Listones HORIZONTALES en el fondo (repartidos a lo alto)
           if (cantPost === 1) {
             prismas.push({
-              x: xMod + xOffsetInt, y: profMod - t, z: zBase + hCarcasa - t - wListonPost,
+              x: xMod + xOffsetInt, y: yCarcasaStart + profCarcasa - t, z: zBase + hCarcasa - t - wListonPost,
               dx: anchoInt, dy: t, dz: wListonPost,
               mat, name: `M${idx + 1} Listón Posterior Superior`,
               moduloIndex: idx
@@ -890,7 +982,7 @@ const Preview3D = (function() {
               else nom += `Intermedio ${k}`;
 
               prismas.push({
-                x: xMod + xOffsetInt, y: profMod - t, z: zPos,
+                x: xMod + xOffsetInt, y: yCarcasaStart + profCarcasa - t, z: zPos,
                 dx: anchoInt, dy: t, dz: wListonPost,
                 mat, name: nom,
                 moduloIndex: idx
@@ -1160,32 +1252,394 @@ const Preview3D = (function() {
           }
         }
       } else if (tipoInt === 'cajonera') {
-        const cantCaj = m.cant_cajones || 3;
-        const altoFr = (hVanoUtil - (cantCaj * 3)) / cantCaj;
+        // =====================================================================
+        // CAJONERA INDUSTRIAL COMPLETA EN 3D (Frentes con tirador, laterales,
+        // contrafrente, trasera, fondo MDF 3mm ranurado y rieles correderas)
+        // =====================================================================
+        const cantCaj = Math.max(2, parseInt(m.cant_cajones) || 3);
+        const montajeCaj = m.cajones_montaje || 'exterior';
+        const tipoCorr = m.cajones_tipo_corredera || 'telescopica';
+        const posCorr = m.cajones_posicion_corredera || 'baja';
+        const luz = (m.cajones_luz !== undefined) ? parseFloat(m.cajones_luz) : 2.0;
+        const tCaja = 15.0; // melamina 15mm para caja de gaveta
+
+        const descSlide = (tipoCorr === 'oculta') ? 21.0 : (tipoCorr === 'metalica' ? 37.5 : 26.0);
+        const wExtBox = Math.max(60, anchoInt - descSlide);
+        const maxSlide = profCarcasa - 30;
+        let largoSlide = 450;
+        const stdSlides = [250, 300, 350, 400, 450, 500, 550, 600];
+        if (m.cajones_largo_corredera && m.cajones_largo_corredera !== 'auto') {
+          largoSlide = Math.min(maxSlide, parseFloat(m.cajones_largo_corredera) || 450);
+        } else {
+          largoSlide = 250;
+          for (let s of stdSlides) {
+            if (s <= maxSlide) largoSlide = s;
+          }
+        }
+
+        // Medidas milimétricas de frentes respetando luz estándar perimétrica y entre cajones
+        let altoFr = 0, anchoFr = 0, xFr = 0, yFrBase = 0, zFrBase = 0;
+        if (montajeCaj === 'exterior') {
+          altoFr = (hCarcasa - ((cantCaj + 1) * luz)) / cantCaj;
+          anchoFr = tieneLaterales ? (wMod - (2 * luz)) : (anchoInt - (2 * luz));
+          xFr = tieneLaterales ? (xMod + luz) : (xMod + xOffsetInt + luz);
+          yFrBase = yCarcasaStart - t;
+          zFrBase = zBase + luz;
+        } else {
+          altoFr = (hVanoUtil - ((cantCaj + 1) * luz)) / cantCaj;
+          anchoFr = anchoInt - (2 * luz);
+          xFr = xMod + xOffsetInt + luz;
+          yFrBase = yCarcasaStart + luz;
+          zFrBase = zIntBase + luz;
+        }
+
+        const altoBox = Math.max(60, Math.min(Math.round(altoFr - 42), 240));
+        const apertura = renderOptions.aperturaAnim || 0;
+        const pullY = -apertura * (largoSlide * 0.72);
 
         for (let c = 0; c < cantCaj; c++) {
-          const zFr = zIntBase + 3 + (c * (altoFr + 3));
+          const zFr = zFrBase + (c * (altoFr + luz));
+          const yFr = yFrBase + pullY;
+
+          // 1. Frente de cajón con luz perimetral exacta
           prismas.push({
-            x: xMod + xOffsetInt + 3, y: -2, z: zFr,
-            dx: anchoInt - 6, dy: t, dz: altoFr,
-            mat: m.material_frentes || mat, name: `M${idx + 1} Frente Cajón ${c + 1}`,
+            x: xFr, y: yFr, z: zFr,
+            dx: anchoFr, dy: t, dz: altoFr,
+            mat: m.material_frentes || mat,
+            name: `M${idx + 1} Frente Cajón ${c + 1} (${montajeCaj === 'exterior' ? 'Tapa Exterior' : 'Embutido'})`,
+            moduloIndex: idx
+          });
+
+          // 2. Tirador metálico satinado en el frente
+          const wTirador = Math.min(140, Math.max(80, anchoFr * 0.35));
+          prismas.push({
+            x: xFr + (anchoFr - wTirador) / 2,
+            y: yFr - 18,
+            z: zFr + (altoFr / 2) - 6,
+            dx: wTirador, dy: 18, dz: 12,
+            mat: 'Herraje Metal Satinado',
+            name: `M${idx + 1} Tirador Cajón ${c + 1}`,
+            moduloIndex: idx
+          });
+
+          // 3. Estructura 3D de la gaveta interior (Laterales, Contrafrente, Trasera y Fondo)
+          const xBox = xMod + xOffsetInt + (descSlide / 2);
+          const yBox = (montajeCaj === 'exterior' ? yCarcasaStart : (yFr + t)) + pullY;
+          const zBox = zFr + 16;
+
+          // Lateral Izquierdo de gaveta (15mm)
+          prismas.push({
+            x: xBox, y: yBox, z: zBox,
+            dx: tCaja, dy: largoSlide, dz: altoBox,
+            mat: 'Melamina Blanca 15mm',
+            name: `M${idx + 1} Lateral Izq Gaveta ${c + 1}`,
+            moduloIndex: idx
+          });
+
+          // Lateral Derecho de gaveta (15mm)
+          prismas.push({
+            x: xBox + wExtBox - tCaja, y: yBox, z: zBox,
+            dx: tCaja, dy: largoSlide, dz: altoBox,
+            mat: 'Melamina Blanca 15mm',
+            name: `M${idx + 1} Lateral Der Gaveta ${c + 1}`,
+            moduloIndex: idx
+          });
+
+          // Contrafrente interior de gaveta (15mm)
+          prismas.push({
+            x: xBox + tCaja, y: yBox, z: zBox,
+            dx: Math.max(10, wExtBox - (2 * tCaja)), dy: tCaja, dz: altoBox,
+            mat: 'Melamina Blanca 15mm',
+            name: `M${idx + 1} Contrafrente Gaveta ${c + 1}`,
+            moduloIndex: idx
+          });
+
+          // Trasera interior de gaveta (15mm)
+          prismas.push({
+            x: xBox + tCaja, y: yBox + largoSlide - tCaja, z: zBox,
+            dx: Math.max(10, wExtBox - (2 * tCaja)), dy: tCaja, dz: altoBox,
+            mat: 'Melamina Blanca 15mm',
+            name: `M${idx + 1} Trasera Gaveta ${c + 1}`,
+            moduloIndex: idx
+          });
+
+          // Fondo MDF 3mm ranurado en la gaveta
+          prismas.push({
+            x: xBox + 4, y: yBox + 4, z: zBox + 12,
+            dx: Math.max(10, wExtBox - 8), dy: Math.max(10, largoSlide - 8), dz: 3,
+            mat: 'MDF Fondo Blanco 3mm',
+            name: `M${idx + 1} Fondo MDF 3mm Gaveta ${c + 1}`,
+            moduloIndex: idx
+          });
+
+          // 4. Correderas metálicas en los laterales del mueble según posición seleccionada
+          const zSlide = (posCorr === 'central')
+            ? (zBox + (altoBox / 2) - 12)
+            : ((posCorr === 'al_tercio') ? (zBox + (altoBox / 3)) : (zBox + 6));
+
+          // Riel corredera lateral izquierdo
+          prismas.push({
+            x: xMod + xOffsetInt + 1, y: yCarcasaStart + 4, z: zSlide,
+            dx: (descSlide / 2) - 2, dy: largoSlide, dz: 24,
+            mat: 'Herraje Metal Satinado',
+            name: `M${idx + 1} Riel Corredera Izq Cajón ${c + 1}`,
+            moduloIndex: idx
+          });
+
+          // Riel corredera lateral derecho
+          prismas.push({
+            x: xMod + xOffsetInt + anchoInt - (descSlide / 2) + 1, y: yCarcasaStart + 4, z: zSlide,
+            dx: (descSlide / 2) - 2, dy: largoSlide, dz: 24,
+            mat: 'Herraje Metal Satinado',
+            name: `M${idx + 1} Riel Corredera Der Cajón ${c + 1}`,
             moduloIndex: idx
           });
         }
-      } else if (tipoInt === 'puertas') {
-        const cantP = (wMod > 600) ? 2 : 1;
-        const luz = 2;
-        const altoP = hCarcasa - (2 * luz);
-        const anchoP = (cantP === 2) ? ((wMod - (3 * luz)) / 2) : (wMod - (2 * luz));
+      }
+
+      // =======================================================================
+      // 4. PUERTAS INDEPENDIENTES (Compatibles con repisas, carcasa o cajoneras)
+      // Perforación estándar de cazoleta Ø35x11.5mm a K=4.5mm y pistones a gas
+      // =======================================================================
+      const tienePuertas = (m.tiene_puertas === true || m.tiene_puertas === 'true' || tipoInt === 'puertas');
+      if (tienePuertas) {
+        const montajeP = m.puertas_montaje || 'exterior';
+        const posicionP = m.puertas_posicion_bisagra || m.puertas_apertura || ((wMod > 600) ? 'doble' : 'derecha');
+        const luz = (m.puertas_luz !== undefined) ? parseFloat(m.puertas_luz) : 2.0;
+        const cantP = (posicionP === 'doble') ? 2 : 1;
+
+        let altoP = 0, anchoP = 0, yP = 0, zP = 0;
+        if (montajeP === 'exterior') {
+          altoP = hCarcasa - (2 * luz);
+          anchoP = (cantP === 2) ? ((wMod - (3 * luz)) / 2) : (wMod - (2 * luz));
+          yP = yCarcasaStart - t;
+          zP = zBase + luz;
+        } else if (montajeP === 'medio') {
+          altoP = hCarcasa - (2 * luz);
+          anchoP = (cantP === 2) ? ((anchoInt + (2 * t) - (3 * luz)) / 2) : (anchoInt + t - (2 * luz));
+          yP = yCarcasaStart - t;
+          zP = zBase + luz;
+        } else {
+          // interior (embutida)
+          altoP = hVanoUtil - (2 * luz);
+          anchoP = (cantP === 2) ? ((anchoInt - (3 * luz)) / 2) : (anchoInt - (2 * luz));
+          yP = yCarcasaStart + luz;
+          zP = zIntBase + luz;
+        }
+
+        const bisInfo = (typeof window.calcularBisagrasPuerta === 'function')
+          ? window.calcularBisagrasPuerta(m, altoP, anchoP)
+          : { cantBis: 2, distCentroBorde: 22, distExtremos: 100, margenK: 4.5, esPistonGas: (posicionP === 'superior') };
+        const cantBis = bisInfo.cantBis || 2;
+        const apertura = renderOptions.aperturaAnim || 0;
 
         for (let p = 0; p < cantP; p++) {
-          const xP = xMod + luz + (p * (anchoP + luz));
+          let xP = 0;
+          if (cantP === 2) {
+            const xBaseLeaf = (montajeP === 'interior') ? (xMod + xOffsetInt + luz) : (xMod + luz);
+            xP = xBaseLeaf + (p * (anchoP + luz));
+          } else {
+            xP = (montajeP === 'interior') ? (xMod + xOffsetInt + luz) : (xMod + luz);
+          }
+
+          // Definición cinemática de apertura
+          let rot = null;
+          if (apertura > 0) {
+            if (posicionP === 'superior') {
+              rot = {
+                eje: 'X',
+                anguloRad: apertura * (70 * Math.PI / 180),
+                pivotX: xP,
+                pivotY: yP + t,
+                pivotZ: zP + altoP
+              };
+            } else if (posicionP === 'inferior') {
+              rot = {
+                eje: 'X',
+                anguloRad: -apertura * (75 * Math.PI / 180),
+                pivotX: xP,
+                pivotY: yP + t,
+                pivotZ: zP
+              };
+            } else if (posicionP === 'derecha' || (posicionP === 'doble' && p === 1)) {
+              rot = {
+                eje: 'Z',
+                anguloRad: apertura * (90 * Math.PI / 180),
+                pivotX: xP + anchoP,
+                pivotY: yP + t,
+                pivotZ: zP
+              };
+            } else {
+              // Izquierda o doble hoja izquierda (p === 0)
+              rot = {
+                eje: 'Z',
+                anguloRad: -apertura * (90 * Math.PI / 180),
+                pivotX: xP,
+                pivotY: yP + t,
+                pivotZ: zP
+              };
+            }
+          }
+
+          // Caras rotadas de la hoja de puerta
+          const customCarasPuerta = generarCarasPrismaRotado(xP, yP, zP, anchoP, t, altoP, rot);
+
           prismas.push({
-            x: xP, y: -t, z: zBase + luz,
+            x: xP, y: yP, z: zP,
             dx: anchoP, dy: t, dz: altoP,
-            mat: m.material_frentes || mat, name: `M${idx + 1} Puerta ${p + 1}`,
-            moduloIndex: idx
+            mat: m.material_frentes || mat,
+            name: `M${idx + 1} Puerta Hoja ${p + 1} (${montajeP === 'exterior' ? 'Puerta Externa' : 'Puerta Embutida'})`,
+            moduloIndex: idx,
+            customCaras: customCarasPuerta
           });
+
+          // Tirador en la puerta
+          if (posicionP === 'superior') {
+            const wTirador = Math.min(180, anchoP * 0.4);
+            const carasTirador = generarCarasPrismaRotado(
+              xP + (anchoP - wTirador) / 2, yP - 18, zP + 30,
+              wTirador, 18, 12, rot
+            );
+            prismas.push({
+              x: xP + (anchoP - wTirador) / 2, y: yP - 18, z: zP + 30,
+              dx: wTirador, dy: 18, dz: 12,
+              mat: 'Herraje Metal Satinado',
+              name: `M${idx + 1} Tirador Puerta ${p + 1}`,
+              moduloIndex: idx,
+              customCaras: carasTirador
+            });
+          } else if (posicionP === 'inferior') {
+            const wTirador = Math.min(180, anchoP * 0.4);
+            const carasTirador = generarCarasPrismaRotado(
+              xP + (anchoP - wTirador) / 2, yP - 18, zP + altoP - 42,
+              wTirador, 18, 12, rot
+            );
+            prismas.push({
+              x: xP + (anchoP - wTirador) / 2, y: yP - 18, z: zP + altoP - 42,
+              dx: wTirador, dy: 18, dz: 12,
+              mat: 'Herraje Metal Satinado',
+              name: `M${idx + 1} Tirador Puerta ${p + 1}`,
+              moduloIndex: idx,
+              customCaras: carasTirador
+            });
+          } else {
+            // Tirador vertical
+            const xTir = (posicionP === 'derecha' || (posicionP === 'doble' && p === 1))
+              ? (xP + 22)
+              : (xP + anchoP - 34);
+            const carasTirador = generarCarasPrismaRotado(
+              xTir, yP - 18, zP + (altoP / 2) - 60,
+              12, 18, 120, rot
+            );
+            prismas.push({
+              x: xTir, y: yP - 18, z: zP + (altoP / 2) - 60,
+              dx: 12, dy: 18, dz: 120,
+              mat: 'Herraje Metal Satinado',
+              name: `M${idx + 1} Tirador Puerta ${p + 1}`,
+              moduloIndex: idx,
+              customCaras: carasTirador
+            });
+          }
+
+          // Perforaciones de Cazoleta Ø35x11.5mm y Bisagras Estándar
+          // En el tablero de la puerta: canto bisagras con margen K=4.5mm (centro a 22mm del borde)
+          const distExt = 100;
+          const distC = 22; // mm al centro de la perforación (K=4.5 + R=17.5)
+          const diamCazoleta = 35;
+
+          for (let b = 0; b < cantBis; b++) {
+            let cX = 0, cZ = 0;
+            if (posicionP === 'superior') {
+              cZ = zP + altoP - distC;
+              const step = (anchoP - (2 * distExt)) / Math.max(1, cantBis - 1);
+              cX = xP + distExt + (b * step);
+            } else if (posicionP === 'inferior') {
+              cZ = zP + distC;
+              const step = (anchoP - (2 * distExt)) / Math.max(1, cantBis - 1);
+              cX = xP + distExt + (b * step);
+            } else if (posicionP === 'derecha' || (posicionP === 'doble' && p === 1)) {
+              cX = xP + anchoP - distC;
+              const step = (altoP - (2 * distExt)) / Math.max(1, cantBis - 1);
+              cZ = zP + distExt + (b * step);
+            } else {
+              // Izquierda
+              cX = xP + distC;
+              const step = (altoP - (2 * distExt)) / Math.max(1, cantBis - 1);
+              cZ = zP + distExt + (b * step);
+            }
+
+            // Perforación de Cazoleta Ø35mm incrustada en la cara interna del tablero
+            const carasCazoleta = generarCarasPrismaRotado(
+              cX - (diamCazoleta / 2), yP + t - 11.5, cZ - (diamCazoleta / 2),
+              diamCazoleta, 11.5, diamCazoleta, rot
+            );
+
+            prismas.push({
+              x: cX - (diamCazoleta / 2), y: yP + t - 11.5, z: cZ - (diamCazoleta / 2),
+              dx: diamCazoleta, dy: 11.5, dz: diamCazoleta,
+              mat: 'Cazoleta Perforacion',
+              name: `M${idx + 1} Perforación Cazoleta Ø35 Hoja ${p + 1} (#${b + 1})`,
+              moduloIndex: idx,
+              customCaras: carasCazoleta,
+              esCazoleta: true
+            });
+
+            // Brazo y placa metálica de la bisagra
+            const carasHerrajeBis = generarCarasPrismaRotado(
+              cX - 12, yP + t - 6, cZ - 14,
+              24, 28, 28, rot
+            );
+            prismas.push({
+              x: cX - 12, y: yP + t - 6, z: cZ - 14,
+              dx: 24, dy: 28, dz: 28,
+              mat: 'Herraje Metal Satinado',
+              name: `M${idx + 1} Herraje Bisagra Hoja ${p + 1} (#${b + 1})`,
+              moduloIndex: idx,
+              customCaras: carasHerrajeBis
+            });
+          }
+
+          // PISTONES A GAS para puertas con apertura superior
+          if (posicionP === 'superior') {
+            // Pistón Izquierdo
+            const yPistBase = yCarcasaStart + 140;
+            const zPistBase = zP + altoP - 160;
+            let yPistDoor = yP + t;
+            let zPistDoor = zP + altoP - 70;
+            if (rot && Math.abs(rot.anguloRad) > 0.0001) {
+              const a = rot.anguloRad;
+              const py = rot.pivotY, pz = rot.pivotZ;
+              const dy0 = yPistDoor - py, dz0 = zPistDoor - pz;
+              yPistDoor = py + (dy0 * Math.cos(a)) - (dz0 * Math.sin(a));
+              zPistDoor = pz + (dy0 * Math.sin(a)) + (dz0 * Math.cos(a));
+            }
+
+            // Cuerpo del pistón (lado izquierdo)
+            prismas.push({
+              x: xMod + xOffsetInt + 2,
+              y: Math.min(yPistBase, yPistDoor),
+              z: Math.min(zPistBase, zPistDoor),
+              dx: 14,
+              dy: Math.max(20, Math.abs(yPistDoor - yPistBase)),
+              dz: Math.max(16, Math.abs(zPistDoor - zPistBase)),
+              mat: 'Herraje Metal Satinado',
+              name: `M${idx + 1} Pistón a Gas Elevable Izq`,
+              moduloIndex: idx
+            });
+
+            // Cuerpo del pistón (lado derecho)
+            prismas.push({
+              x: xMod + xOffsetInt + anchoInt - 16,
+              y: Math.min(yPistBase, yPistDoor),
+              z: Math.min(zPistBase, zPistDoor),
+              dx: 14,
+              dy: Math.max(20, Math.abs(yPistDoor - yPistBase)),
+              dz: Math.max(16, Math.abs(zPistDoor - zPistBase)),
+              mat: 'Herraje Metal Satinado',
+              name: `M${idx + 1} Pistón a Gas Elevable Der`,
+              moduloIndex: idx
+            });
+          }
         }
       }
     });
@@ -1295,7 +1749,7 @@ const Preview3D = (function() {
     prismas.forEach(prisma => {
       const { x, y, z, dx, dy, dz, mat, moduloIndex, esZocaloFrontal, esListonSoporteZocalo, esZocaloBase } = prisma;
 
-      const defCaras = [
+      const defCaras = prisma.customCaras || [
         { norm: { x: 0, y: 0, z: 1 }, pts: [[x, y, z + dz], [x + dx, y, z + dz], [x + dx, y + dy, z + dz], [x, y + dy, z + dz]] },
         { norm: { x: 0, y: -1, z: 0 }, pts: [[x, y, z], [x + dx, y, z], [x + dx, y, z + dz], [x, y, z + dz]] },
         { norm: { x: 0, y: 1, z: 0 }, pts: [[x, y + dy, z], [x, y + dy, z + dz], [x + dx, y + dy, z + dz], [x + dx, y + dy, z]] },
@@ -1306,8 +1760,9 @@ const Preview3D = (function() {
 
       defCaras.forEach(fc => {
         let cx = 0, cy = 0, cz = 0;
+        const nPts = fc.pts.length || 4;
         fc.pts.forEach(p => { cx += p[0]; cy += p[1]; cz += p[2]; });
-        cx /= 4; cy /= 4; cz /= 4;
+        cx /= nPts; cy /= nPts; cz /= nPts;
 
         const projCentro = proyectar(cx, cy, cz);
         const dot = Math.max(0, (fc.norm.x * lightDir.x) + (fc.norm.y * lightDir.y) + (fc.norm.z * lightDir.z));
@@ -1327,6 +1782,7 @@ const Preview3D = (function() {
           const prioridadFrontal = (esZocaloFrontal && fc.norm.y < 0) ? -0.5 : 0;
           caras.push({
             puntos: fc.pts.map(p => proyectar(p[0], p[1], p[2])),
+            centro2D: projCentro,
             profundidadVista: projCentro.profundidadVista + prioridadFrontal,
             factorLuz,
             mat,
@@ -1334,7 +1790,9 @@ const Preview3D = (function() {
             esZocaloFrontal: !!esZocaloFrontal,
             esListonSoporteZocalo: !!esListonSoporteZocalo,
             esNoPermitido: !!prisma.esNoPermitido,
-            esZocaloBase: !!esZocaloBase
+            esZocaloBase: !!esZocaloBase,
+            esCazoleta: !!fc.esCazoleta || !!prisma.esCazoleta,
+            esHerraje: !!fc.esHerraje || !!prisma.esHerraje
           });
         }
       });
@@ -1352,7 +1810,10 @@ const Preview3D = (function() {
       const f = cara.factorLuz;
       let fill = `rgb(${Math.round(r * f)}, ${Math.round(g * f)}, ${Math.round(b * f)})`;
 
-      if (cara.esZocaloFrontal) {
+      if (cara.esCazoleta) {
+        // Hueco de cazoleta estándar Ø35mm: profundidad nítida oscura con aro técnico
+        fill = `rgb(15, 23, 42)`;
+      } else if (cara.esZocaloFrontal) {
         // Zócalo frontal continuo: melamina sólida 100% opaca nítida
         fill = `rgb(${Math.round(r * f)}, ${Math.round(g * f)}, ${Math.round(b * f)})`;
       } else if (cara.esListonSoporteZocalo) {
@@ -1378,13 +1839,27 @@ const Preview3D = (function() {
       if (!modoAlambre) {
         ctx.fillStyle = fill;
         ctx.fill();
-        ctx.strokeStyle = cara.esZocaloFrontal
-          ? (isDark ? '#38BDF8' : '#1D4ED8')
-          : (cara.esListonSoporteZocalo 
-              ? (cara.esNoPermitido ? '#DC2626' : '#1E40AF') 
-              : (esActivo ? '#2563EB' : paleta.border));
-        ctx.lineWidth = (cara.esZocaloFrontal || cara.esListonSoporteZocalo) ? 1.6 : (esActivo ? 1.4 : 0.8);
+        ctx.strokeStyle = cara.esCazoleta
+          ? '#38BDF8'
+          : (cara.esZocaloFrontal
+              ? (isDark ? '#38BDF8' : '#1D4ED8')
+              : (cara.esListonSoporteZocalo 
+                  ? (cara.esNoPermitido ? '#DC2626' : '#1E40AF') 
+                  : (esActivo ? '#2563EB' : paleta.border)));
+        ctx.lineWidth = cara.esCazoleta ? 1.4 : ((cara.esZocaloFrontal || cara.esListonSoporteZocalo) ? 1.6 : (esActivo ? 1.4 : 0.8));
         ctx.stroke();
+
+        // En perforación de cazoleta trazar cruz central de centrado milimétrico
+        if (cara.esCazoleta && cara.centro2D) {
+          ctx.strokeStyle = 'rgba(56, 189, 248, 0.7)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(cara.centro2D.px - 4, cara.centro2D.py);
+          ctx.lineTo(cara.centro2D.px + 4, cara.centro2D.py);
+          ctx.moveTo(cara.centro2D.px, cara.centro2D.py - 4);
+          ctx.lineTo(cara.centro2D.px, cara.centro2D.py + 4);
+          ctx.stroke();
+        }
       } else {
         ctx.strokeStyle = cara.esZocaloFrontal 
           ? '#38BDF8' 
@@ -2111,6 +2586,8 @@ const Preview3D = (function() {
     setView,
     setRenderMode,
     toggleCotas,
+    setAperturaAnim,
+    getAperturaAnim,
     resize: ajustarTamano,
     render,
     generarPrismas: generarPrismasModulos,

@@ -1921,48 +1921,161 @@ module JPQMelaminaPro
               end
 
             when 'cajonera'
-              cant_caj = (m_data['cant_cajones'] || 3).to_i
-              alto_frente_caj_num = (h_vano_util_num - (cant_caj * 3.0)) / cant_caj.to_f
+              cant_caj = [(m_data['cant_cajones'] || 3).to_i, 2].max
+              montaje_caj = m_data['cajones_montaje'] || 'exterior'
+              tipo_corr = m_data['cajones_tipo_corredera'] || 'telescopica'
+              luz_caj_num = 2.0
+              luz_caj = luz_caj_num.mm
+              t_caja_num = 15.0
+              t_caja = t_caja_num.mm
+
+              desc_corr_num = case tipo_corr
+                              when 'oculta' then 21.0
+                              when 'metalica' then 37.5
+                              else 26.0
+                              end
+              desc_corr = desc_corr_num.mm
+              w_ext_box_num = [ancho_int_num - desc_corr_num, 60.0].max
+              w_ext_box = w_ext_box_num.mm
+              max_slide_num = prof_carcasa_num - 30.0
+              largo_slide_num = [max_slide_num, 450.0].min
+              largo_slide = largo_slide_num.mm
+
+              alto_fr_num = if montaje_caj == 'exterior'
+                              (h_carcasa_num - ((cant_caj + 1) * luz_caj_num)) / cant_caj.to_f
+                            else
+                              (h_vano_util_num - ((cant_caj + 1) * luz_caj_num)) / cant_caj.to_f
+                            end
+              ancho_fr_num = if montaje_caj == 'exterior'
+                               tiene_laterales ? (w_mod_num - (2 * luz_caj_num)) : (ancho_int_num - (2 * luz_caj_num))
+                             else
+                               ancho_int_num - (2 * luz_caj_num)
+                             end
+              x_fr = if montaje_caj == 'exterior'
+                       tiene_laterales ? (x_pos + luz_caj) : (x_pos + x_offset_int + luz_caj)
+                     else
+                       x_pos + x_offset_int + luz_caj
+                     end
+              y_fr_base = (montaje_caj == 'exterior') ? (y_carcasa_start - t) : (y_carcasa_start + luz_caj)
+              z_fr_base = (montaje_caj == 'exterior') ? (z_base + luz_caj) : (z_int_base + luz_caj)
+              alto_box_num = [(alto_fr_num - 42.0), 60.0].max
+
               cant_caj.times do |c_idx|
-                z_frente = z_int_base + 3.0.mm + (c_idx * (alto_frente_caj_num + 3.0)).mm
+                z_fr = z_fr_base + (c_idx * (alto_fr_num + luz_caj_num)).mm
+
+                # 1. Frente de cajón
                 CabinetBuilder.crear_panel(
                   grupo_mod, "M#{idx + 1} Frente Cajón #{c_idx + 1}",
-                  x_pos + t + 3.0.mm, 0.mm, z_frente,
-                  (ancho_int_num - 6.0).mm, t, alto_frente_caj_num.mm,
+                  x_fr, y_fr_base, z_fr,
+                  ancho_fr_num.mm, t, alto_fr_num.mm,
                   {
                     'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-FR-CAJ-#{c_idx + 1}",
-                    'pieza_nombre' => "M#{idx + 1} Frente Cajón #{c_idx + 1}", 'material' => mat_frentes,
+                    'pieza_nombre' => "M#{idx + 1} Frente Cajón #{c_idx + 1} (#{montaje_caj})", 'material' => mat_frentes,
                     'resistencia' => resistencia,
-                    'largo_bruto_mm' => ancho_int_num - 6.0, 'ancho_bruto_mm' => alto_frente_caj_num, 'espesor_mm' => t_num,
-                    'largo_neto_mm' => ancho_int_num - 10.0, 'ancho_neto_mm' => alto_frente_caj_num - 4.0,
+                    'largo_bruto_mm' => ancho_fr_num, 'ancho_bruto_mm' => alto_fr_num, 'espesor_mm' => t_num,
+                    'largo_neto_mm' => ancho_fr_num - 4.0, 'ancho_neto_mm' => alto_fr_num - 4.0,
                     'cantidad' => 1, 'veta' => 'longitudinal',
                     'canto_L1' => 2.0, 'canto_L2' => 2.0, 'canto_A1' => 2.0, 'canto_A2' => 2.0,
-                    'ranura' => 'Ninguna'
+                    'ranura' => "Tirador central, montaje #{montaje_caj}"
                   }
                 )
-              end
 
-            when 'puertas'
-              cant_p = (w_mod_num > 600.0) ? 2 : 1
-              luz_mm = 2.0
-              alto_p_num = h_carcasa_num - (2 * luz_mm)
-              ancho_p_num = (cant_p == 2) ? ((w_mod_num - (3 * luz_mm)) / 2.0) : (w_mod_num - (2 * luz_mm))
+                # 2. Caja de gaveta: Laterales, Contrafrente, Trasera y Fondo MDF 3mm
+                x_box = x_pos + x_offset_int + (desc_corr / 2.0)
+                y_box = (montaje_caj == 'exterior') ? y_carcasa_start : (y_fr_base + t)
+                z_box = z_fr + 16.0.mm
+
+                # Lateral Izquierdo de gaveta
+                CabinetBuilder.crear_panel(
+                  grupo_mod, "M#{idx + 1} Lat Izq Gaveta #{c_idx + 1}",
+                  x_box, y_box, z_box,
+                  t_caja, largo_slide, alto_box_num.mm,
+                  { 'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-CAJ-#{c_idx + 1}-LI", 'pieza_nombre' => "M#{idx + 1} Lat Izq Gaveta #{c_idx + 1}", 'material' => 'Melamina Blanca 15mm', 'espesor_mm' => t_caja_num, 'largo_bruto_mm' => largo_slide_num, 'ancho_bruto_mm' => alto_box_num, 'cantidad' => 1 }
+                )
+                # Lateral Derecho de gaveta
+                CabinetBuilder.crear_panel(
+                  grupo_mod, "M#{idx + 1} Lat Der Gaveta #{c_idx + 1}",
+                  x_box + w_ext_box - t_caja, y_box, z_box,
+                  t_caja, largo_slide, alto_box_num.mm,
+                  { 'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-CAJ-#{c_idx + 1}-LD", 'pieza_nombre' => "M#{idx + 1} Lat Der Gaveta #{c_idx + 1}", 'material' => 'Melamina Blanca 15mm', 'espesor_mm' => t_caja_num, 'largo_bruto_mm' => largo_slide_num, 'ancho_bruto_mm' => alto_box_num, 'cantidad' => 1 }
+                )
+                # Contrafrente
+                CabinetBuilder.crear_panel(
+                  grupo_mod, "M#{idx + 1} Contrafrente Gaveta #{c_idx + 1}",
+                  x_box + t_caja, y_box, z_box,
+                  (w_ext_box_num - (2 * t_caja_num)).mm, t_caja, alto_box_num.mm,
+                  { 'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-CAJ-#{c_idx + 1}-CF", 'pieza_nombre' => "M#{idx + 1} Contrafrente Gaveta #{c_idx + 1}", 'material' => 'Melamina Blanca 15mm', 'espesor_mm' => t_caja_num, 'largo_bruto_mm' => w_ext_box_num - (2 * t_caja_num), 'ancho_bruto_mm' => alto_box_num, 'cantidad' => 1 }
+                )
+                # Trasera
+                CabinetBuilder.crear_panel(
+                  grupo_mod, "M#{idx + 1} Trasera Gaveta #{c_idx + 1}",
+                  x_box + t_caja, y_box + largo_slide - t_caja, z_box,
+                  (w_ext_box_num - (2 * t_caja_num)).mm, t_caja, alto_box_num.mm,
+                  { 'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-CAJ-#{c_idx + 1}-TR", 'pieza_nombre' => "M#{idx + 1} Trasera Gaveta #{c_idx + 1}", 'material' => 'Melamina Blanca 15mm', 'espesor_mm' => t_caja_num, 'largo_bruto_mm' => w_ext_box_num - (2 * t_caja_num), 'ancho_bruto_mm' => alto_box_num, 'cantidad' => 1 }
+                )
+                # Fondo MDF 3mm
+                CabinetBuilder.crear_panel(
+                  grupo_mod, "M#{idx + 1} Fondo MDF Gaveta #{c_idx + 1}",
+                  x_box + 4.0.mm, y_box + 4.0.mm, z_box + 12.0.mm,
+                  (w_ext_box_num - 8.0).mm, (largo_slide_num - 8.0).mm, 3.0.mm,
+                  { 'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-CAJ-#{c_idx + 1}-FND", 'pieza_nombre' => "M#{idx + 1} Fondo MDF Gaveta #{c_idx + 1}", 'material' => 'MDF Fondo Blanco 3mm', 'espesor_mm' => 3.0, 'largo_bruto_mm' => largo_slide_num - 8.0, 'ancho_bruto_mm' => w_ext_box_num - 8.0, 'cantidad' => 1 }
+                )
+              end
+            end
+
+            # D. Puertas Independientes (compatibles con repisas, cajoneras o carcasa)
+            tiene_puertas_mod = (m_data['tiene_puertas'] == true || m_data['tiene_puertas'] == 'true' || tipo_int == 'puertas')
+            if tiene_puertas_mod
+              montaje_p = m_data['puertas_montaje'] || 'exterior'
+              posicion_p = m_data['puertas_posicion_bisagra'] || ((w_mod_num > 600.0) ? 'doble' : 'derecha')
+              luz_p_num = (m_data['puertas_luz'] || 2.0).to_f
+              luz_p = luz_p_num.mm
+              cant_p = (posicion_p == 'doble') ? 2 : 1
+
+              alto_p_num = (montaje_p == 'interior') ? (h_vano_util_num - (2 * luz_p_num)) : (h_carcasa_num - (2 * luz_p_num))
+              ancho_p_num = if montaje_p == 'interior'
+                              (cant_p == 2) ? ((ancho_int_num - (3 * luz_p_num)) / 2.0) : (ancho_int_num - (2 * luz_p_num))
+                            elsif montaje_p == 'medio'
+                              (cant_p == 2) ? ((ancho_int_num + (2 * t_num) - (3 * luz_p_num)) / 2.0) : (ancho_int_num + t_num - (2 * luz_p_num))
+                            else
+                              (cant_p == 2) ? ((w_mod_num - (3 * luz_p_num)) / 2.0) : (w_mod_num - (2 * luz_p_num))
+                            end
+              y_p = (montaje_p == 'interior') ? (y_carcasa_start + luz_p) : (y_carcasa_start - t)
+              z_p = (montaje_p == 'interior') ? (z_int_base + luz_p) : (z_base + luz_p)
+
+              cant_bis = case m_data['puertas_cant_bisagras'].to_s
+                         when '2' then 2
+                         when '3' then 3
+                         when '4' then 4
+                         when '5' then 5
+                         else
+                           (posicion_p == 'superior' || posicion_p == 'inferior') ? ((ancho_p_num > 900.0) ? 3 : 2) : (alto_p_num > 2000.0 ? 5 : (alto_p_num > 1600.0 ? 4 : (alto_p_num > 900.0 ? 3 : 2)))
+                         end
 
               cant_p.times do |p_idx|
-                x_p = x_pos + luz_mm.mm + (p_idx * (ancho_p_num + luz_mm).mm)
+                x_p = if cant_p == 2
+                        x_base_leaf = (montaje_p == 'interior') ? (x_pos + x_offset_int + luz_p) : (x_pos + luz_p)
+                        x_base_leaf + (p_idx * (ancho_p_num + luz_p_num)).mm
+                      else
+                        (montaje_p == 'interior') ? (x_pos + x_offset_int + luz_p) : (x_pos + luz_p)
+                      end
+
                 CabinetBuilder.crear_panel(
                   grupo_mod, "M#{idx + 1} Puerta #{p_idx + 1}",
-                  x_p, -t, z_base + luz_mm.mm,
+                  x_p, y_p, z_p,
                   ancho_p_num.mm, t, alto_p_num.mm,
                   {
                     'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-PTA-#{p_idx + 1}",
-                    'pieza_nombre' => "M#{idx + 1} Puerta #{p_idx + 1}", 'material' => mat_frentes,
+                    'pieza_nombre' => "M#{idx + 1} Puerta #{p_idx + 1} (#{montaje_p})", 'material' => mat_frentes,
                     'resistencia' => resistencia,
                     'largo_bruto_mm' => alto_p_num, 'ancho_bruto_mm' => ancho_p_num, 'espesor_mm' => t_num,
                     'largo_neto_mm' => alto_p_num - 4.0, 'ancho_neto_mm' => ancho_p_num - 4.0,
                     'cantidad' => 1, 'veta' => 'longitudinal',
                     'canto_L1' => 2.0, 'canto_L2' => 2.0, 'canto_A1' => 2.0, 'canto_A2' => 2.0,
-                    'ranura' => 'Ninguna'
+                    'ranura' => "#{cant_bis} cazoletas Ø35x11.5mm (K=4.5mm) - [Bisagras #{posicion_p}]",
+                    'bisagras_cant' => cant_bis,
+                    'bisagras_posicion' => posicion_p,
+                    'perforacion_cazoleta' => "#{cant_bis}x Ø35mm K=4.5mm"
                   }
                 )
               end

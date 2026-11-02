@@ -688,7 +688,22 @@ function armarEstructuraModularDesdePerfil(perfil) {
       material_frentes: AppState.materialFrentes || 'blanco',
       parantes_tipo: 'ninguno',
       parantes: [],
-      espacios_repisas: []
+      espacios_repisas: [],
+
+      // Puertas independientes (por defecto exteriores según estándares industriales)
+      tiene_puertas: (tipoInt === 'puertas'),
+      puertas_montaje: 'exterior',
+      puertas_posicion_bisagra: (ancho > 600) ? 'doble' : 'derecha',
+      puertas_cant_bisagras: 'auto',
+      puertas_luz: 2.0,
+      puertas_liston_tope: 'ninguno',
+
+      // Cajonera industrial (por defecto tapas externas sobrepuestas)
+      cajones_montaje: 'exterior',
+      cajones_tipo_corredera: 'telescopica',
+      cajones_posicion_corredera: 'baja',
+      cajones_largo_corredera: 'auto',
+      cajones_luz: 2.0
     };
   };
 
@@ -778,7 +793,7 @@ function armarEstructuraModularDesdePerfil(perfil) {
 
       const nivelMod = (ms.nivel_apilado !== undefined && ms.nivel_apilado !== null) ? ms.nivel_apilado : 0;
 
-      modulos.push(crearModulo(
+      const mod = crearModulo(
         idx,
         ms.nombre || `Módulo ${idx + 1}`,
         anchoMod,
@@ -793,7 +808,27 @@ function armarEstructuraModularDesdePerfil(perfil) {
         ms.profundidad,
         cIdx,
         nivelMod
-      ));
+      );
+
+      // Heredar configuración de puertas del módulo prediseñado
+      if (ms.tiene_puertas !== undefined) {
+        mod.tiene_puertas = !!ms.tiene_puertas;
+      } else if (ms.tipo_interior === 'puertas') {
+        mod.tiene_puertas = true;
+      }
+      if (ms.puertas_montaje) mod.puertas_montaje = ms.puertas_montaje;
+      if (ms.puertas_posicion_bisagra) mod.puertas_posicion_bisagra = ms.puertas_posicion_bisagra;
+      if (ms.puertas_cant_bisagras) mod.puertas_cant_bisagras = ms.puertas_cant_bisagras;
+      if (ms.puertas_luz !== undefined) mod.puertas_luz = ms.puertas_luz;
+
+      // Heredar configuración de cajoneras del módulo prediseñado
+      if (ms.cajones_montaje) mod.cajones_montaje = ms.cajones_montaje;
+      if (ms.cajones_tipo_corredera) mod.cajones_tipo_corredera = ms.cajones_tipo_corredera;
+      if (ms.cajones_posicion_corredera) mod.cajones_posicion_corredera = ms.cajones_posicion_corredera;
+      if (ms.cajones_largo_corredera) mod.cajones_largo_corredera = ms.cajones_largo_corredera;
+      if (ms.cajones_luz !== undefined) mod.cajones_luz = ms.cajones_luz;
+
+      modulos.push(mod);
     });
   } else {
     // Fallback ergonómico automático si el perfil no especifica módulos en el JSON
@@ -804,7 +839,13 @@ function armarEstructuraModularDesdePerfil(perfil) {
       const tipoInt = (i === 0 && cantMod > 1) ? 'cajonera' : 'repisas';
       const cajones = (tipoInt === 'cajonera') ? 3 : 0;
       const repisas = (tipoInt === 'repisas') ? 3 : 0;
-      modulos.push(crearModulo(i, `Módulo ${i + 1}`, anchoM, tipoInt, repisas, cajones, true, true, true, false));
+      const mod = crearModulo(i, `Módulo ${i + 1}`, anchoM, tipoInt, repisas, cajones, true, true, true, false);
+      // Por defecto en muebles cerrados activar puertas exteriores
+      if (tipoInt !== 'cajonera') {
+        mod.tiene_puertas = true;
+        mod.puertas_montaje = 'exterior';
+      }
+      modulos.push(mod);
     }
   }
 
@@ -1695,22 +1736,99 @@ function actualizarFormularioModuloActivo() {
     `;
   }
 
-  // Interior
+  // Sincronización de Profundidad Útil y Carcasa
+  const dimCarcasa = calcularDimensionesCarcasa(m, AppState.espesorMelamina);
+  const lblDescuentoDetalle = document.getElementById('lblDescuentoProfDetalle');
+  if (lblDescuentoDetalle) {
+    lblDescuentoDetalle.innerHTML = `
+      <div><strong>Profundidad Total Mueble:</strong> ${profInfo.profMod} mm</div>
+      <div style="color: ${dimCarcasa.descuentaFrente ? 'var(--accent)' : 'var(--text-muted)'};">
+        <strong>Profundidad Carcasa:</strong> ${dimCarcasa.profCarcasa} mm ${dimCarcasa.descuentaFrente ? `(-${dimCarcasa.descFrenteMm}mm por frente exterior)` : ''}
+      </div>
+      <div><strong>Profundidad Útil Interior:</strong> <span style="font-weight: 700; color: var(--primary);">${profInfo.profUtil} mm</span></div>
+      <div style="font-size: 9px; color: var(--text-muted); margin-top: 2px;">${profInfo.detallesTexto}</div>
+    `;
+  }
+
+  // 1. Equipamiento Interior (Carcasa, Repisas o Cajonera)
   const selInterior = document.getElementById('modTipoInterior');
-  if (selInterior) selInterior.value = m.tipo_interior || 'carcasa';
+  let tipoIntActual = m.tipo_interior || 'carcasa';
+  if (tipoIntActual === 'puertas') {
+    tipoIntActual = (m.cant_repisas > 0) ? 'repisas' : 'carcasa';
+    m.tipo_interior = tipoIntActual;
+    m.tiene_puertas = true;
+  }
+  if (selInterior) selInterior.value = tipoIntActual;
 
   const grpRepisas = document.getElementById('grpDetalleRepisas');
   const grpCajones = document.getElementById('grpDetalleCajonera');
   const inpRep = document.getElementById('modCantRepisas');
-  const inpCaj = document.getElementById('modCantCajones');
 
-  if (grpRepisas) grpRepisas.style.display = (m.tipo_interior === 'repisas') ? 'block' : 'none';
-  if (grpCajones) grpCajones.style.display = (m.tipo_interior === 'cajonera') ? 'block' : 'none';
+  if (grpRepisas) grpRepisas.style.display = (tipoIntActual === 'repisas') ? 'block' : 'none';
+  if (grpCajones) grpCajones.style.display = (tipoIntActual === 'cajonera') ? 'block' : 'none';
   if (inpRep) inpRep.value = (m.cant_repisas !== undefined) ? m.cant_repisas : 0;
-  if (inpCaj) inpCaj.value = m.cant_cajones || 3;
+
+  // Sincronizar Controles de Cajonera
+  const inpCantCaj = document.getElementById('modCantCajones');
+  const selMontajeCaj = document.getElementById('modCajonesMontaje');
+  const selTipoCorr = document.getElementById('modCajonesTipoCorredera');
+  const selPosCorr = document.getElementById('modCajonesPosicionCorredera');
+  const selLargoSlide = document.getElementById('modCajonesLargoCorredera');
+  const badgeCaj = document.getElementById('badgeInfoCajonera');
+
+  if (inpCantCaj) inpCantCaj.value = m.cant_cajones || 3;
+  if (selMontajeCaj) selMontajeCaj.value = m.cajones_montaje || 'exterior';
+  if (selTipoCorr) selTipoCorr.value = m.cajones_tipo_corredera || 'telescopica';
+  if (selPosCorr) selPosCorr.value = m.cajones_posicion_corredera || 'baja';
+  if (selLargoSlide) selLargoSlide.value = m.cajones_largo_corredera || 'auto';
+  if (badgeCaj) {
+    const cTipo = m.cajones_tipo_corredera || 'telescopica';
+    const cDesc = (cTipo === 'oculta') ? '21mm' : (cTipo === 'metalica' ? '37.5mm' : '26mm');
+    badgeCaj.textContent = `${m.cant_cajones || 3} Cajones (${cDesc})`;
+  }
+
+  // 2. Puertas Frontales Independientes
+  const chkPuertas = document.getElementById('modTienePuertas');
+  const grpPuertas = document.getElementById('grpDetallePuertas');
+  const selMontajeP = document.getElementById('modPuertasMontaje');
+  const selPosP = document.getElementById('modPuertasPosicionBisagra');
+  const selCantBis = document.getElementById('modPuertasCantBisagras');
+  const selListonP = document.getElementById('modPuertasListonTope');
+  const badgePuertas = document.getElementById('badgeInfoPuertas');
+  const lblCazoleta = document.getElementById('lblInfoCazoletaDetalle');
+
+  const tienePuertas = !!(m.tiene_puertas || m.tipo_interior === 'puertas');
+  if (chkPuertas) chkPuertas.checked = tienePuertas;
+  if (grpPuertas) grpPuertas.style.display = tienePuertas ? 'block' : 'none';
+  if (selMontajeP) selMontajeP.value = m.puertas_montaje || 'exterior';
+  if (selPosP) selPosP.value = m.puertas_posicion_bisagra || m.puertas_apertura || ((m.ancho > 600) ? 'doble' : 'derecha');
+  if (selCantBis) selCantBis.value = m.puertas_cant_bisagras || 'auto';
+  if (selListonP) selListonP.value = m.puertas_liston_tope || 'ninguno';
+
+  if (badgePuertas) {
+    if (!tienePuertas) {
+      badgePuertas.textContent = 'Sin Puertas';
+      badgePuertas.className = 'cota-badge cota-badge-muted';
+    } else {
+      const posP = m.puertas_posicion_bisagra || m.puertas_apertura || ((m.ancho > 600) ? 'doble' : 'derecha');
+      const montP = m.puertas_montaje || 'exterior';
+      badgePuertas.textContent = `${posP === 'doble' ? '2 Hojas' : '1 Hoja'} (${montP})`;
+      badgePuertas.className = 'cota-badge';
+    }
+  }
+
+  if (lblCazoleta && tienePuertas) {
+    const hC = m.alto - ((m.tiene_zocalo && m.alto_zocalo > 0) ? m.alto_zocalo : 0);
+    const bisInfo = calcularBisagrasPuerta(m, hC, m.ancho);
+    lblCazoleta.innerHTML = `
+      <strong>${bisInfo.tipoBisagra}</strong> | ${bisInfo.cantBis} bisagras por hoja.<br>
+      Perforación cazoleta Ø${bisInfo.diametroCazoleta}mm x ${bisInfo.profPerforacion}mm prof. | Margen K = ${bisInfo.margenK}mm (centro a ${bisInfo.distCentroBorde}mm) | Extremos a ${bisInfo.distExtremos}mm.
+      ${bisInfo.esPistonGas ? '<br><span style="color: var(--primary); font-weight: 600;">★ Incluye brazos neumáticos de pistón a gas.</span>' : ''}
+    `;
+  }
 
   // Renderizar controles avanzados de parantes y repisas por espacio
-  if (m.tipo_interior === 'repisas') {
+  if (tipoIntActual === 'repisas') {
     renderizarControlesParantesYEspacios(m);
   }
 
@@ -3520,9 +3638,182 @@ function onCambiarPosicionListonAmarre(pos) {
  * @param {number} [t] - Espesor de la melamina (18 o 15 mm).
  * @returns {Object} Desglose detallado con profUtil, descuentoFrontal, descuentoPosterior, y texto explicativo.
  */
-function calcularProfundidadUtilInterior(m, t) {
+/**
+ * Calcula las dimensiones y retranqueos estructurales de la carcasa del módulo.
+ * REGLA TÉCNICA PRINCIPAL (Carpintería Arquitectónica y Estándares):
+ * - Cuando las puertas o tapas de cajón son EXTERIORES (sobrepuestas o semi-sobrepuestas codo 9),
+ *   la profundidad de la carcasa (laterales, piso, techo) DEBE restar el espesor de la puerta/frente (t),
+ *   para que la profundidad total terminada del mueble (carcasa + puerta) sea EXACTAMENTE igual
+ *   a la profundidad nominal configurada (m.profundidad).
+ * - Cuando las puertas o tapas son INTERIORES (embutidas), la carcasa conserva la profundidad completa,
+ *   y las puertas/tapas se instalan dentro del vano útil interior.
+ * @param {Object} m - Objeto del módulo.
+ * @param {number} [t] - Espesor de la melamina (18 o 15 mm).
+ * @returns {Object} Desglose con profMod, descuentaFrente, descFrenteMm, profCarcasa, yCarcasaStart y motivoDescuento.
+ */
+function calcularDimensionesCarcasa(m, t) {
   t = t || AppState.espesorMelamina || 18;
   const profMod = m.profundidad;
+
+  // Determinar si hay puertas exteriores o cajones exteriores
+  const tienePuerta = !!(m.tiene_puertas || m.tipo_interior === 'puertas');
+  const montajePuerta = m.puertas_montaje || 'exterior';
+  const tienePuertaExt = tienePuerta && (montajePuerta === 'exterior' || montajePuerta === 'medio');
+
+  const tieneCajonera = (m.tipo_interior === 'cajonera');
+  const montajeCajon = m.cajones_montaje || 'exterior';
+  const tieneCajonExt = !tienePuerta && tieneCajonera && (montajeCajon === 'exterior');
+
+  const descuentaFrente = tienePuertaExt || tieneCajonExt;
+  const descFrenteMm = descuentaFrente ? t : 0;
+  const profCarcasa = Math.max(100, profMod - descFrenteMm);
+  const yCarcasaStart = descFrenteMm;
+
+  let motivoDescuento = 'Sin descuento frontal (carcasa a profundidad nominal completa)';
+  if (tienePuertaExt) {
+    motivoDescuento = `Descontado ${t}mm de carcasa por puerta ${montajePuerta === 'medio' ? 'semi-sobrepuesta (codo 9)' : 'exterior sobrepuesta'}`;
+  } else if (tieneCajonExt) {
+    motivoDescuento = `Descontado ${t}mm de carcasa por tapa de cajón exterior sobrepuesta`;
+  }
+
+  return {
+    profMod,
+    descuentaFrente,
+    descFrenteMm,
+    profCarcasa,
+    yCarcasaStart,
+    motivoDescuento
+  };
+}
+if (typeof window !== 'undefined') {
+  window.calcularDimensionesCarcasa = calcularDimensionesCarcasa;
+}
+
+/**
+ * Calcula la especificación técnica de bisagras y perforaciones estándar de cazoleta de 35mm
+ * conforme a estándares internacionales (DIN 68857 / Blum / DTC / Hettich).
+ * @param {Object} m - Objeto del módulo.
+ * @param {number} altoP - Altura neta de la puerta en mm.
+ * @param {number} anchoP - Ancho neto de la puerta en mm.
+ * @returns {Object} Especificación completa de bisagras y perforaciones de cazoleta.
+ */
+function calcularBisagrasPuerta(m, altoP, anchoP) {
+  const montaje = m.puertas_montaje || 'exterior';
+  const posicion = m.puertas_posicion_bisagra || m.puertas_apertura || ((m.ancho > 600) ? 'doble' : 'derecha');
+  
+  let tipoBisagra = 'Bisagra Recta 0mm (Sobrepuesta)';
+  if (montaje === 'interior') {
+    tipoBisagra = 'Bisagra Codo 18 (Curva Alta / Embutida)';
+  } else if (montaje === 'medio') {
+    tipoBisagra = 'Bisagra Codo 9 (Semi-curva / Semi-sobrepuesta)';
+  }
+
+  // Cantidad de bisagras por hoja
+  let cantBis = 2;
+  const cfgCant = m.puertas_cant_bisagras || 'auto';
+  if (cfgCant !== 'auto' && parseInt(cfgCant) > 0) {
+    cantBis = parseInt(cfgCant);
+  } else {
+    if (posicion === 'superior' || posicion === 'inferior') {
+      cantBis = (anchoP > 900) ? 3 : 2;
+    } else {
+      if (altoP <= 900) cantBis = 2;
+      else if (altoP <= 1600) cantBis = 3;
+      else if (altoP <= 2000) cantBis = 4;
+      else cantBis = 5;
+    }
+  }
+
+  // Parámetros de perforación estándar de cazoleta
+  const diametroCazoleta = 35.0; // mm
+  const profPerforacion = 11.5;  // mm
+  const margenK = 4.5;           // mm al borde del tablero
+  const distCentroBorde = 22.0;  // mm (17.5 radio + 4.5 margen K)
+  const distExtremos = 100.0;    // mm desde esquinas al centro de cazoleta
+
+  // Generador de coordenadas relativas de perforación sobre el tablero de la puerta
+  function calcularPerforacionesHoja(bordeHinges) {
+    const perfs = [];
+    if (bordeHinges === 'superior') {
+      const yHole = altoP - distCentroBorde;
+      if (cantBis === 2) {
+        perfs.push({ x: distExtremos, y: yHole, diam: diametroCazoleta, prof: profPerforacion, margenK, borde: 'superior' });
+        perfs.push({ x: anchoP - distExtremos, y: yHole, diam: diametroCazoleta, prof: profPerforacion, margenK, borde: 'superior' });
+      } else {
+        const step = (anchoP - (2 * distExtremos)) / Math.max(1, cantBis - 1);
+        for (let i = 0; i < cantBis; i++) {
+          perfs.push({ x: distExtremos + (i * step), y: yHole, diam: diametroCazoleta, prof: profPerforacion, margenK, borde: 'superior' });
+        }
+      }
+    } else if (bordeHinges === 'inferior') {
+      const yHole = distCentroBorde;
+      if (cantBis === 2) {
+        perfs.push({ x: distExtremos, y: yHole, diam: diametroCazoleta, prof: profPerforacion, margenK, borde: 'inferior' });
+        perfs.push({ x: anchoP - distExtremos, y: yHole, diam: diametroCazoleta, prof: profPerforacion, margenK, borde: 'inferior' });
+      } else {
+        const step = (anchoP - (2 * distExtremos)) / Math.max(1, cantBis - 1);
+        for (let i = 0; i < cantBis; i++) {
+          perfs.push({ x: distExtremos + (i * step), y: yHole, diam: diametroCazoleta, prof: profPerforacion, margenK, borde: 'inferior' });
+        }
+      }
+    } else if (bordeHinges === 'derecho') {
+      const xHole = anchoP - distCentroBorde;
+      if (cantBis === 2) {
+        perfs.push({ x: xHole, y: distExtremos, diam: diametroCazoleta, prof: profPerforacion, margenK, borde: 'derecho' });
+        perfs.push({ x: xHole, y: altoP - distExtremos, diam: diametroCazoleta, prof: profPerforacion, margenK, borde: 'derecho' });
+      } else {
+        const step = (altoP - (2 * distExtremos)) / Math.max(1, cantBis - 1);
+        for (let i = 0; i < cantBis; i++) {
+          perfs.push({ x: xHole, y: distExtremos + (i * step), diam: diametroCazoleta, prof: profPerforacion, margenK, borde: 'derecho' });
+        }
+      }
+    } else {
+      // Izquierdo (por defecto)
+      const xHole = distCentroBorde;
+      if (cantBis === 2) {
+        perfs.push({ x: xHole, y: distExtremos, diam: diametroCazoleta, prof: profPerforacion, margenK, borde: 'izquierdo' });
+        perfs.push({ x: xHole, y: altoP - distExtremos, diam: diametroCazoleta, prof: profPerforacion, margenK, borde: 'izquierdo' });
+      } else {
+        const step = (altoP - (2 * distExtremos)) / Math.max(1, cantBis - 1);
+        for (let i = 0; i < cantBis; i++) {
+          perfs.push({ x: xHole, y: distExtremos + (i * step), diam: diametroCazoleta, prof: profPerforacion, margenK, borde: 'izquierdo' });
+        }
+      }
+    }
+    return perfs;
+  }
+
+  return {
+    montaje,
+    posicion,
+    tipoBisagra,
+    cantBis,
+    diametroCazoleta,
+    profPerforacion,
+    margenK,
+    distCentroBorde,
+    distExtremos,
+    esPistonGas: (posicion === 'superior' || posicion === 'inferior'),
+    calcularPerforacionesHoja
+  };
+}
+if (typeof window !== 'undefined') {
+  window.calcularBisagrasPuerta = calcularBisagrasPuerta;
+}
+
+/**
+ * Calcula con precisión milimétrica la profundidad útil real interior del módulo.
+ * Integra la deducción de puertas/cajones exteriores sobre la carcasa, los retranqueos frontales,
+ * el espesor de fondos MDF (delante o detrás de listón) y fondos de melamina.
+ * @param {Object} m - Datos del módulo activo.
+ * @param {number} [t] - Espesor de la melamina (18 o 15 mm).
+ * @returns {Object} Desglose detallado con profUtil, descuentoFrontal, descuentoPosterior, y texto explicativo.
+ */
+function calcularProfundidadUtilInterior(m, t) {
+  t = t || AppState.espesorMelamina || 18;
+  const dimCarcasa = calcularDimensionesCarcasa(m, t);
+  const profBase = dimCarcasa.profCarcasa;
+
   const descuentoFrontal = (m.descuento_frontal !== undefined && m.descuento_frontal !== '')
     ? Math.max(0, parseFloat(m.descuento_frontal))
     : (m.retrans_repisas !== undefined ? Math.max(0, parseFloat(m.retrans_repisas)) : 20);
@@ -3544,11 +3835,13 @@ function calcularProfundidadUtilInterior(m, t) {
   let descuentoPosterior = 0;
   let detallesDescuento = [];
 
+  if (dimCarcasa.descuentaFrente) {
+    detallesDescuento.push(`-${dimCarcasa.descFrenteMm} mm (frente exterior resta fondo a carcasa)`);
+  }
   detallesDescuento.push(`-${descuentoFrontal} mm (retranqueo frontal)`);
 
   if (tipoFondo === 'melamina') {
     // Fondo de melamina embutido entre laterales (sin listón posterior)
-    // Por default al borde posterior (distFondoMel = 0), o retraído para no chocar con la pared
     const distFondoMel = (m.dist_fondo_melamina !== undefined) ? Math.max(0, parseFloat(m.dist_fondo_melamina)) : 0;
     descuentoPosterior = distFondoMel + t;
     if (distFondoMel > 0) {
@@ -3560,14 +3853,12 @@ function calcularProfundidadUtilInterior(m, t) {
     const grosorMdf = parseFloat(m.grosor_mdf) || 3;
     const distRanura = (m.dist_ranura_mdf !== undefined) ? Math.max(0, parseFloat(m.dist_ranura_mdf)) : 0;
     if (posMdf === 'delante_liston') {
-      // El MDF va enranurado con la profundidad posterior / retranqueo indicado (0mm = al borde posterior)
       descuentoPosterior = distRanura + grosorMdf;
       if (distRanura > 0) {
         detallesDescuento.push(`-${distRanura} mm (prof. posterior MDF)`);
       }
       detallesDescuento.push(`-${grosorMdf} mm (fondo MDF enranurado)`);
     } else {
-      // MDF sobrepuesto por detrás del módulo
       if (tieneListonPost) {
         descuentoPosterior = t;
         detallesDescuento.push(`-${t} mm (listón posterior de amarre)`);
@@ -3581,15 +3872,18 @@ function calcularProfundidadUtilInterior(m, t) {
     }
   }
 
-  const profUtil = Math.max(100, profMod - descuentoFrontal - descuentoPosterior);
-  const yStart = descuentoFrontal;
+  const profUtil = Math.max(100, profBase - descuentoFrontal - descuentoPosterior);
+  const yStart = dimCarcasa.yCarcasaStart + descuentoFrontal;
   const yEnd = yStart + profUtil;
 
   return {
-    profMod,
+    profMod: m.profundidad,
+    profCarcasa: dimCarcasa.profCarcasa,
+    descuentaFrente: dimCarcasa.descuentaFrente,
+    descFrenteMm: dimCarcasa.descFrenteMm,
     descuentoFrontal,
     descuentoPosterior,
-    descuentoTotal: descuentoFrontal + descuentoPosterior,
+    descuentoTotal: dimCarcasa.descFrenteMm + descuentoFrontal + descuentoPosterior,
     profUtil,
     yStart,
     yEnd,
@@ -4786,10 +5080,190 @@ function onEditarCantCajones(cant) {
   const m = AppState.modulos[idx];
   if (!m) return;
 
-  m.cant_cajones = Math.max(2, Math.min(5, parseInt(cant) || 3));
+  m.cant_cajones = Math.max(2, Math.min(6, parseInt(cant) || 3));
+  const badgeCaj = document.getElementById('badgeInfoCajonera');
+  if (badgeCaj) {
+    const cTipo = m.cajones_tipo_corredera || 'telescopica';
+    const cDesc = (cTipo === 'oculta') ? '21mm' : (cTipo === 'metalica' ? '37.5mm' : '26mm');
+    badgeCaj.textContent = `${m.cant_cajones} Cajones (${cDesc})`;
+  }
   actualizarCanvas();
   validarLimitesTecnicosModulo(m, idx);
 }
+window.onEditarCantCajones = onEditarCantCajones;
+
+/**
+ * Modifica el tipo de montaje de las tapas de cajón (exterior sobrepuesta o interior embutida).
+ * Si es exterior, se descuenta el espesor de la carcasa.
+ * @param {string} montaje - 'exterior' | 'interior'
+ */
+function onCambiarMontajeCajones(montaje) {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m) return;
+
+  m.cajones_montaje = montaje;
+  actualizarCanvas();
+  validarLimitesTecnicosModulo(m, idx);
+  sincronizarFormularioModulo();
+}
+window.onCambiarMontajeCajones = onCambiarMontajeCajones;
+
+/**
+ * Cambia el tipo de corredera (telescopica 26mm, oculta 21mm, metalica 37.5mm).
+ * @param {string} tipo - 'telescopica' | 'oculta' | 'metalica'
+ */
+function onCambiarTipoCorrederaCajones(tipo) {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m) return;
+
+  m.cajones_tipo_corredera = tipo;
+  const badgeCaj = document.getElementById('badgeInfoCajonera');
+  if (badgeCaj) {
+    const cDesc = (tipo === 'oculta') ? '21mm' : (tipo === 'metalica' ? '37.5mm' : '26mm');
+    badgeCaj.textContent = `${m.cant_cajones || 3} Cajones (${cDesc})`;
+  }
+  actualizarCanvas();
+  validarLimitesTecnicosModulo(m, idx);
+}
+window.onCambiarTipoCorrederaCajones = onCambiarTipoCorrederaCajones;
+
+/**
+ * Cambia la posición en altura de la corredera en el lateral del cajón (baja, central, al tercio).
+ * @param {string} pos - 'baja' | 'central' | 'al_tercio'
+ */
+function onCambiarPosicionCorrederaCajones(pos) {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m) return;
+
+  m.cajones_posicion_corredera = pos;
+  actualizarCanvas();
+  validarLimitesTecnicosModulo(m, idx);
+}
+window.onCambiarPosicionCorrederaCajones = onCambiarPosicionCorrederaCajones;
+
+/**
+ * Modifica el largo nominal de la corredera o modo automático.
+ * @param {string} largo - 'auto' | '250' | '300' | ... | '600'
+ */
+function onCambiarLargoCorrederaCajones(largo) {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m) return;
+
+  m.cajones_largo_corredera = largo;
+  actualizarCanvas();
+  validarLimitesTecnicosModulo(m, idx);
+}
+window.onCambiarLargoCorrederaCajones = onCambiarLargoCorrederaCajones;
+
+/**
+ * Conmuta la presencia de puertas frontales en el módulo activo.
+ * @param {boolean} checked - True si lleva puertas.
+ */
+function onTogglePuertasModulo(checked) {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m) return;
+
+  m.tiene_puertas = !!checked;
+  if (m.tiene_puertas) {
+    m.puertas_montaje = m.puertas_montaje || 'exterior';
+    m.puertas_posicion_bisagra = m.puertas_posicion_bisagra || m.puertas_apertura || ((m.ancho > 600) ? 'doble' : 'derecha');
+    m.puertas_cant_bisagras = m.puertas_cant_bisagras || 'auto';
+    m.puertas_liston_tope = m.puertas_liston_tope || 'ninguno';
+  }
+
+  const grpPuertas = document.getElementById('grpDetallePuertas');
+  if (grpPuertas) grpPuertas.style.display = m.tiene_puertas ? 'block' : 'none';
+
+  actualizarCanvas();
+  validarLimitesTecnicosModulo(m, idx);
+  sincronizarFormularioModulo();
+}
+window.onTogglePuertasModulo = onTogglePuertasModulo;
+
+/**
+ * Modifica el montaje de las puertas (exterior, medio, interior).
+ * Si es exterior o medio, la carcasa descuenta el espesor de la puerta.
+ * @param {string} montaje - 'exterior' | 'medio' | 'interior'
+ */
+function onCambiarMontajePuertas(montaje) {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m) return;
+
+  m.puertas_montaje = montaje;
+  actualizarCanvas();
+  validarLimitesTecnicosModulo(m, idx);
+  sincronizarFormularioModulo();
+}
+window.onCambiarMontajePuertas = onCambiarMontajePuertas;
+
+/**
+ * Modifica la posición de las bisagras y tipo de apertura (doble, izquierda, derecha, superior para pistón gas, inferior, corrediza).
+ * @param {string} pos - 'doble' | 'izquierda' | 'derecha' | 'superior' | 'inferior' | 'corrediza'
+ */
+function onCambiarPosicionBisagrasPuertas(pos) {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m) return;
+
+  m.puertas_posicion_bisagra = pos;
+  m.puertas_apertura = pos;
+  actualizarCanvas();
+  validarLimitesTecnicosModulo(m, idx);
+  sincronizarFormularioModulo();
+}
+window.onCambiarPosicionBisagrasPuertas = onCambiarPosicionBisagrasPuertas;
+
+/**
+ * Modifica la cantidad de bisagras por hoja ('auto' o cantidad numérica).
+ * @param {string} cant - 'auto' | '2' | '3' | '4' | '5'
+ */
+function onCambiarCantBisagrasPuertas(cant) {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m) return;
+
+  m.puertas_cant_bisagras = cant;
+  actualizarCanvas();
+  validarLimitesTecnicosModulo(m, idx);
+  sincronizarFormularioModulo();
+}
+window.onCambiarCantBisagrasPuertas = onCambiarCantBisagrasPuertas;
+
+/**
+ * Modifica el listón de tope interior para las puertas.
+ * @param {string} tope - 'ninguno' | 'superior' | 'inferior' | 'ambos'
+ */
+function onCambiarListonTopePuertas(tope) {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m) return;
+
+  m.puertas_liston_tope = tope;
+  actualizarCanvas();
+  validarLimitesTecnicosModulo(m, idx);
+}
+window.onCambiarListonTopePuertas = onCambiarListonTopePuertas;
+
+/**
+ * Modifica el nivel de apertura cinemática en el visor 3D para ver los cajones y puertas abiertos.
+ * @param {number|string} val - Porcentaje de apertura (0 a 100).
+ */
+function onCambiarAperturaAnim(val) {
+  const pct = Math.max(0, Math.min(100, parseFloat(val) || 0));
+  const lbl = document.getElementById('lblAperturaAnim');
+  if (lbl) lbl.textContent = `${Math.round(pct)}%`;
+
+  if (window.Preview3D && typeof window.Preview3D.setAperturaAnim === 'function') {
+    window.Preview3D.setAperturaAnim(pct / 100);
+  }
+}
+window.onCambiarAperturaAnim = onCambiarAperturaAnim;
 
 // ==============================================================================
 // 7. MOTOR DE VALIDACIONES TÉCNICAS & REGLAS DE PANDEO INDUSTRIALES
@@ -5772,6 +6246,9 @@ function generarDespieceEstimadoLocal() {
     const esDobleMelamina = m.techo_doble_melamina === true || m.techo_doble_melamina === 'true';
     const hTecho = tieneTechoSobre ? (esDobleMelamina ? (2 * t) : t) : 0;
 
+    const dimCarcasa = calcularDimensionesCarcasa(m, t);
+    const profCarcasa = dimCarcasa.profCarcasa;
+
     // Los laterales van sobre el zócalo inferior (z = zH) y continúan hasta arriba (descontando solo techo sobrepuesto si existe)
     const tieneLaterales = (m.tiene_laterales !== false && m.tiene_laterales !== 'false');
     const hLateral = m.alto - zH - hTecho;
@@ -5793,20 +6270,20 @@ function generarDespieceEstimadoLocal() {
       ? `Ranura ${anchoRanura}x${profRanura}mm a ${distRanura}mm`
       : 'Ninguna';
 
-    // Laterales (Costados): solo se agregan a la lista de corte si tiene_laterales está activo
+    // Laterales (Costados): usan profCarcasa (descontando espesor si el frente es exterior)
     if (tieneLaterales) {
       piezas.push({
         item: itemNum++, modulo: modId, pieza: "Costado Izquierdo",
         material: AppState.materialEstructura, cant: 1,
-        largo_bruto: hLateral, ancho_bruto: m.profundidad, espesor: t,
-        largo_neto: hLateral - 2.5, ancho_neto: m.profundidad - 1.0,
+        largo_bruto: hLateral, ancho_bruto: profCarcasa, espesor: t,
+        largo_neto: hLateral - 2.5, ancho_neto: profCarcasa - 1.0,
         canto_L1: '2.0', canto_L2: '0.5', canto_A1: '0.5', canto_A2: '0.5', ranura: ranuraCarcasa
       });
       piezas.push({
         item: itemNum++, modulo: modId, pieza: "Costado Derecho",
         material: AppState.materialEstructura, cant: 1,
-        largo_bruto: hLateral, ancho_bruto: m.profundidad, espesor: t,
-        largo_neto: hLateral - 2.5, ancho_neto: m.profundidad - 1.0,
+        largo_bruto: hLateral, ancho_bruto: profCarcasa, espesor: t,
+        largo_neto: hLateral - 2.5, ancho_neto: profCarcasa - 1.0,
         canto_L1: '2.0', canto_L2: '0.5', canto_A1: '0.5', canto_A2: '0.5', ranura: ranuraCarcasa
       });
     }
@@ -5836,8 +6313,8 @@ function generarDespieceEstimadoLocal() {
         piezas.push({
           item: itemNum++, modulo: modId, pieza: "Piso Carcasa",
           material: AppState.materialEstructura, cant: 1,
-          largo_bruto: anchoInt, ancho_bruto: m.profundidad, espesor: t,
-          largo_neto: anchoInt - 1.0, ancho_neto: m.profundidad - 1.0,
+          largo_bruto: anchoInt, ancho_bruto: profCarcasa, espesor: t,
+          largo_neto: anchoInt - 1.0, ancho_neto: profCarcasa - 1.0,
           canto_L1: '2.0', canto_L2: '0.0', canto_A1: '0.5', canto_A2: '0.5', ranura: ranuraCarcasa
         });
       }
@@ -5871,16 +6348,16 @@ function generarDespieceEstimadoLocal() {
             piezas.push({
               item: itemNum++, modulo: modId, pieza: "Tapa Techo Doble Melamina (Engrosado 36mm)",
               material: AppState.materialEstructura, cant: 2,
-              largo_bruto: m.ancho, ancho_bruto: m.profundidad, espesor: t,
-              largo_neto: m.ancho - 1.0, ancho_neto: m.profundidad - 1.0,
+              largo_bruto: m.ancho, ancho_bruto: profCarcasa, espesor: t,
+              largo_neto: m.ancho - 1.0, ancho_neto: profCarcasa - 1.0,
               canto_L1: '2.0', canto_L2: '2.0', canto_A1: '2.0', canto_A2: '2.0', ranura: 'Ninguna'
             });
           } else {
             piezas.push({
               item: itemNum++, modulo: modId, pieza: "Tapa Techo Sobrepuesta Simple",
               material: AppState.materialEstructura, cant: 1,
-              largo_bruto: m.ancho, ancho_bruto: m.profundidad, espesor: t,
-              largo_neto: m.ancho - 1.0, ancho_neto: m.profundidad - 1.0,
+              largo_bruto: m.ancho, ancho_bruto: profCarcasa, espesor: t,
+              largo_neto: m.ancho - 1.0, ancho_neto: profCarcasa - 1.0,
               canto_L1: '2.0', canto_L2: '2.0', canto_A1: '2.0', canto_A2: '2.0', ranura: 'Ninguna'
             });
           }
@@ -5889,8 +6366,8 @@ function generarDespieceEstimadoLocal() {
         piezas.push({
           item: itemNum++, modulo: modId, pieza: "Techo Carcasa Sólido",
           material: AppState.materialEstructura, cant: 1,
-          largo_bruto: anchoInt, ancho_bruto: m.profundidad, espesor: t,
-          largo_neto: anchoInt - 1.0, ancho_neto: m.profundidad - 1.0,
+          largo_bruto: anchoInt, ancho_bruto: profCarcasa, espesor: t,
+          largo_neto: anchoInt - 1.0, ancho_neto: profCarcasa - 1.0,
           canto_L1: '2.0', canto_L2: '0.0', canto_A1: '0.5', canto_A2: '0.5', ranura: ranuraCarcasa
         });
       }
@@ -6132,6 +6609,162 @@ function generarDespieceEstimadoLocal() {
           });
         }
       });
+    }
+
+    // Piezas de Cajonera Industrial Completa (Laterales, Contrafrente, Trasera, Fondo MDF 3mm y Correderas)
+    if (m.tipo_interior === 'cajonera') {
+      const cantCaj = Math.max(2, parseInt(m.cant_cajones) || 3);
+      const montajeCaj = m.cajones_montaje || 'exterior';
+      const tipoCorr = m.cajones_tipo_corredera || 'telescopica';
+      const posCorr = m.cajones_posicion_corredera || 'baja';
+      const luzCaj = 2.0;
+      const tCaja = 15.0; // melamina 15mm/18mm para caja interna
+
+      const descCorr = (tipoCorr === 'oculta') ? 21.0 : (tipoCorr === 'metalica' ? 37.5 : 26.0);
+      const wExtCaja = Math.max(80, anchoInt - descCorr);
+      const wIntCaja = Math.max(50, wExtCaja - (2 * tCaja));
+
+      const maxSlide = profCarcasa - 30;
+      let largoSlide = 450;
+      const stdSlides = [250, 300, 350, 400, 450, 500, 550, 600];
+      if (m.cajones_largo_corredera && m.cajones_largo_corredera !== 'auto') {
+        largoSlide = Math.min(maxSlide, parseFloat(m.cajones_largo_corredera) || 450);
+      } else {
+        largoSlide = 250;
+        for (let s of stdSlides) {
+          if (s <= maxSlide) largoSlide = s;
+        }
+      }
+
+      const hVanoUtilCaj = Math.max(0, hCarcasa - (tienePiso ? t : 0) - (tieneTecho ? t : 0));
+      let altoFrente = 0, anchoFrente = 0;
+      if (montajeCaj === 'exterior') {
+        altoFrente = (hCarcasa - ((cantCaj + 1) * luzCaj)) / cantCaj;
+        anchoFrente = tieneLaterales ? (m.ancho - (2 * luzCaj)) : (anchoInt - (2 * luzCaj));
+      } else {
+        altoFrente = (hVanoUtilCaj - ((cantCaj + 1) * luzCaj)) / cantCaj;
+        anchoFrente = anchoInt - (2 * luzCaj);
+      }
+      const altoCaja = Math.max(60, Math.min(260, Math.round(altoFrente - 42)));
+
+      for (let c = 0; c < cantCaj; c++) {
+        // 1. Frente de cajón
+        piezas.push({
+          item: itemNum++, modulo: modId, pieza: `Frente Cajón ${c + 1} (${montajeCaj === 'exterior' ? 'Sobrepuesto' : 'Embutido'})`,
+          material: m.material_frentes || AppState.materialEstructura, cant: 1,
+          largo_bruto: Math.round(anchoFrente), ancho_bruto: Math.round(altoFrente), espesor: t,
+          largo_neto: Math.round(anchoFrente) - 4.0, ancho_neto: Math.round(altoFrente) - 4.0,
+          canto_L1: '2.0', canto_L2: '2.0', canto_A1: '2.0', canto_A2: '2.0',
+          ranura: `Tirador central, montaje ${montajeCaj}`
+        });
+
+        if (tipoCorr !== 'metalica') {
+          // 2. Laterales de gaveta (x2)
+          piezas.push({
+            item: itemNum++, modulo: modId, pieza: `Laterales Gaveta Cajón ${c + 1} (x2)`,
+            material: 'Melamina Blanca 15mm', cant: 2,
+            largo_bruto: largoSlide, ancho_bruto: altoCaja, espesor: tCaja,
+            largo_neto: largoSlide - 1.0, ancho_neto: altoCaja - 1.0,
+            canto_L1: '0.5', canto_L2: '0.0', canto_A1: '0.0', canto_A2: '0.0',
+            ranura: `Ranura Fondo 3mm a 12mm de la base (${tipoCorr}, pos: ${posCorr})`
+          });
+          // 3. Contrafrente
+          piezas.push({
+            item: itemNum++, modulo: modId, pieza: `Contrafrente Gaveta Cajón ${c + 1}`,
+            material: 'Melamina Blanca 15mm', cant: 1,
+            largo_bruto: Math.round(wIntCaja), ancho_bruto: altoCaja, espesor: tCaja,
+            largo_neto: Math.round(wIntCaja) - 1.0, ancho_neto: altoCaja - 1.0,
+            canto_L1: '0.5', canto_L2: '0.0', canto_A1: '0.0', canto_A2: '0.0',
+            ranura: 'Ranura Fondo 3mm a 12mm de la base'
+          });
+          // 4. Trasera
+          piezas.push({
+            item: itemNum++, modulo: modId, pieza: `Trasera Gaveta Cajón ${c + 1}`,
+            material: 'Melamina Blanca 15mm', cant: 1,
+            largo_bruto: Math.round(wIntCaja), ancho_bruto: altoCaja, espesor: tCaja,
+            largo_neto: Math.round(wIntCaja) - 1.0, ancho_neto: altoCaja - 1.0,
+            canto_L1: '0.5', canto_L2: '0.0', canto_A1: '0.0', canto_A2: '0.0',
+            ranura: 'Ranura Fondo 3mm a 12mm de la base'
+          });
+          // 5. Fondo MDF 3mm
+          piezas.push({
+            item: itemNum++, modulo: modId, pieza: `Fondo MDF 3mm Cajón ${c + 1}`,
+            material: 'MDF Fondo Blanco 3mm', cant: 1,
+            largo_bruto: largoSlide - 4, ancho_bruto: Math.round(wExtCaja) - 4, espesor: 3,
+            largo_neto: largoSlide - 4, ancho_neto: Math.round(wExtCaja) - 4,
+            canto_L1: '0.0', canto_L2: '0.0', canto_A1: '0.0', canto_A2: '0.0',
+            ranura: 'Incrustado en ranura 3x8mm'
+          });
+        }
+      }
+
+      // Herraje Corredera
+      piezas.push({
+        item: itemNum++, modulo: modId, pieza: `Juego Correderas ${tipoCorr.toUpperCase()} ${largoSlide}mm (x${cantCaj} pares)`,
+        material: 'Herraje Mecánico / Acero', cant: cantCaj,
+        largo_bruto: largoSlide, ancho_bruto: descCorr, espesor: 12,
+        largo_neto: largoSlide, ancho_neto: descCorr,
+        canto_L1: '0.0', canto_L2: '0.0', canto_A1: '0.0', canto_A2: '0.0',
+        ranura: `Posición: ${posCorr} (descuento lateral: ${descCorr}mm)`
+      });
+    }
+
+    // Piezas de Puertas Frontales (Independiente del equipamiento interior)
+    const tienePuertas = !!(m.tiene_puertas || m.tipo_interior === 'puertas');
+    if (tienePuertas) {
+      const montajeP = m.puertas_montaje || 'exterior';
+      const posicionP = m.puertas_posicion_bisagra || m.puertas_apertura || ((m.ancho > 600) ? 'doble' : 'derecha');
+      const luzP = parseFloat(m.puertas_luz) || 2.0;
+      const cantHojas = (posicionP === 'doble') ? 2 : 1;
+
+      let altoP = 0, anchoP = 0;
+      if (montajeP === 'exterior') {
+        altoP = hCarcasa - (2 * luzP);
+        anchoP = (cantHojas === 2) ? ((m.ancho - (3 * luzP)) / 2.0) : (m.ancho - (2 * luzP));
+      } else if (montajeP === 'medio') {
+        altoP = hCarcasa - (2 * luzP);
+        anchoP = (cantHojas === 2) ? ((anchoInt + (2 * t) - (3 * luzP)) / 2.0) : (anchoInt + t - (2 * luzP));
+      } else { // interior
+        const hVanoUtilP = Math.max(0, hCarcasa - (tienePiso ? t : 0) - (tieneTecho ? t : 0));
+        altoP = hVanoUtilP - (2 * luzP);
+        anchoP = (cantHojas === 2) ? ((anchoInt - (3 * luzP)) / 2.0) : (anchoInt - (2 * luzP));
+      }
+
+      const bisInfo = calcularBisagrasPuerta(m, altoP, anchoP);
+      const specRanuraBis = `Perforación: ${bisInfo.cantBis} cazoletas Ø35x11.5mm (K=4.5mm) - ${bisInfo.tipoBisagra} [Bisagras ${bisInfo.posicion}]`;
+
+      for (let p = 0; p < cantHojas; p++) {
+        const nomPuerta = (cantHojas === 2) ? `Puerta Hoja ${p + 1} (${p === 0 ? 'Izq' : 'Der'})` : `Puerta (${posicionP})`;
+        piezas.push({
+          item: itemNum++, modulo: modId, pieza: nomPuerta,
+          material: m.material_frentes || AppState.materialEstructura, cant: 1,
+          largo_bruto: Math.round(altoP), ancho_bruto: Math.round(anchoP), espesor: t,
+          largo_neto: Math.round(altoP) - 4.0, ancho_neto: Math.round(anchoP) - 4.0,
+          canto_L1: '2.0', canto_L2: '2.0', canto_A1: '2.0', canto_A2: '2.0',
+          ranura: specRanuraBis
+        });
+      }
+
+      // Listón de tope interior de puerta
+      const listonTope = m.puertas_liston_tope || 'ninguno';
+      if (listonTope === 'superior' || listonTope === 'ambos') {
+        piezas.push({
+          item: itemNum++, modulo: modId, pieza: "Listón de Tope Superior Puerta",
+          material: AppState.materialEstructura, cant: 1,
+          largo_bruto: anchoInt, ancho_bruto: 40, espesor: t,
+          largo_neto: anchoInt - 1.0, ancho_neto: 40 - 1.0,
+          canto_L1: '0.5', canto_L2: '0.0', canto_A1: '0.5', canto_A2: '0.5', ranura: 'Ninguna'
+        });
+      }
+      if (listonTope === 'inferior' || listonTope === 'ambos') {
+        piezas.push({
+          item: itemNum++, modulo: modId, pieza: "Listón de Tope Inferior Puerta",
+          material: AppState.materialEstructura, cant: 1,
+          largo_bruto: anchoInt, ancho_bruto: 40, espesor: t,
+          largo_neto: anchoInt - 1.0, ancho_neto: 40 - 1.0,
+          canto_L1: '0.5', canto_L2: '0.0', canto_A1: '0.5', canto_A2: '0.5', ranura: 'Ninguna'
+        });
+      }
     }
   });
 

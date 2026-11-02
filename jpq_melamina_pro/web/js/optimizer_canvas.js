@@ -139,6 +139,64 @@ class OptimizerCanvasRenderer {
         ctx.font = '9px sans-serif';
         ctx.fillText(`${Math.round(p.w)} × ${Math.round(p.h)} mm`, px + (pw / 2), py + (ph / 2) + 7);
       }
+
+      // 3.1. Dibujar perforaciones estándar de cazoletas Ø35mm en el tablero si la pieza es una puerta
+      const esPuerta = (p.esPuerta === true || (p.nombre && p.nombre.toLowerCase().includes('puerta')));
+      if (esPuerta && pw > 20 && ph > 20) {
+        let perfs = (Array.isArray(p.perforaciones) && p.perforaciones.length > 0) ? p.perforaciones : null;
+        if (!perfs) {
+          // Generar perforaciones estándar automáticamente según medidas de la pieza en el tablero
+          perfs = [];
+          const dimLargo = Math.max(p.w, p.h);
+          const esHorizontal = (p.w >= p.h);
+          let nHoles = 2;
+          if (dimLargo > 2000) nHoles = 5;
+          else if (dimLargo > 1500) nHoles = 4;
+          else if (dimLargo > 900) nHoles = 3;
+
+          const distC = 22; // mm centro a borde (K=4.5 + R=17.5)
+          const distExt = Math.min(100, dimLargo * 0.2);
+          const step = (dimLargo - (2 * distExt)) / Math.max(1, nHoles - 1);
+
+          for (let hIdx = 0; hIdx < nHoles; hIdx++) {
+            const posAlong = distExt + (hIdx * step);
+            if (esHorizontal) {
+              perfs.push({ x: posAlong, y: distC, diam: 35 });
+            } else {
+              perfs.push({ x: distC, y: posAlong, diam: 35 });
+            }
+          }
+        }
+
+        // Trazar las perforaciones circulares sobre el tablero
+        perfs.forEach(perf => {
+          const hX = px + (perf.x * escala);
+          const hY = py + (perf.y * escala);
+          const rHole = Math.max(2.5, (perf.diam || 35) / 2 * escala);
+
+          ctx.beginPath();
+          ctx.arc(hX, hY, rHole, 0, Math.PI * 2);
+          ctx.fillStyle = '#0F172A';
+          ctx.fill();
+          ctx.strokeStyle = '#38BDF8';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          // Cruz de centro CAD
+          ctx.strokeStyle = 'rgba(56, 189, 248, 0.7)';
+          ctx.beginPath();
+          ctx.moveTo(hX - rHole - 1, hY); ctx.lineTo(hX + rHole + 1, hY);
+          ctx.moveTo(hX, hY - rHole - 1); ctx.lineTo(hX, hY + rHole + 1);
+          ctx.stroke();
+
+          if (rHole >= 5) {
+            ctx.fillStyle = '#38BDF8';
+            ctx.font = '7px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Ø35', hX, hY - rHole - 2);
+          }
+        });
+      }
     });
 
     // 4. Cotas generales de la plancha exterior
