@@ -1433,13 +1433,46 @@ const Preview3D = (function() {
         const cantBis = bisInfo.cantBis || 2;
         const apertura = renderOptions.aperturaAnim || 0;
 
+        // Detección de parante vertical para alinear el encuentro exacto sobre el parante
+        let xCentroParante = null;
+        if (m.tipo_interior === 'repisas' && m.parantes_tipo === 'vertical' && Array.isArray(m.parantes) && m.parantes.length === 1) {
+          const geo = (typeof window.calcularDivisionesYEspaciosModulo === 'function')
+            ? window.calcularDivisionesYEspaciosModulo(m, t)
+            : null;
+          if (geo && geo.parantes && geo.parantes[0]) {
+            xCentroParante = (tieneLaterales ? t : 0) + geo.parantes[0].posicion + (t / 2);
+          }
+        }
+
         for (let p = 0; p < cantP; p++) {
           let xP = 0;
-          if (cantP === 2) {
+          let anchoHojaP = anchoP;
+
+          if (cantP === 2 && xCentroParante !== null) {
+            if (montajeP === 'interior') {
+              if (p === 0) {
+                xP = xMod + t + luz;
+                anchoHojaP = xCentroParante - t - (1.5 * luz);
+              } else {
+                xP = xMod + xCentroParante + (luz / 2);
+                anchoHojaP = wMod - t - xCentroParante - (1.5 * luz);
+              }
+            } else {
+              if (p === 0) {
+                xP = xMod + luz;
+                anchoHojaP = xCentroParante - (1.5 * luz);
+              } else {
+                xP = xMod + xCentroParante + (luz / 2);
+                anchoHojaP = wMod - xCentroParante - (1.5 * luz);
+              }
+            }
+          } else if (cantP === 2) {
             const xBaseLeaf = (montajeP === 'interior') ? (xMod + xOffsetInt + luz) : (xMod + luz);
             xP = xBaseLeaf + (p * (anchoP + luz));
+            anchoHojaP = anchoP;
           } else {
             xP = (montajeP === 'interior') ? (xMod + xOffsetInt + luz) : (xMod + luz);
+            anchoHojaP = anchoP;
           }
 
           // Definición cinemática de apertura
@@ -1465,7 +1498,7 @@ const Preview3D = (function() {
               rot = {
                 eje: 'Z',
                 anguloRad: apertura * (90 * Math.PI / 180),
-                pivotX: xP + anchoP,
+                pivotX: xP + anchoHojaP,
                 pivotY: yP + t,
                 pivotZ: zP
               };
@@ -1482,26 +1515,26 @@ const Preview3D = (function() {
           }
 
           // Caras rotadas de la hoja de puerta
-          const customCarasPuerta = generarCarasPrismaRotado(xP, yP, zP, anchoP, t, altoP, rot);
+          const customCarasPuerta = generarCarasPrismaRotado(xP, yP, zP, anchoHojaP, t, altoP, rot);
 
           prismas.push({
             x: xP, y: yP, z: zP,
-            dx: anchoP, dy: t, dz: altoP,
+            dx: anchoHojaP, dy: t, dz: altoP,
             mat: m.material_frentes || mat,
-            name: `M${idx + 1} Puerta Hoja ${p + 1} (${montajeP === 'exterior' ? 'Puerta Externa' : 'Puerta Embutida'})`,
+            name: `M${idx + 1} Puerta Hoja ${p + 1} (${montajeP === 'exterior' ? 'Puerta Externa' : 'Puerta Embutida'}${xCentroParante !== null ? ' -> Cierre a Parante Central' : ''})`,
             moduloIndex: idx,
             customCaras: customCarasPuerta
           });
 
           // Tirador en la puerta
           if (posicionP === 'superior') {
-            const wTirador = Math.min(180, anchoP * 0.4);
+            const wTirador = Math.min(180, anchoHojaP * 0.4);
             const carasTirador = generarCarasPrismaRotado(
-              xP + (anchoP - wTirador) / 2, yP - 18, zP + 30,
+              xP + (anchoHojaP - wTirador) / 2, yP - 18, zP + 30,
               wTirador, 18, 12, rot
             );
             prismas.push({
-              x: xP + (anchoP - wTirador) / 2, y: yP - 18, z: zP + 30,
+              x: xP + (anchoHojaP - wTirador) / 2, y: yP - 18, z: zP + 30,
               dx: wTirador, dy: 18, dz: 12,
               mat: 'Herraje Metal Satinado',
               name: `M${idx + 1} Tirador Puerta ${p + 1}`,
@@ -1509,13 +1542,13 @@ const Preview3D = (function() {
               customCaras: carasTirador
             });
           } else if (posicionP === 'inferior') {
-            const wTirador = Math.min(180, anchoP * 0.4);
+            const wTirador = Math.min(180, anchoHojaP * 0.4);
             const carasTirador = generarCarasPrismaRotado(
-              xP + (anchoP - wTirador) / 2, yP - 18, zP + altoP - 42,
+              xP + (anchoHojaP - wTirador) / 2, yP - 18, zP + altoP - 42,
               wTirador, 18, 12, rot
             );
             prismas.push({
-              x: xP + (anchoP - wTirador) / 2, y: yP - 18, z: zP + altoP - 42,
+              x: xP + (anchoHojaP - wTirador) / 2, y: yP - 18, z: zP + altoP - 42,
               dx: wTirador, dy: 18, dz: 12,
               mat: 'Herraje Metal Satinado',
               name: `M${idx + 1} Tirador Puerta ${p + 1}`,
@@ -1526,7 +1559,7 @@ const Preview3D = (function() {
             // Tirador vertical
             const xTir = (posicionP === 'derecha' || (posicionP === 'doble' && p === 1))
               ? (xP + 22)
-              : (xP + anchoP - 34);
+              : (xP + anchoHojaP - 34);
             const carasTirador = generarCarasPrismaRotado(
               xTir, yP - 18, zP + (altoP / 2) - 60,
               12, 18, 120, rot
@@ -1551,14 +1584,14 @@ const Preview3D = (function() {
             let cX = 0, cZ = 0;
             if (posicionP === 'superior') {
               cZ = zP + altoP - distC;
-              const step = (anchoP - (2 * distExt)) / Math.max(1, cantBis - 1);
+              const step = (anchoHojaP - (2 * distExt)) / Math.max(1, cantBis - 1);
               cX = xP + distExt + (b * step);
             } else if (posicionP === 'inferior') {
               cZ = zP + distC;
-              const step = (anchoP - (2 * distExt)) / Math.max(1, cantBis - 1);
+              const step = (anchoHojaP - (2 * distExt)) / Math.max(1, cantBis - 1);
               cX = xP + distExt + (b * step);
             } else if (posicionP === 'derecha' || (posicionP === 'doble' && p === 1)) {
-              cX = xP + anchoP - distC;
+              cX = xP + anchoHojaP - distC;
               const step = (altoP - (2 * distExt)) / Math.max(1, cantBis - 1);
               cZ = zP + distExt + (b * step);
             } else {

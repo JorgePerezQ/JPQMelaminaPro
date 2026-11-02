@@ -2052,8 +2052,33 @@ module JPQMelaminaPro
                            (posicion_p == 'superior' || posicion_p == 'inferior') ? ((ancho_p_num > 900.0) ? 3 : 2) : (alto_p_num > 2000.0 ? 5 : (alto_p_num > 1600.0 ? 4 : (alto_p_num > 900.0 ? 3 : 2)))
                          end
 
+              x_centro_parante_num = nil
+              if tipo_int == 'repisas' && m_data['parantes_tipo'] == 'vertical' && defined?(parantes_resueltos) && parantes_resueltos && parantes_resueltos.length == 1
+                p_v = parantes_resueltos.first
+                x_centro_parante_num = (tiene_laterales ? t_num : 0.0) + p_v[:x] + (t_num / 2.0)
+              end
+
               cant_p.times do |p_idx|
-                x_p = if cant_p == 2
+                ancho_hoja_p_num = ancho_p_num
+                x_p = if cant_p == 2 && x_centro_parante_num
+                        if montaje_p == 'interior'
+                          if p_idx == 0
+                            ancho_hoja_p_num = x_centro_parante_num - t_num - (1.5 * luz_p_num)
+                            x_pos + t + luz_p
+                          else
+                            ancho_hoja_p_num = w_mod_num - t_num - x_centro_parante_num - (1.5 * luz_p_num)
+                            x_pos + x_centro_parante_num.mm + (luz_p / 2.0)
+                          end
+                        else
+                          if p_idx == 0
+                            ancho_hoja_p_num = x_centro_parante_num - (1.5 * luz_p_num)
+                            x_pos + luz_p
+                          else
+                            ancho_hoja_p_num = w_mod_num - x_centro_parante_num - (1.5 * luz_p_num)
+                            x_pos + x_centro_parante_num.mm + (luz_p / 2.0)
+                          end
+                        end
+                      elsif cant_p == 2
                         x_base_leaf = (montaje_p == 'interior') ? (x_pos + x_offset_int + luz_p) : (x_pos + luz_p)
                         x_base_leaf + (p_idx * (ancho_p_num + luz_p_num)).mm
                       else
@@ -2063,13 +2088,13 @@ module JPQMelaminaPro
                 CabinetBuilder.crear_panel(
                   grupo_mod, "M#{idx + 1} Puerta #{p_idx + 1}",
                   x_p, y_p, z_p,
-                  ancho_p_num.mm, t, alto_p_num.mm,
+                  ancho_hoja_p_num.mm, t, alto_p_num.mm,
                   {
                     'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-PTA-#{p_idx + 1}",
-                    'pieza_nombre' => "M#{idx + 1} Puerta #{p_idx + 1} (#{montaje_p})", 'material' => mat_frentes,
+                    'pieza_nombre' => "M#{idx + 1} Puerta #{p_idx + 1} (#{montaje_p})#{x_centro_parante_num ? ' [Cierre a Parante Central]' : ''}", 'material' => mat_frentes,
                     'resistencia' => resistencia,
-                    'largo_bruto_mm' => alto_p_num, 'ancho_bruto_mm' => ancho_p_num, 'espesor_mm' => t_num,
-                    'largo_neto_mm' => alto_p_num - 4.0, 'ancho_neto_mm' => ancho_p_num - 4.0,
+                    'largo_bruto_mm' => alto_p_num, 'ancho_bruto_mm' => ancho_hoja_p_num, 'espesor_mm' => t_num,
+                    'largo_neto_mm' => alto_p_num - 4.0, 'ancho_neto_mm' => ancho_hoja_p_num - 4.0,
                     'cantidad' => 1, 'veta' => 'longitudinal',
                     'canto_L1' => 2.0, 'canto_L2' => 2.0, 'canto_A1' => 2.0, 'canto_A2' => 2.0,
                     'ranura' => "#{cant_bis} cazoletas Ø35x11.5mm (K=4.5mm) - [Bisagras #{posicion_p}]",

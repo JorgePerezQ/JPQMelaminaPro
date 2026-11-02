@@ -6733,15 +6733,43 @@ function generarDespieceEstimadoLocal() {
       const bisInfo = calcularBisagrasPuerta(m, altoP, anchoP);
       const specRanuraBis = `Perforación: ${bisInfo.cantBis} cazoletas Ø35x11.5mm (K=4.5mm) - ${bisInfo.tipoBisagra} [Bisagras ${bisInfo.posicion}]`;
 
+      // Detección de parante vertical para alinear el encuentro de cierre al centro del parante
+      let xCentroParante = null;
+      if (m.tipo_interior === 'repisas' && m.parantes_tipo === 'vertical' && Array.isArray(m.parantes) && m.parantes.length === 1) {
+        const geo = (typeof calcularDivisionesYEspaciosModulo === 'function') ? calcularDivisionesYEspaciosModulo(m, t) : null;
+        if (geo && geo.parantes && geo.parantes[0]) {
+          xCentroParante = (tieneLaterales ? t : 0) + geo.parantes[0].posicion + (t / 2);
+        }
+      }
+
       for (let p = 0; p < cantHojas; p++) {
-        const nomPuerta = (cantHojas === 2) ? `Puerta Hoja ${p + 1} (${p === 0 ? 'Izq' : 'Der'})` : `Puerta (${posicionP})`;
+        let anchoHojaP = anchoP;
+        if (cantHojas === 2 && xCentroParante !== null) {
+          if (montajeP === 'interior') {
+            anchoHojaP = (p === 0)
+              ? (xCentroParante - t - 1.5 * luzP)
+              : (m.ancho - t - xCentroParante - 1.5 * luzP);
+          } else {
+            anchoHojaP = (p === 0)
+              ? (xCentroParante - 1.5 * luzP)
+              : (m.ancho - xCentroParante - 1.5 * luzP);
+          }
+        }
+
+        const nomPuerta = (cantHojas === 2)
+          ? `Puerta Hoja ${p + 1} (${p === 0 ? 'Izq' : 'Der'}${xCentroParante !== null ? ' -> Cierre a Parante Central' : ''})`
+          : `Puerta (${posicionP})`;
         piezas.push({
           item: itemNum++, modulo: modId, pieza: nomPuerta,
           material: m.material_frentes || AppState.materialEstructura, cant: 1,
-          largo_bruto: Math.round(altoP), ancho_bruto: Math.round(anchoP), espesor: t,
-          largo_neto: Math.round(altoP) - 4.0, ancho_neto: Math.round(anchoP) - 4.0,
+          largo_bruto: Math.round(altoP), ancho_bruto: Math.round(anchoHojaP), espesor: t,
+          largo_neto: Math.round(altoP) - 4.0, ancho_neto: Math.round(anchoHojaP) - 4.0,
           canto_L1: '2.0', canto_L2: '2.0', canto_A1: '2.0', canto_A2: '2.0',
-          ranura: specRanuraBis
+          ranura: specRanuraBis,
+          esPuerta: true,
+          cantBisagras: bisInfo.cantBis,
+          posicionBisagras: posicionP,
+          bisagrasInfo: bisInfo
         });
       }
 
