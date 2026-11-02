@@ -635,9 +635,9 @@ function armarEstructuraModularDesdePerfil(perfil) {
       medida_liston_piso: 80,
       tiene_zocalo_sup: false,
       alto_zocalo_sup: 70,
-      tiene_liston_post: !tieneFondo,
+      tiene_liston_post: true,
       orientacion_liston_post: 'horizontal',
-      cant_listones_post: 2,
+      cant_listones_post: (perfil && perfil.cant_amarres) ? perfil.cant_amarres : 2,
       ancho_liston_post: 80,
       medida_liston_post: 80,
       tiene_techo: tieneTecho,
@@ -646,8 +646,8 @@ function armarEstructuraModularDesdePerfil(perfil) {
       medida_liston_techo: 80,
       techo_sobre_liston: false,
       techo_doble_melamina: false,
-      tiene_liston_amarre: !tieneFondo,
-      cant_listones_amarre: 2,
+      tiene_liston_amarre: true,
+      cant_listones_amarre: (perfil && perfil.cant_amarres) ? perfil.cant_amarres : 2,
       alto_liston_amarre: 80,
       posicion_liston_amarre: 'posterior',
       tiene_fondo: tieneFondo,
@@ -663,7 +663,7 @@ function armarEstructuraModularDesdePerfil(perfil) {
       posicion_fondo_mdf: 'delante_liston',
       ancho_ranura_mdf: 4,
       prof_ranura_mdf: 8,
-      dist_ranura_mdf: 0,
+      dist_ranura_mdf: (perfil && perfil.distancia_ranura !== undefined) ? perfil.distancia_ranura : 18,
       posicion_fondo_melamina: 'embutido',
       tipo_interior: tipoInt,
       cant_repisas: repisas,
@@ -5009,9 +5009,9 @@ function evaluarEstandaresYSinColisiones(m, idx, t) {
           });
         } else {
           const espacioGaps = Math.max(0, hVanoUtilPost - (cantPost * wListonPost));
-          const pasoGap = espacioGaps / (cantPost - 1);
+          const pasoGap = (cantPost > 1) ? (espacioGaps / (cantPost - 1)) : 0;
           for (let k = 0; k < cantPost; k++) {
-            const zPos = zH + t + Math.round(k * (wListonPost + pasoGap));
+            const zPos = zStartPost + Math.round(k * (wListonPost + pasoGap));
             piezasSolidas.push({
               nombre: `Listón Posterior ${k === 0 ? 'Inferior' : (k === cantPost - 1 ? 'Superior' : 'Intermedio')}`,
               minX: t, maxX: wMod - t,

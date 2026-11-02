@@ -1,5 +1,4 @@
-// Archivo generado automáticamente como respaldo offline para index.html
-window.PERFILES_CONFIG_FALLBACK = {
+window.JPQ_PERFILES_CONFIG = {
   "perfiles": {
     "aereo_cocina_1_modulo": {
       "id": "aereo_cocina_1_modulo",
@@ -668,7 +667,10 @@ window.PERFILES_CONFIG_FALLBACK = {
           "cant_repisas": 1,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "alacena": {
       "id": "alacena",
@@ -694,7 +696,10 @@ window.PERFILES_CONFIG_FALLBACK = {
           "cant_repisas": 4,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "cama_cabecera_integrada": {
       "id": "cama_cabecera_integrada",
@@ -714,7 +719,7 @@ window.PERFILES_CONFIG_FALLBACK = {
       "tipo_montaje": "exterior",
       "luz_frentes": 2,
       "tipo_corredera": "oculta",
-      "mdf_metodo": "clavado",
+      "mdf_metodo": "ranura",
       "distancia_ranura": 18,
       "cant_amarres": 2,
       "material_resistencia": "Normal",
@@ -900,7 +905,10 @@ window.PERFILES_CONFIG_FALLBACK = {
           "cant_cajones": 4,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "comoda_doble": {
       "id": "comoda_doble",
@@ -933,7 +941,10 @@ window.PERFILES_CONFIG_FALLBACK = {
           "cant_cajones": 4,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "senior_accesibilidad": {
       "id": "senior_accesibilidad",
@@ -1004,7 +1015,10 @@ window.PERFILES_CONFIG_FALLBACK = {
           "cant_repisas": 1,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "ropero_1_cuerpo": {
       "id": "ropero_1_cuerpo",
@@ -1419,7 +1433,10 @@ window.PERFILES_CONFIG_FALLBACK = {
           "cant_cajones": 2,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "zapatera": {
       "id": "zapatera",
@@ -1445,7 +1462,10 @@ window.PERFILES_CONFIG_FALLBACK = {
           "cant_repisas": 4,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "centro_tv_40_pulgadas": {
       "id": "centro_tv_40_pulgadas",
@@ -1478,7 +1498,10 @@ window.PERFILES_CONFIG_FALLBACK = {
           "cant_repisas": 1,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "centro_tv_48_pulgadas": {
       "id": "centro_tv_48_pulgadas",
@@ -1518,7 +1541,10 @@ window.PERFILES_CONFIG_FALLBACK = {
           "cant_repisas": 2,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "centro_tv_55_pulgadas": {
       "id": "centro_tv_55_pulgadas",
@@ -1558,7 +1584,10 @@ window.PERFILES_CONFIG_FALLBACK = {
           "cant_repisas": 3,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "centro_tv_65_pulgadas": {
       "id": "centro_tv_65_pulgadas",
@@ -1598,7 +1627,10 @@ window.PERFILES_CONFIG_FALLBACK = {
           "cant_repisas": 4,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "estanteria": {
       "id": "estanteria",
@@ -1624,7 +1656,10 @@ window.PERFILES_CONFIG_FALLBACK = {
           "cant_repisas": 4,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "mesa_centro": {
       "id": "mesa_centro",
@@ -1684,7 +1719,10 @@ window.PERFILES_CONFIG_FALLBACK = {
           "cant_repisas": 1,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "recibidor_zapatera": {
       "id": "recibidor_zapatera",
@@ -1755,7 +1793,10 @@ window.PERFILES_CONFIG_FALLBACK = {
           "cant_repisas": 1,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "escritorio_gamer": {
       "id": "escritorio_gamer",
@@ -1827,7 +1868,10 @@ window.PERFILES_CONFIG_FALLBACK = {
           "cant_repisas": 4,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "setup_gamer_pro": {
       "id": "setup_gamer_pro",
@@ -1848,27 +1892,59 @@ window.PERFILES_CONFIG_FALLBACK = {
       "modulos_sugeridos": [
         {
           "nombre": "Vitrina Coleccionables RGB",
-          "ancho_fijo": 550,
+          "columna_idx": 0,
+          "nivel_apilado": 0,
+          "ancho_fijo": 500,
+          "alto": 1920,
+          "profundidad": 650,
           "tipo_interior": "repisas",
           "cant_repisas": 4,
+          "tiene_piso": true,
+          "tiene_techo": true,
           "tiene_fondo": true
         },
         {
-          "nombre": "Vano Escritorio 2 Pantallas",
+          "nombre": "Mesa Escritorio Gamer Ergonómico",
+          "columna_idx": 1,
+          "nivel_apilado": 0,
           "ancho_proporcional": 1.0,
+          "alto": 670,
+          "profundidad": 650,
           "tipo_interior": "carcasa",
-          "cant_repisas": 1,
           "tiene_piso": false,
-          "tiene_fondo": false
+          "tiene_techo": true,
+          "tiene_fondo": true
         },
         {
-          "nombre": "Pedestal Gabinete y Cables",
-          "ancho_fijo": 450,
+          "nombre": "Puente Superior 2 Pantallas & Repisa RGB",
+          "columna_idx": 1,
+          "nivel_apilado": 1,
+          "ancho_proporcional": 1.0,
+          "alto": 1250,
+          "profundidad": 350,
+          "tipo_interior": "repisas",
+          "cant_repisas": 1,
+          "tiene_piso": true,
+          "tiene_techo": true,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Pedestal Gabinete CPU & Periféricos",
+          "columna_idx": 2,
+          "nivel_apilado": 0,
+          "ancho_fijo": 500,
+          "alto": 1920,
+          "profundidad": 650,
           "tipo_interior": "cajonera",
           "cant_cajones": 3,
+          "tiene_piso": true,
+          "tiene_techo": true,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "cama_juvenil_cajones": {
       "id": "cama_juvenil_cajones",
@@ -1901,7 +1977,10 @@ window.PERFILES_CONFIG_FALLBACK = {
           "cant_cajones": 2,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "closet_juvenil_estudio": {
       "id": "closet_juvenil_estudio",
@@ -1934,7 +2013,10 @@ window.PERFILES_CONFIG_FALLBACK = {
           "cant_repisas": 2,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "tocador_hollywood_led": {
       "id": "tocador_hollywood_led",
@@ -1970,7 +2052,10 @@ window.PERFILES_CONFIG_FALLBACK = {
           "tiene_techo": true,
           "tiene_fondo": false
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "tocador_juvenil": {
       "id": "tocador_juvenil",
@@ -2015,7 +2100,10 @@ window.PERFILES_CONFIG_FALLBACK = {
           "tiene_laterales": true,
           "tiene_fondo": false
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "infantil_estudio_creativo": {
       "id": "infantil_estudio_creativo",
@@ -2139,7 +2227,10 @@ window.PERFILES_CONFIG_FALLBACK = {
           "cant_cajones": 3,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "botiquin": {
       "id": "botiquin",
@@ -2165,7 +2256,10 @@ window.PERFILES_CONFIG_FALLBACK = {
           "cant_repisas": 2,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "columna_bano": {
       "id": "columna_bano",
@@ -2330,7 +2424,10 @@ window.PERFILES_CONFIG_FALLBACK = {
           "cant_repisas": 5,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "librero": {
       "id": "librero",
@@ -2363,7 +2460,10 @@ window.PERFILES_CONFIG_FALLBACK = {
           "cant_repisas": 4,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "repisero_cubos": {
       "id": "repisero_cubos",
@@ -2389,7 +2489,10 @@ window.PERFILES_CONFIG_FALLBACK = {
           "cant_repisas": 3,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "cajonera_movil": {
       "id": "cajonera_movil",
@@ -2415,7 +2518,10 @@ window.PERFILES_CONFIG_FALLBACK = {
           "cant_cajones": 3,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "credencia": {
       "id": "credencia",
@@ -2448,7 +2554,10 @@ window.PERFILES_CONFIG_FALLBACK = {
           "cant_repisas": 1,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "escritorio": {
       "id": "escritorio",
@@ -2515,24 +2624,53 @@ window.PERFILES_CONFIG_FALLBACK = {
       "modulos_sugeridos": [
         {
           "nombre": "Pedestal Archivo Carpetas",
+          "columna_idx": 0,
+          "nivel_apilado": 0,
           "ancho_fijo": 480,
+          "alto": 2000,
+          "profundidad": 650,
           "tipo_interior": "cajonera",
           "cant_cajones": 3,
+          "tiene_piso": true,
+          "tiene_techo": true,
           "tiene_fondo": true
         },
         {
-          "nombre": "Vano Ergonomía Silla",
+          "nombre": "Mesa Escritorio Ejecutivo Ergonómico",
+          "columna_idx": 1,
+          "nivel_apilado": 0,
           "ancho_proporcional": 1.0,
+          "alto": 650,
+          "profundidad": 650,
           "tipo_interior": "carcasa",
-          "cant_repisas": 1,
           "tiene_piso": false,
+          "tiene_techo": true,
           "tiene_fondo": true
         },
         {
-          "nombre": "Torre Archivador Papeles",
+          "nombre": "Módulo Aéreo Librero / Almacén Ejecutivo",
+          "columna_idx": 1,
+          "nivel_apilado": 1,
+          "ancho_proporcional": 1.0,
+          "alto": 1350,
+          "profundidad": 350,
+          "tipo_interior": "repisas",
+          "cant_repisas": 2,
+          "tiene_piso": true,
+          "tiene_techo": true,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Torre Archivador con Puertas",
+          "columna_idx": 2,
+          "nivel_apilado": 0,
           "ancho_fijo": 480,
+          "alto": 2000,
+          "profundidad": 650,
           "tipo_interior": "puertas",
           "cant_repisas": 4,
+          "tiene_piso": true,
+          "tiene_techo": true,
           "tiene_fondo": true
         }
       ]
@@ -2575,7 +2713,10 @@ window.PERFILES_CONFIG_FALLBACK = {
           "cant_repisas": 1,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "bar_mural": {
       "id": "bar_mural",
@@ -2601,7 +2742,10 @@ window.PERFILES_CONFIG_FALLBACK = {
           "cant_repisas": 2,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "vitrina": {
       "id": "vitrina",
@@ -2627,7 +2771,10 @@ window.PERFILES_CONFIG_FALLBACK = {
           "cant_repisas": 4,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "lavanderia_auxiliar": {
       "id": "lavanderia_auxiliar",
@@ -2739,7 +2886,10 @@ window.PERFILES_CONFIG_FALLBACK = {
           "cant_repisas": 3,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "comercial_mostrador_recepcion": {
       "id": "comercial_mostrador_recepcion",
@@ -2817,7 +2967,10 @@ window.PERFILES_CONFIG_FALLBACK = {
           "cant_repisas": 2,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "comercial_vitrina_exhibidora": {
       "id": "comercial_vitrina_exhibidora",

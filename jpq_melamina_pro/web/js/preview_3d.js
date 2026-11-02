@@ -880,10 +880,10 @@ const Preview3D = (function() {
             });
           } else {
             const espacioGaps = Math.max(0, hVanoUtilPost - (cantPost * wListonPost));
-            const pasoGap = espacioGaps / (cantPost - 1);
+            const pasoGap = (cantPost > 1) ? (espacioGaps / (cantPost - 1)) : 0;
 
             for (let k = 0; k < cantPost; k++) {
-              const zPos = zBase + t + Math.round(k * (wListonPost + pasoGap));
+              const zPos = zStartPost + Math.round(k * (wListonPost + pasoGap));
               let nom = `M${idx + 1} Listón Posterior `;
               if (k === 0) nom += 'Inferior';
               else if (k === cantPost - 1) nom += 'Superior';

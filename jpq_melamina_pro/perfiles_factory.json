@@ -667,7 +667,10 @@
           "cant_repisas": 1,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "alacena": {
       "id": "alacena",
@@ -693,7 +696,10 @@
           "cant_repisas": 4,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "cama_cabecera_integrada": {
       "id": "cama_cabecera_integrada",
@@ -713,7 +719,7 @@
       "tipo_montaje": "exterior",
       "luz_frentes": 2,
       "tipo_corredera": "oculta",
-      "mdf_metodo": "clavado",
+      "mdf_metodo": "ranura",
       "distancia_ranura": 18,
       "cant_amarres": 2,
       "material_resistencia": "Normal",
@@ -899,7 +905,10 @@
           "cant_cajones": 4,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "comoda_doble": {
       "id": "comoda_doble",
@@ -932,7 +941,10 @@
           "cant_cajones": 4,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "senior_accesibilidad": {
       "id": "senior_accesibilidad",
@@ -1003,7 +1015,10 @@
           "cant_repisas": 1,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "ropero_1_cuerpo": {
       "id": "ropero_1_cuerpo",
@@ -1418,7 +1433,10 @@
           "cant_cajones": 2,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "zapatera": {
       "id": "zapatera",
@@ -1444,7 +1462,10 @@
           "cant_repisas": 4,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "centro_tv_40_pulgadas": {
       "id": "centro_tv_40_pulgadas",
@@ -1477,7 +1498,10 @@
           "cant_repisas": 1,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "centro_tv_48_pulgadas": {
       "id": "centro_tv_48_pulgadas",
@@ -1517,7 +1541,10 @@
           "cant_repisas": 2,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "centro_tv_55_pulgadas": {
       "id": "centro_tv_55_pulgadas",
@@ -1557,7 +1584,10 @@
           "cant_repisas": 3,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "centro_tv_65_pulgadas": {
       "id": "centro_tv_65_pulgadas",
@@ -1597,7 +1627,10 @@
           "cant_repisas": 4,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "estanteria": {
       "id": "estanteria",
@@ -1623,7 +1656,10 @@
           "cant_repisas": 4,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "mesa_centro": {
       "id": "mesa_centro",
@@ -1683,7 +1719,10 @@
           "cant_repisas": 1,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "recibidor_zapatera": {
       "id": "recibidor_zapatera",
@@ -1754,7 +1793,10 @@
           "cant_repisas": 1,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "escritorio_gamer": {
       "id": "escritorio_gamer",
@@ -1826,7 +1868,10 @@
           "cant_repisas": 4,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "setup_gamer_pro": {
       "id": "setup_gamer_pro",
@@ -1847,27 +1892,59 @@
       "modulos_sugeridos": [
         {
           "nombre": "Vitrina Coleccionables RGB",
-          "ancho_fijo": 550,
+          "columna_idx": 0,
+          "nivel_apilado": 0,
+          "ancho_fijo": 500,
+          "alto": 1920,
+          "profundidad": 650,
           "tipo_interior": "repisas",
           "cant_repisas": 4,
+          "tiene_piso": true,
+          "tiene_techo": true,
           "tiene_fondo": true
         },
         {
-          "nombre": "Vano Escritorio 2 Pantallas",
+          "nombre": "Mesa Escritorio Gamer Ergonómico",
+          "columna_idx": 1,
+          "nivel_apilado": 0,
           "ancho_proporcional": 1.0,
+          "alto": 670,
+          "profundidad": 650,
           "tipo_interior": "carcasa",
-          "cant_repisas": 1,
           "tiene_piso": false,
-          "tiene_fondo": false
+          "tiene_techo": true,
+          "tiene_fondo": true
         },
         {
-          "nombre": "Pedestal Gabinete y Cables",
-          "ancho_fijo": 450,
+          "nombre": "Puente Superior 2 Pantallas & Repisa RGB",
+          "columna_idx": 1,
+          "nivel_apilado": 1,
+          "ancho_proporcional": 1.0,
+          "alto": 1250,
+          "profundidad": 350,
+          "tipo_interior": "repisas",
+          "cant_repisas": 1,
+          "tiene_piso": true,
+          "tiene_techo": true,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Pedestal Gabinete CPU & Periféricos",
+          "columna_idx": 2,
+          "nivel_apilado": 0,
+          "ancho_fijo": 500,
+          "alto": 1920,
+          "profundidad": 650,
           "tipo_interior": "cajonera",
           "cant_cajones": 3,
+          "tiene_piso": true,
+          "tiene_techo": true,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "cama_juvenil_cajones": {
       "id": "cama_juvenil_cajones",
@@ -1900,7 +1977,10 @@
           "cant_cajones": 2,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "closet_juvenil_estudio": {
       "id": "closet_juvenil_estudio",
@@ -1933,7 +2013,10 @@
           "cant_repisas": 2,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "tocador_hollywood_led": {
       "id": "tocador_hollywood_led",
@@ -1969,7 +2052,10 @@
           "tiene_techo": true,
           "tiene_fondo": false
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "tocador_juvenil": {
       "id": "tocador_juvenil",
@@ -2014,7 +2100,10 @@
           "tiene_laterales": true,
           "tiene_fondo": false
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "infantil_estudio_creativo": {
       "id": "infantil_estudio_creativo",
@@ -2138,7 +2227,10 @@
           "cant_cajones": 3,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "botiquin": {
       "id": "botiquin",
@@ -2164,7 +2256,10 @@
           "cant_repisas": 2,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "columna_bano": {
       "id": "columna_bano",
@@ -2329,7 +2424,10 @@
           "cant_repisas": 5,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "librero": {
       "id": "librero",
@@ -2362,7 +2460,10 @@
           "cant_repisas": 4,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "repisero_cubos": {
       "id": "repisero_cubos",
@@ -2388,7 +2489,10 @@
           "cant_repisas": 3,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "cajonera_movil": {
       "id": "cajonera_movil",
@@ -2414,7 +2518,10 @@
           "cant_cajones": 3,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "credencia": {
       "id": "credencia",
@@ -2447,7 +2554,10 @@
           "cant_repisas": 1,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "escritorio": {
       "id": "escritorio",
@@ -2514,24 +2624,53 @@
       "modulos_sugeridos": [
         {
           "nombre": "Pedestal Archivo Carpetas",
+          "columna_idx": 0,
+          "nivel_apilado": 0,
           "ancho_fijo": 480,
+          "alto": 2000,
+          "profundidad": 650,
           "tipo_interior": "cajonera",
           "cant_cajones": 3,
+          "tiene_piso": true,
+          "tiene_techo": true,
           "tiene_fondo": true
         },
         {
-          "nombre": "Vano Ergonomía Silla",
+          "nombre": "Mesa Escritorio Ejecutivo Ergonómico",
+          "columna_idx": 1,
+          "nivel_apilado": 0,
           "ancho_proporcional": 1.0,
+          "alto": 650,
+          "profundidad": 650,
           "tipo_interior": "carcasa",
-          "cant_repisas": 1,
           "tiene_piso": false,
+          "tiene_techo": true,
           "tiene_fondo": true
         },
         {
-          "nombre": "Torre Archivador Papeles",
+          "nombre": "Módulo Aéreo Librero / Almacén Ejecutivo",
+          "columna_idx": 1,
+          "nivel_apilado": 1,
+          "ancho_proporcional": 1.0,
+          "alto": 1350,
+          "profundidad": 350,
+          "tipo_interior": "repisas",
+          "cant_repisas": 2,
+          "tiene_piso": true,
+          "tiene_techo": true,
+          "tiene_fondo": true
+        },
+        {
+          "nombre": "Torre Archivador con Puertas",
+          "columna_idx": 2,
+          "nivel_apilado": 0,
           "ancho_fijo": 480,
+          "alto": 2000,
+          "profundidad": 650,
           "tipo_interior": "puertas",
           "cant_repisas": 4,
+          "tiene_piso": true,
+          "tiene_techo": true,
           "tiene_fondo": true
         }
       ]
@@ -2574,7 +2713,10 @@
           "cant_repisas": 1,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "bar_mural": {
       "id": "bar_mural",
@@ -2600,7 +2742,10 @@
           "cant_repisas": 2,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "vitrina": {
       "id": "vitrina",
@@ -2626,7 +2771,10 @@
           "cant_repisas": 4,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "lavanderia_auxiliar": {
       "id": "lavanderia_auxiliar",
@@ -2738,7 +2886,10 @@
           "cant_repisas": 3,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "comercial_mostrador_recepcion": {
       "id": "comercial_mostrador_recepcion",
@@ -2816,7 +2967,10 @@
           "cant_repisas": 2,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "mdf_metodo": "ranura",
+      "distancia_ranura": 18,
+      "cant_amarres": 2
     },
     "comercial_vitrina_exhibidora": {
       "id": "comercial_vitrina_exhibidora",

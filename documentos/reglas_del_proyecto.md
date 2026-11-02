@@ -462,6 +462,18 @@ Cada perfil en el archivo JSON puede definir su matriz modular interna sin recur
 5. **Tocadores de Maquillaje Ergonómicos para Señoritas**:
    - `tocador_juvenil` (1100 × 780 × 450 mm): Altura ergonómica de mesa (780 mm con zócalo 80 mm) y fondo de 450 mm para alcance óptimo al espejo. Incluye cajonera lateral de 4 gavetas para skincare y vano ergonómico para sentarse con cajón joyero superior.
    - `tocador_hollywood_led` (1200 × 800 × 480 mm): Modelo amplio con torre de 5 cajones cosméticos y cubierta engrosada.
+6. **Estaciones Gamer y Home Office con Módulos Apilados y Mesa Ergonómica**:
+   - `setup_gamer_pro` (2400 × 2000 × 650 mm): Estación integral de streaming y gaming distribuida en 3 columnas y 2 niveles de altura:
+     - **Columna 0**: Vitrina lateral de coleccionables RGB (500 × 1920 mm) con 4 repisas.
+     - **Columna 1 - Nivel 0 (Mesa de Escritorio Gamer)**: Ancho 1400 mm, Alto 670 mm ($80\text{ zócalo} + 670 = 750\text{ mm}$ altura ergonómica exacta), Profundidad 650 mm. Diseñado con `tiene_piso: false` (espacio libre para piernas y silla gamer), `tiene_techo: true` (tablero de mesa de trabajo macizo) y `tiene_fondo: true` para canalización de cables.
+     - **Columna 1 - Nivel 1 (Puente Superior Pantallas y Repisa RGB)**: Ancho 1400 mm, Alto 1250 mm ($750 + 1250 = 2000\text{ mm}$), Profundidad retraída a 350 mm para evitar golpes en la cabeza. Espacio inferior abierto para 2 monitores ultrawide de hasta 32" y repisa superior de exhibición con tira LED.
+     - **Columna 2**: Pedestal gabinete CPU y periféricos (500 × 1920 mm) con 3 cajones de almacenamiento.
+   - `home_office_ejecutivo` (2000 × 2100 × 650 mm): Idéntico esquema arquitectónico apilado ($100\text{ zócalo} + 650 = 750\text{ mm}$ en mesa ergonómica nivel 0, coronado por módulo aéreo archivador nivel 1 de 1350 mm).
+7. **Regla de Fabricación: Fondos MDF Ranurados a 18 mm y Soporte Posterior**:
+   - Todos los muebles con fondo MDF (roperos, libreros, cómodas, centros TV, escritorios, etc.) se diseñan con mecanizado de ranura a **18 mm del filo posterior** (`distancia_ranura: 18`, `dist_ranura_mdf: 18`).
+   - Alojan en el espacio posterior de 18 mm listones de amarre y soporte posterior de melamina maciza de 18 mm (`tiene_liston_post: true`, `cant_amarres: 2`).
+   - Los listones posteriores aprisionan el MDF en la ranura garantizando resistencia al pandeo y soporte seguro para anclaje a muro sin deformaciones ni tornillos pasantes.
+   - **Tolerancia Milimétrica Cero-Colisiones**: La posición en Z de los listones horizontales parte de `zStartPost = zBase + (tienePiso ? t : 0)`, impidiendo que piezas atraviesen los techos o bases de carcasa bajo cualquier configuración modular.
 
 ---
 

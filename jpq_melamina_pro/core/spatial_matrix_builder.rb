@@ -1416,7 +1416,7 @@ module JPQMelaminaPro
 
                     CabinetBuilder.crear_panel(
                       grupo_mod, "M#{idx + 1} Listón Posterior #{nom_sub}",
-                      x_pos + x_offset_int, d_mod - t, z_base + t + z_pos_num.mm,
+                      x_pos + x_offset_int, d_mod - t, z_start_post + z_pos_num.mm,
                       ancho_int, t, w_liston_post,
                       {
                         'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-LISTON-POST-#{pieza_code}",
