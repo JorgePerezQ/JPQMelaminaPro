@@ -8,11 +8,14 @@ node_modules/
 .DS_Store
 Thumbs.db
 *.Zone.Identifier
+*:Zone.Identifier
+*Zone.Identifier*
 
 # Empaquetados de extensiones SketchUp
 *.rbz
 *.zip
 *.tar.gz
+*.rar
 
 # Logs y temporales
 *.log
@@ -25,3 +28,8 @@ dist/
 build/
 __pycache__/
 *.pyc
+
+# Scratch y carpetas temporales de extracción
+scratch/
+jpq_melamina_pro/scratch/
+/textures/

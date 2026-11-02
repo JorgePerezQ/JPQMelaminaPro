@@ -31,9 +31,17 @@ const AppState = {
 
   // 2. Configuración Base de Melamina y Fabricación
   espesorMelamina: 18, // 15, 18, 36 mm
-  materialEstructura: 'Pelikano Blanco Nieve 18mm',
-  materialFrentes: 'Pelikano Blanco Nieve 18mm',
+  esquemaColor: 'unicolor', // 'unicolor' (todo el mueble) | 'bicolor' (frontis exterior vs interior)
+  marcaMelamina: 'Pelikano', // Marca frontis / general
+  materialFrentes: 'Pelikano Blanco Nieve 18mm', // Color frontis / exterior (o todo el mueble)
+  materialColorHex: '#F5F6F8',
+  marcaInterior: 'Pelikano', // Marca interior
+  materialEstructura: 'Pelikano Blanco Nieve 18mm', // Color estructura interior / repisas
+  materialInteriorHex: '#F5F6F8',
+  colorMdf: 'MDF Fondo Blanco 3mm', // Color fondo MDF 3mm
+  colorMdfHex: '#F8F9FA',
   resistencia: 'Normal', // 'Normal' o 'RH'
+  luzFrentes: 3.0, // Luz perimetral estándar de 3.0 mm
   cantidadModulos: 0,
 
   // 3. Colección de Módulos Paramétricos y Modo de Selección
@@ -70,6 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderizarBotonesSelectorCanvas();
   inicializarScrollHorizontalConRueda();
   inicializarSelectorPlantillas();
+  poblarSelectoresMateriales();
 
   // Inicializar el motor Canvas 3D con callback de selección de módulo al hacer clic
   if (window.Preview3D) {
@@ -248,6 +257,598 @@ window.onPerfilesObtenidos = function(datos) {
   procesarDatosPerfiles(datos);
   mostrarNotificacion(`Catálogo sincronizado: ${AppState.catalogoPerfiles.length} muebles disponibles.`, 'info');
 };
+
+// ==============================================================================
+// 1.1 CATÁLOGO DE MATERIALES, TEXTURAS Y EXTRACCIÓN DESDE SKETCHUP
+// ==============================================================================
+
+const CATALOGO_MATERIALES_BASE = [
+  // Pelikano (Novopan)
+  { id: 'pel_blanco_nieve_18', marca: 'Pelikano', categoria: 'Unicolores', nombre: 'Pelikano Blanco Nieve 18mm', color: '#F5F6F8' },
+  { id: 'pel_bellota_18', marca: 'Pelikano', categoria: 'Maderas', nombre: 'Pelikano Bellota 18mm', color: '#8D5B36' },
+  { id: 'pel_macadamia_18', marca: 'Pelikano', categoria: 'Maderas', nombre: 'Pelikano Macadamia 18mm', color: '#B99B78' },
+  { id: 'pel_rovere_18', marca: 'Pelikano', categoria: 'Maderas', nombre: 'Pelikano Rovere 18mm', color: '#A88B67' },
+  { id: 'pel_caramel_18', marca: 'Pelikano', categoria: 'Maderas', nombre: 'Pelikano Caramel 18mm', color: '#A66838' },
+  { id: 'pel_cognac_18', marca: 'Pelikano', categoria: 'Maderas', nombre: 'Pelikano Coñac 18mm', color: '#7A3E26' },
+  { id: 'pel_duna_18', marca: 'Pelikano', categoria: 'Maderas', nombre: 'Pelikano Duna 18mm', color: '#D6C7B2' },
+  { id: 'pel_niebla_18', marca: 'Pelikano', categoria: 'Unicolores', nombre: 'Pelikano Niebla 18mm', color: '#C2C3BF' },
+  { id: 'pel_carbono_18', marca: 'Pelikano', categoria: 'Unicolores', nombre: 'Pelikano Carbono 18mm', color: '#33363B' },
+  { id: 'pel_oxido_18', marca: 'Pelikano', categoria: 'Fantasía', nombre: 'Pelikano Óxido 18mm', color: '#6B4F43' },
+
+  // Vesto (Arauco)
+  { id: 'vesto_blanco_frost_18', marca: 'Vesto', categoria: 'Unicolores', nombre: 'Vesto Blanco Frost 18mm', color: '#F2F4F5' },
+  { id: 'vesto_roble_cendra_18', marca: 'Vesto', categoria: 'Maderas', nombre: 'Vesto Roble Cendra 18mm', color: '#9E8C78' },
+  { id: 'vesto_aserrado_18', marca: 'Vesto', categoria: 'Maderas', nombre: 'Vesto Aserrado 18mm', color: '#B4926C' },
+  { id: 'vesto_seda_giorno_18', marca: 'Vesto', categoria: 'Textil', nombre: 'Vesto Seda Giorno 18mm', color: '#8E7E73' },
+  { id: 'vesto_linosa_18', marca: 'Vesto', categoria: 'Textil', nombre: 'Vesto Linosa 18mm', color: '#B7A998' },
+  { id: 'vesto_teca_lira_18', marca: 'Vesto', categoria: 'Maderas', nombre: 'Vesto Teca Lira 18mm', color: '#85583B' },
+  { id: 'vesto_nogal_terra_18', marca: 'Vesto', categoria: 'Maderas', nombre: 'Vesto Nogal Terracota 18mm', color: '#6E4631' },
+  { id: 'vesto_wengue_18', marca: 'Vesto', categoria: 'Maderas', nombre: 'Vesto Wengue 18mm', color: '#3B2B23' },
+  { id: 'vesto_cendra_escan_18', marca: 'Vesto', categoria: 'Maderas', nombre: 'Vesto Cendra Escandinavo 18mm', color: '#C9BCAC' },
+  { id: 'vesto_titan_18', marca: 'Vesto', categoria: 'Unicolores', nombre: 'Vesto Titán 18mm', color: '#4A4F55' },
+
+  // Universal / Comercial
+  { id: 'mel_blanco_18', marca: 'Universal', categoria: 'Unicolores', nombre: 'Melamina Blanca 18mm', color: '#FFFFFF' },
+  { id: 'mel_roble_18', marca: 'Universal', categoria: 'Maderas', nombre: 'Melamina Roble Natural 18mm', color: '#D0A87C' },
+  { id: 'mel_gris_humo_18', marca: 'Universal', categoria: 'Unicolores', nombre: 'Melamina Gris Humo 18mm', color: '#7F8489' },
+  { id: 'mel_negro_18', marca: 'Universal', categoria: 'Unicolores', nombre: 'Melamina Negro Mate 18mm', color: '#222222' },
+  { id: 'mel_haya_18', marca: 'Universal', categoria: 'Maderas', nombre: 'Melamina Haya Claro 18mm', color: '#DEB887' },
+  { id: 'mel_cedro_18', marca: 'Universal', categoria: 'Maderas', nombre: 'Melamina Cedro 18mm', color: '#A0522D' },
+  { id: 'mel_wengue_18', marca: 'Universal', categoria: 'Maderas', nombre: 'Melamina Wengue 18mm', color: '#362B28' }
+];
+
+window.onMaterialesBandejaObtenidos = function(materiales) {
+  if (Array.isArray(materiales)) {
+    AppState.materialesBandeja = materiales;
+    poblarSelectoresMateriales();
+    mostrarNotificacion(`🎨 Bandeja de SketchUp: ${materiales.length} materiales importados correctamente.`, 'success');
+  }
+};
+
+window.onMaterialActivoBandeja = function(resp) {
+  if (resp && resp.ok && resp.material) {
+    aplicarMaterialSegunDestino(resp.material);
+    mostrarNotificacion(`🎨 Textura de SketchUp aplicada: ${resp.material.nombre}`, 'success');
+  } else if (resp && resp.error) {
+    mostrarNotificacion(resp.error, 'warning');
+  }
+};
+
+window.onMaterialSeleccion3D = function(resp) {
+  if (resp && resp.ok && resp.material) {
+    aplicarMaterialSegunDestino(resp.material);
+    mostrarNotificacion(`💉 Gotero 3D: Textura capturada: ${resp.material.nombre}`, 'success');
+  } else if (resp && resp.error) {
+    mostrarNotificacion(resp.error, 'warning');
+  } else {
+    mostrarNotificacion('Selecciona una cara o pieza en SketchUp para tomar su textura.', 'info');
+  }
+};
+
+let _destinoGotero = 'exterior';
+
+function capturarMaterialCuentagotas(destino = 'exterior') {
+  _destinoGotero = destino;
+  if (typeof window.callSketchup === 'function') {
+    window.callSketchup('obtenerMaterialSeleccion3D', '');
+    mostrarNotificacion('💉 Gotero 3D: Leyendo textura de la selección activa en SketchUp...', 'info');
+  } else {
+    mostrarNotificacion('Gotero 3D: Disponible al ejecutar dentro del plugin de SketchUp.', 'info');
+  }
+}
+window.capturarMaterialCuentagotas = capturarMaterialCuentagotas;
+
+function extraerMaterialesDeSketchUp() {
+  if (typeof window.callSketchup === 'function') {
+    window.callSketchup('obtenerMaterialesBandeja', '');
+    mostrarNotificacion('🎨 Leyendo materiales y texturas de la bandeja de SketchUp...', 'info');
+  } else {
+    mostrarNotificacion('Bandeja SketchUp: Disponible al ejecutar dentro de SketchUp.', 'info');
+  }
+}
+window.extraerMaterialesDeSketchUp = extraerMaterialesDeSketchUp;
+
+function aplicarMaterialSegunDestino(mat) {
+  if (!mat) return;
+  if (mat.marca === 'Bandeja SketchUp' || mat.es_de_bandeja) {
+    if (!AppState.materialesBandeja.find(m => m.nombre === mat.nombre)) {
+      AppState.materialesBandeja.unshift(mat);
+    }
+  }
+
+  if (_destinoGotero === 'interior') {
+    AppState.materialEstructura = mat.nombre;
+    AppState.materialInteriorHex = mat.color || '#F5F6F8';
+    poblarSelectoresMateriales();
+    const selMatInt = document.getElementById('selectMaterialInterior');
+    if (selMatInt) selMatInt.value = mat.nombre;
+    actualizarMuestraInteriorUI(mat);
+  } else {
+    AppState.materialFrentes = mat.nombre;
+    AppState.materialColorHex = mat.color || '#F5F6F8';
+    if (AppState.esquemaColor === 'unicolor') {
+      AppState.materialEstructura = mat.nombre;
+      AppState.materialInteriorHex = mat.color || '#F5F6F8';
+    }
+    poblarSelectoresMateriales();
+    const selMatExt = document.getElementById('selectMaterialTextura');
+    if (selMatExt) selMatExt.value = mat.nombre;
+    actualizarMuestraMaterialUI(mat);
+  }
+
+  // Sincronizar módulos
+  if (Array.isArray(AppState.modulos)) {
+    AppState.modulos.forEach(m => {
+      m.material_frentes = AppState.materialFrentes;
+      m.material_interior = AppState.materialEstructura;
+    });
+  }
+
+  actualizarCanvas();
+  if (AppState.despieceActual && AppState.despieceActual.length > 0) {
+    generarDespieceEstimadoLocal();
+  }
+}
+
+function cambiarEsquemaColor(esquema) {
+  AppState.esquemaColor = esquema || 'unicolor';
+  const btnUni = document.getElementById('btnEsquemaUnicolor');
+  const btnBi = document.getElementById('btnEsquemaBicolor');
+  const secInt = document.getElementById('seccionColorInterior');
+  const lblTitExt = document.getElementById('lblTituloColorExt');
+
+  if (esquema === 'bicolor') {
+    if (btnUni) btnUni.className = 'btn btn-xs btn-outline';
+    if (btnBi) btnBi.className = 'btn btn-xs btn-primary';
+    if (secInt) secInt.style.display = 'block';
+    if (lblTitExt) lblTitExt.textContent = '1. Color Frontis Exterior (Puertas/Cajones):';
+    mostrarNotificacion('🎭 Mueble a 2 Colores activado: Frontis exterior vs Estructura interior.', 'info');
+  } else {
+    if (btnUni) btnUni.className = 'btn btn-xs btn-primary';
+    if (btnBi) btnBi.className = 'btn btn-xs btn-outline';
+    if (secInt) secInt.style.display = 'none';
+    if (lblTitExt) lblTitExt.textContent = '1. Color Frontis / Todo el Mueble:';
+    
+    // Unicolor: igualar interior a exterior
+    AppState.materialEstructura = AppState.materialFrentes;
+    AppState.materialInteriorHex = AppState.materialColorHex;
+    AppState.marcaInterior = AppState.marcaMelamina;
+    
+    if (Array.isArray(AppState.modulos)) {
+      AppState.modulos.forEach(m => {
+        m.material_frentes = AppState.materialFrentes;
+        m.material_interior = AppState.materialEstructura;
+      });
+    }
+    mostrarNotificacion('🎨 Esquema Unicolor: Todo el mueble y sus tapacantos adoptan el mismo color.', 'info');
+  }
+
+  poblarSelectoresMateriales();
+  actualizarCanvas();
+  if (AppState.despieceActual && AppState.despieceActual.length > 0) {
+    generarDespieceEstimadoLocal();
+  }
+}
+window.cambiarEsquemaColor = cambiarEsquemaColor;
+
+function poblarSelectoresMateriales() {
+  const selMarcaExt = document.getElementById('selectMarcaMelamina');
+  const selTexturaExt = document.getElementById('selectMaterialTextura');
+  const selMarcaInt = document.getElementById('selectMarcaInterior');
+  const selTexturaInt = document.getElementById('selectMaterialInterior');
+
+  const catalogoTexturasReales = (window.CATALOGO_TEXTURAS_MAESTRO && window.CATALOGO_TEXTURAS_MAESTRO.length > 0)
+    ? window.CATALOGO_TEXTURAS_MAESTRO
+    : CATALOGO_MATERIALES_BASE;
+
+  const catalogoCombinado = [...catalogoTexturasReales, ...AppState.materialesBandeja];
+
+  // Actualizar etiqueta de bandeja SketchUp en ambos selectores de marca
+  const cantSU = AppState.materialesBandeja.length;
+  [selMarcaExt, selMarcaInt].forEach(sel => {
+    if (sel) {
+      const optSU = sel.querySelector('option[value="Bandeja SketchUp"]');
+      if (optSU) {
+        optSU.textContent = cantSU > 0 ? `🎨 Bandeja SketchUp (${cantSU} texturas)` : '🎨 Bandeja SketchUp';
+      }
+    }
+  });
+
+  // 1. Selector Exterior / Frontis
+  if (selTexturaExt) {
+    const marcaExt = (selMarcaExt && selMarcaExt.value) ? selMarcaExt.value : (AppState.marcaMelamina || 'PELIKANO');
+    const marcaNorm = (marcaExt || '').toUpperCase();
+    let itemsExt = [];
+    if (marcaExt === 'todas') itemsExt = catalogoCombinado;
+    else if (marcaExt === 'Bandeja SketchUp') itemsExt = AppState.materialesBandeja;
+    else itemsExt = catalogoCombinado.filter(m => (m.marca || '').toUpperCase().includes(marcaNorm) || marcaNorm.includes((m.marca || '').toUpperCase()));
+
+    selTexturaExt.innerHTML = '';
+    if (itemsExt.length === 0) {
+      const opt = document.createElement('option');
+      opt.value = '';
+      opt.textContent = (marcaExt === 'Bandeja SketchUp') ? 'Sin texturas en SketchUp (Pulse Leer)' : 'Sin texturas';
+      selTexturaExt.appendChild(opt);
+    } else {
+      let act = null;
+      itemsExt.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.nombre;
+        opt.textContent = `${m.nombre} (${m.categoria || m.marca})`;
+        if (m.nombre === AppState.materialFrentes) {
+          opt.selected = true;
+          act = m;
+        }
+        selTexturaExt.appendChild(opt);
+      });
+      if (!act && itemsExt.length > 0) act = itemsExt[0];
+      if (act) actualizarMuestraMaterialUI(act);
+    }
+  }
+
+  // 2. Selector Interior / Estructura
+  if (selTexturaInt) {
+    const marcaInt = (selMarcaInt && selMarcaInt.value) ? selMarcaInt.value : (AppState.marcaInterior || 'PELIKANO');
+    const marcaNorm = (marcaInt || '').toUpperCase();
+    let itemsInt = [];
+    if (marcaInt === 'todas') itemsInt = catalogoCombinado;
+    else if (marcaInt === 'Bandeja SketchUp') itemsInt = AppState.materialesBandeja;
+    else itemsInt = catalogoCombinado.filter(m => (m.marca || '').toUpperCase().includes(marcaNorm) || marcaNorm.includes((m.marca || '').toUpperCase()));
+
+    selTexturaInt.innerHTML = '';
+    if (itemsInt.length === 0) {
+      const opt = document.createElement('option');
+      opt.value = '';
+      opt.textContent = (marcaInt === 'Bandeja SketchUp') ? 'Sin texturas en SketchUp (Pulse Leer)' : 'Sin texturas';
+      selTexturaInt.appendChild(opt);
+    } else {
+      let actInt = null;
+      itemsInt.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.nombre;
+        opt.textContent = `${m.nombre} (${m.categoria || m.marca})`;
+        if (m.nombre === AppState.materialEstructura) {
+          opt.selected = true;
+          actInt = m;
+        }
+        selTexturaInt.appendChild(opt);
+      });
+      if (!actInt && itemsInt.length > 0) actInt = itemsInt[0];
+      if (actInt) actualizarMuestraInteriorUI(actInt);
+    }
+  }
+}
+window.poblarSelectoresMateriales = poblarSelectoresMateriales;
+
+function onMarcaMelaminaChange(marca) {
+  AppState.marcaMelamina = marca;
+  poblarSelectoresMateriales();
+  const sel = document.getElementById('selectMaterialTextura');
+  if (sel && sel.value) {
+    onMaterialTexturaChange(sel.value);
+  }
+}
+window.onMarcaMelaminaChange = onMarcaMelaminaChange;
+
+function onMaterialTexturaChange(nombre) {
+  const catalogoCombinado = [
+    ...(window.CATALOGO_TEXTURAS_MAESTRO || []),
+    ...CATALOGO_MATERIALES_BASE,
+    ...AppState.materialesBandeja
+  ];
+  const mat = catalogoCombinado.find(m => m.nombre === nombre) || { nombre: nombre, color: '#F5F6F8', marca: AppState.marcaMelamina };
+  
+  AppState.materialFrentes = mat.nombre;
+  AppState.materialColorHex = mat.color || '#F5F6F8';
+
+  // Si está en modo unicolor, ¡TODO el mueble cambia de inmediato a esta textura!
+  if (AppState.esquemaColor === 'unicolor') {
+    AppState.materialEstructura = mat.nombre;
+    AppState.materialInteriorHex = mat.color || '#F5F6F8';
+    actualizarMuestraInteriorUI(mat);
+  }
+
+  // Sincronizar en módulos
+  if (Array.isArray(AppState.modulos)) {
+    AppState.modulos.forEach(m => {
+      m.material_frentes = AppState.materialFrentes;
+      if (AppState.esquemaColor === 'unicolor') {
+        m.material_interior = AppState.materialEstructura;
+      }
+    });
+  }
+
+  actualizarMuestraMaterialUI(mat);
+  actualizarCanvas();
+  if (AppState.despieceActual && AppState.despieceActual.length > 0) {
+    generarDespieceEstimadoLocal();
+  }
+
+  if (AppState.esquemaColor === 'unicolor') {
+    mostrarNotificacion(`✨ Todo el mueble actualizado a: ${mat.nombre}`, 'success');
+  } else {
+    mostrarNotificacion(`✨ Frontis exterior actualizado a: ${mat.nombre}`, 'success');
+  }
+}
+window.onMaterialTexturaChange = onMaterialTexturaChange;
+
+function onMarcaInteriorChange(marca) {
+  AppState.marcaInterior = marca;
+  poblarSelectoresMateriales();
+  const sel = document.getElementById('selectMaterialInterior');
+  if (sel && sel.value) {
+    onMaterialInteriorChange(sel.value);
+  }
+}
+window.onMarcaInteriorChange = onMarcaInteriorChange;
+
+function onMaterialInteriorChange(nombre) {
+  const catalogoCombinado = [
+    ...(window.CATALOGO_TEXTURAS_MAESTRO || []),
+    ...CATALOGO_MATERIALES_BASE,
+    ...AppState.materialesBandeja
+  ];
+  const mat = catalogoCombinado.find(m => m.nombre === nombre) || { nombre: nombre, color: '#F5F6F8', marca: AppState.marcaInterior };
+
+  AppState.materialEstructura = mat.nombre;
+  AppState.materialInteriorHex = mat.color || '#F5F6F8';
+
+  if (Array.isArray(AppState.modulos)) {
+    AppState.modulos.forEach(m => {
+      m.material_interior = AppState.materialEstructura;
+    });
+  }
+
+  actualizarMuestraInteriorUI(mat);
+  actualizarCanvas();
+  if (AppState.despieceActual && AppState.despieceActual.length > 0) {
+    generarDespieceEstimadoLocal();
+  }
+  mostrarNotificacion(`✨ Piezas interiores actualizadas a: ${mat.nombre}`, 'info');
+}
+window.onMaterialInteriorChange = onMaterialInteriorChange;
+
+function copiarColorExteriorAInterior() {
+  AppState.materialEstructura = AppState.materialFrentes;
+  AppState.materialInteriorHex = AppState.materialColorHex;
+  AppState.marcaInterior = AppState.marcaMelamina;
+  
+  const selMarcaInt = document.getElementById('selectMarcaInterior');
+  if (selMarcaInt) selMarcaInt.value = AppState.marcaInterior;
+  
+  poblarSelectoresMateriales();
+  const selMatInt = document.getElementById('selectMaterialInterior');
+  if (selMatInt) selMatInt.value = AppState.materialEstructura;
+
+  actualizarMuestraInteriorUI({ nombre: AppState.materialEstructura, color: AppState.materialInteriorHex, marca: AppState.marcaInterior });
+
+  if (Array.isArray(AppState.modulos)) {
+    AppState.modulos.forEach(m => {
+      m.material_interior = AppState.materialEstructura;
+    });
+  }
+
+  actualizarCanvas();
+  if (AppState.despieceActual && AppState.despieceActual.length > 0) {
+    generarDespieceEstimadoLocal();
+  }
+  mostrarNotificacion('Color exterior copiado a piezas interiores.', 'success');
+}
+window.copiarColorExteriorAInterior = copiarColorExteriorAInterior;
+
+function onColorMdfChange(val) {
+  AppState.colorMdf = val;
+  const mapaHex = {
+    'MDF Fondo Blanco 3mm': '#F8F9FA',
+    'MDF Fondo Negro 3mm': '#1A1A1A',
+    'MDF Fondo Grafito 3mm': '#374151',
+    'MDF Fondo Roble 3mm': '#A07855',
+    'MDF Fondo Haya 3mm': '#DEB887',
+    'MDF Fondo Crudo 3mm': '#C8AD8D'
+  };
+  AppState.colorMdfHex = mapaHex[val] || '#F8F9FA';
+  const swatch = document.getElementById('swatchColorMdf');
+  if (swatch) {
+    const archTex = (window.Preview3D && window.Preview3D.resolverArchivoTextura) ? window.Preview3D.resolverArchivoTextura(val) : null;
+    if (archTex) {
+      swatch.style.backgroundImage = `url('textures/${archTex}')`;
+      swatch.style.backgroundSize = 'cover';
+      swatch.style.backgroundPosition = 'center';
+    } else {
+      swatch.style.backgroundImage = 'none';
+      swatch.style.background = AppState.colorMdfHex;
+    }
+  }
+
+  actualizarCanvas();
+  if (AppState.despieceActual && AppState.despieceActual.length > 0) {
+    generarDespieceEstimadoLocal();
+  }
+  mostrarNotificacion(`Fondo MDF 3mm: ${val}`, 'info');
+}
+window.onColorMdfChange = onColorMdfChange;
+
+function actualizarMuestraMaterialUI(mat) {
+  const lblNom = document.getElementById('lblNombreMaterialActivo');
+  const lblDet = document.getElementById('lblDetalleMaterialActivo');
+  const swatch = document.getElementById('swatchColorMaterial');
+  if (lblNom) lblNom.textContent = mat.nombre;
+  if (lblDet) lblDet.textContent = `${mat.marca || 'Pelikano'} • ${mat.categoria || 'Frontis'}`;
+  if (swatch) {
+    const archTex = (window.Preview3D && window.Preview3D.resolverArchivoTextura) ? window.Preview3D.resolverArchivoTextura(mat.nombre) : null;
+    if (archTex) {
+      swatch.style.backgroundImage = `url('textures/${archTex}')`;
+      swatch.style.backgroundSize = 'cover';
+      swatch.style.backgroundPosition = 'center';
+      swatch.style.borderColor = 'rgba(59, 130, 246, 0.5)';
+    } else {
+      swatch.style.backgroundImage = 'none';
+      swatch.style.background = mat.color || '#F5F6F8';
+    }
+  }
+}
+
+function actualizarMuestraInteriorUI(mat) {
+  const lblNom = document.getElementById('lblNombreMaterialInterior');
+  const lblDet = document.getElementById('lblDetalleMaterialInterior');
+  const swatch = document.getElementById('swatchColorInterior');
+  if (lblNom) lblNom.textContent = mat.nombre;
+  if (lblDet) lblDet.textContent = `${mat.marca || 'Pelikano'} • ${mat.categoria || 'Interior'}`;
+  if (swatch) {
+    const archTex = (window.Preview3D && window.Preview3D.resolverArchivoTextura) ? window.Preview3D.resolverArchivoTextura(mat.nombre) : null;
+    if (archTex) {
+      swatch.style.backgroundImage = `url('textures/${archTex}')`;
+      swatch.style.backgroundSize = 'cover';
+      swatch.style.backgroundPosition = 'center';
+      swatch.style.borderColor = 'rgba(16, 185, 129, 0.5)';
+    } else {
+      swatch.style.backgroundImage = 'none';
+      swatch.style.background = mat.color || '#F5F6F8';
+    }
+  }
+}
+
+function onLuzFrentesChange(val) {
+  const luz = parseFloat(val) || 3.0;
+  AppState.luzFrentes = Math.max(0.5, Math.min(10.0, luz));
+  const badge = document.getElementById('badgeLuzFrentes');
+  if (badge) {
+    badge.textContent = (AppState.luzFrentes === 3.0) ? '3.0 mm (Estándar)' : `${AppState.luzFrentes.toFixed(1)} mm`;
+  }
+  const inpModal = document.getElementById('modalInpLuzPuerta');
+  if (inpModal) inpModal.value = AppState.luzFrentes;
+
+  if (Array.isArray(AppState.modulos)) {
+    AppState.modulos.forEach(m => {
+      m.puertas_luz = AppState.luzFrentes;
+      m.cajones_luz = AppState.luzFrentes;
+    });
+  }
+
+  actualizarCanvas();
+  if (AppState.despieceActual && AppState.despieceActual.length > 0) {
+    generarDespieceEstimadoLocal();
+  }
+}
+window.onLuzFrentesChange = onLuzFrentesChange;
+
+// --- MODAL DE CONFIGURACIÓN DE PUERTAS ---
+let _tempMontajePuerta = 'exterior';
+let _tempPosicionBisagra = 'derecha';
+
+function abrirModalConfigPuerta() {
+  const modal = document.getElementById('modalConfigPuerta');
+  if (!modal) return;
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m) return;
+
+  const montaje = m.puertas_montaje || 'exterior';
+  const pos = m.puertas_posicion_bisagra || m.puertas_apertura || 'derecha';
+  const cantBis = m.puertas_cant_bisagras || 'auto';
+  const luz = (m.puertas_luz !== undefined) ? m.puertas_luz : (AppState.luzFrentes || 3.0);
+
+  seleccionarMontajePuertaModal(montaje);
+  seleccionarPosicionBisagraModal(pos);
+
+  const selCant = document.getElementById('modalSelCantBisagras');
+  if (selCant) selCant.value = cantBis;
+
+  const inpLuz = document.getElementById('modalInpLuzPuerta');
+  if (inpLuz) inpLuz.value = luz;
+
+  modal.style.display = 'flex';
+}
+window.abrirModalConfigPuerta = abrirModalConfigPuerta;
+
+function cerrarModalConfigPuerta() {
+  const modal = document.getElementById('modalConfigPuerta');
+  if (modal) modal.style.display = 'none';
+}
+window.cerrarModalConfigPuerta = cerrarModalConfigPuerta;
+
+function seleccionarMontajePuertaModal(montaje) {
+  _tempMontajePuerta = montaje;
+  const btns = {
+    'exterior': document.getElementById('btnMontajeExterior'),
+    'medio': document.getElementById('btnMontajeMedio'),
+    'interior': document.getElementById('btnMontajeInterior')
+  };
+  Object.keys(btns).forEach(k => {
+    const b = btns[k];
+    if (!b) return;
+    if (k === montaje) {
+      b.style.border = '2px solid var(--primary)';
+      b.style.background = 'rgba(59, 130, 246, 0.12)';
+    } else {
+      b.style.border = '1px solid var(--border-color)';
+      b.style.background = 'transparent';
+    }
+  });
+}
+window.seleccionarMontajePuertaModal = seleccionarMontajePuertaModal;
+
+function seleccionarPosicionBisagraModal(pos) {
+  _tempPosicionBisagra = pos;
+  const btns = {
+    'derecha': document.getElementById('btnPosDerecha'),
+    'izquierda': document.getElementById('btnPosIzquierda'),
+    'doble': document.getElementById('btnPosDoble'),
+    'superior': document.getElementById('btnPosSuperior')
+  };
+  Object.keys(btns).forEach(k => {
+    const b = btns[k];
+    if (!b) return;
+    if (k === pos) {
+      b.style.border = '2px solid var(--primary)';
+      b.style.background = 'rgba(59, 130, 246, 0.12)';
+    } else {
+      b.style.border = '1px solid var(--border-color)';
+      b.style.background = 'transparent';
+    }
+  });
+}
+window.seleccionarPosicionBisagraModal = seleccionarPosicionBisagraModal;
+
+function confirmarConfigPuertaModal() {
+  const idx = AppState.moduloActivoIndex;
+  const m = AppState.modulos[idx];
+  if (!m) return;
+
+  m.tiene_puertas = true;
+  m.puertas_montaje = _tempMontajePuerta || 'exterior';
+  m.puertas_posicion_bisagra = _tempPosicionBisagra || 'derecha';
+  m.puertas_apertura = _tempPosicionBisagra || 'derecha';
+
+  const selCant = document.getElementById('modalSelCantBisagras');
+  if (selCant) m.puertas_cant_bisagras = selCant.value;
+
+  const inpLuz = document.getElementById('modalInpLuzPuerta');
+  if (inpLuz) m.puertas_luz = parseFloat(inpLuz.value) || AppState.luzFrentes || 3.0;
+
+  const chkPuertas = document.getElementById('modTienePuertas');
+  if (chkPuertas) chkPuertas.checked = true;
+
+  const btnConfig = document.getElementById('btnConfigurarPuerta');
+  if (btnConfig) btnConfig.style.display = 'inline-block';
+
+  const grpPuertas = document.getElementById('grpDetallePuertas');
+  if (grpPuertas) grpPuertas.style.display = 'block';
+
+  cerrarModalConfigPuerta();
+  actualizarCanvas();
+  validarLimitesTecnicosModulo(m, idx);
+
+  if (AppState.despieceActual && AppState.despieceActual.length > 0) {
+    generarDespieceEstimadoLocal();
+  }
+
+  const descHojas = (m.puertas_posicion_bisagra === 'doble') ? '2 Hojas Batiente Doble' :
+                    (m.puertas_posicion_bisagra === 'superior') ? '1 Hoja Superior con Pistón a Gas' :
+                    `1 Hoja (${m.puertas_posicion_bisagra === 'derecha' ? 'Derecha' : 'Izquierda'})`;
+  mostrarNotificacion(`🚪 Puerta configurada: ${m.puertas_montaje} • ${descHojas}`, 'success');
+}
+window.confirmarConfigPuertaModal = confirmarConfigPuertaModal;
 
 /**
  * Inicializa el cargador de plantillas y selectores dinámicos al iniciar la app.
@@ -529,13 +1130,58 @@ function actualizarTarjetaResumenPreset(preset) {
   if (lblAmb) lblAmb.textContent = preset.ambiente || 'General';
   if (lblEdad) lblEdad.textContent = preset.edad_genero || 'Universal';
 
+  const lblRh = document.getElementById('lblPresetRhBadge');
+  if (lblRh) {
+    const esRH = (preset.material_resistencia === 'RH');
+    lblRh.style.display = esRH ? 'inline-flex' : 'none';
+  }
+
   if (lblDet) {
     const tieneZ = preset.altura_zocalo > 0;
     const zocaloInfo = tieneZ ? `Zócalo ${preset.altura_zocalo}mm` : 'Sin Zócalo';
     const cantMods = (Array.isArray(preset.modulos_sugeridos) && preset.modulos_sugeridos.length > 0)
       ? `${preset.modulos_sugeridos.length} Módulos prediseñados`
       : 'Estructura adaptable';
-    lblDet.innerHTML = `<strong>${zocaloInfo}</strong> • <em>${cantMods}</em> • ${preset.descripcion || ''}`;
+    const tagRH = (preset.material_resistencia === 'RH') ? '<strong style="color:#059669;"> • 🛡️ Melamina RH Antihumedad</strong>' : '';
+    lblDet.innerHTML = `<strong>${zocaloInfo}</strong> • <em>${cantMods}</em>${tagRH} • ${preset.descripcion || ''}`;
+  }
+}
+
+/**
+ * Actualiza los indicadores visuales de Melamina RH en la interfaz de usuario.
+ */
+function actualizarIndicadorRHUI() {
+  const isRH = (AppState.resistencia === 'RH');
+  const b1 = document.getElementById('badgeIndicadorRH');
+  if (b1) b1.style.display = isRH ? 'inline-block' : 'none';
+  const b2 = document.getElementById('lblPresetRhBadge');
+  if (b2 && AppState.catalogoPerfiles) {
+    b2.style.display = isRH ? 'inline-flex' : 'none';
+  }
+  const selRes = document.getElementById('selectResistenciaMelamina');
+  if (selRes && selRes.value !== AppState.resistencia) {
+    selRes.value = AppState.resistencia;
+  }
+}
+
+/**
+ * Maneja el cambio de resistencia/sustrato (Normal vs RH) desde el selector de Melamina.
+ * @param {string} val - 'Normal' o 'RH'
+ */
+function onResistenciaMelaminaChange(val) {
+  AppState.resistencia = val || 'Normal';
+  actualizarIndicadorRHUI();
+  actualizarBadgeEstado();
+  actualizarCanvas();
+
+  if (AppState.despieceActual && AppState.despieceActual.length > 0) {
+    generarDespieceEstimadoLocal();
+  }
+
+  if (val === 'RH') {
+    mostrarNotificacion('🛡️ Melamina RH Hidrófuga activada (núcleo verde para ambientes húmedos: Cocina, Baño y Lavandería).', 'success');
+  } else {
+    mostrarNotificacion('Tablero Estándar seleccionado (núcleo madera para ambientes secos: Dormitorio, Sala, Oficina).', 'info');
   }
 }
 
@@ -586,6 +1232,13 @@ function aplicarPresetMobiliario(tipo) {
   AppState.altoZocalo = altoZ;
   AppState.retransZocalo = retransZ;
   AppState.cantListonesZocalo = cantL;
+
+  // Sincronizar resistencia de melamina (RH vs Normal) desde la plantilla JSON
+  const resPreset = preset.material_resistencia || 'Normal';
+  AppState.resistencia = resPreset;
+  const selRes = document.getElementById('selectResistenciaMelamina');
+  if (selRes) selRes.value = resPreset;
+  actualizarIndicadorRHUI();
 
   const elRetrans = document.getElementById('muebleRetransZocalo');
   if (elRetrans) elRetrans.value = retransZ;
@@ -685,7 +1338,8 @@ function armarEstructuraModularDesdePerfil(perfil) {
       tipo_interior: tipoInt,
       cant_repisas: repisas,
       cant_cajones: cajones,
-      material_frentes: AppState.materialFrentes || 'blanco',
+      material_frentes: AppState.materialFrentes || 'Pelikano Blanco Nieve 18mm',
+      material_interior: AppState.materialEstructura || 'Pelikano Blanco Nieve 18mm',
       parantes_tipo: 'ninguno',
       parantes: [],
       espacios_repisas: [],
@@ -695,7 +1349,7 @@ function armarEstructuraModularDesdePerfil(perfil) {
       puertas_montaje: 'exterior',
       puertas_posicion_bisagra: (ancho > 600) ? 'doble' : 'derecha',
       puertas_cant_bisagras: 'auto',
-      puertas_luz: 2.0,
+      puertas_luz: (AppState.luzFrentes !== undefined) ? AppState.luzFrentes : 3.0,
       puertas_liston_tope: 'ninguno',
 
       // Cajonera industrial (por defecto tapas externas sobrepuestas)
@@ -703,7 +1357,7 @@ function armarEstructuraModularDesdePerfil(perfil) {
       cajones_tipo_corredera: 'telescopica',
       cajones_posicion_corredera: 'baja',
       cajones_largo_corredera: 'auto',
-      cajones_luz: 2.0
+      cajones_luz: (AppState.luzFrentes !== undefined) ? AppState.luzFrentes : 3.0
     };
   };
 
@@ -819,14 +1473,16 @@ function armarEstructuraModularDesdePerfil(perfil) {
       if (ms.puertas_montaje) mod.puertas_montaje = ms.puertas_montaje;
       if (ms.puertas_posicion_bisagra) mod.puertas_posicion_bisagra = ms.puertas_posicion_bisagra;
       if (ms.puertas_cant_bisagras) mod.puertas_cant_bisagras = ms.puertas_cant_bisagras;
-      if (ms.puertas_luz !== undefined) mod.puertas_luz = ms.puertas_luz;
+      mod.puertas_luz = (AppState.luzFrentes !== undefined) ? AppState.luzFrentes : (ms.puertas_luz || 3.0);
 
       // Heredar configuración de cajoneras del módulo prediseñado
       if (ms.cajones_montaje) mod.cajones_montaje = ms.cajones_montaje;
       if (ms.cajones_tipo_corredera) mod.cajones_tipo_corredera = ms.cajones_tipo_corredera;
       if (ms.cajones_posicion_corredera) mod.cajones_posicion_corredera = ms.cajones_posicion_corredera;
       if (ms.cajones_largo_corredera) mod.cajones_largo_corredera = ms.cajones_largo_corredera;
-      if (ms.cajones_luz !== undefined) mod.cajones_luz = ms.cajones_luz;
+      mod.cajones_luz = (AppState.luzFrentes !== undefined) ? AppState.luzFrentes : (ms.cajones_luz || 3.0);
+      mod.material_frentes = AppState.materialFrentes;
+      mod.material_interior = AppState.materialEstructura;
 
       modulos.push(mod);
     });
@@ -903,12 +1559,29 @@ function reiniciarAEstadoVacio() {
 /**
  * Actualiza el espesor de la melamina (15mm o 18mm estándar).
  */
-function onEspesorMelaminaChange() {
+function onEspesorMelaminaChange(val) {
   const selEspesor = document.getElementById('dimEspesorMelamina');
-  AppState.espesorMelamina = parseFloat(selEspesor.value) || 18;
+  const t = parseFloat(val !== undefined ? val : (selEspesor ? selEspesor.value : 18)) || 18;
+  AppState.espesorMelamina = t;
+
+  if (AppState.materialEstructura.includes('18mm') || AppState.materialEstructura.includes('15mm') || AppState.materialEstructura.includes('36mm')) {
+    AppState.materialEstructura = AppState.materialEstructura.replace(/\d+mm/, `${t}mm`);
+  }
+  if (AppState.materialFrentes.includes('18mm') || AppState.materialFrentes.includes('15mm') || AppState.materialFrentes.includes('36mm')) {
+    AppState.materialFrentes = AppState.materialFrentes.replace(/\d+mm/, `${t}mm`);
+  }
+
+  poblarSelectoresMateriales();
   actualizarCanvas();
   validarTodosLosModulos();
+
+  if (AppState.despieceActual && AppState.despieceActual.length > 0) {
+    generarDespieceEstimadoLocal();
+  }
+
+  mostrarNotificacion(`Tablero: Espesor ${t}mm • Resistencia: ${AppState.resistencia} • Luz: ${AppState.luzFrentes || 3.0}mm`, 'info');
 }
+window.onEspesorMelaminaChange = onEspesorMelaminaChange;
 
 /**
  * Modifica la cantidad de módulos con los botones [+] y [-] o input directo.
@@ -4145,6 +4818,15 @@ function onCambiarTipoInterior(tipo) {
     if (!Array.isArray(m.parantes)) m.parantes = [];
     if (!Array.isArray(m.espacios_repisas)) m.espacios_repisas = [];
     renderizarControlesParantesYEspacios(m);
+  } else if (tipo === 'puertas') {
+    m.tiene_puertas = true;
+    const chkPuertas = document.getElementById('modTienePuertas');
+    if (chkPuertas) chkPuertas.checked = true;
+    const btnConfig = document.getElementById('btnConfigurarPuerta');
+    if (btnConfig) btnConfig.style.display = 'inline-block';
+    const grpPuertas = document.getElementById('grpDetallePuertas');
+    if (grpPuertas) grpPuertas.style.display = 'block';
+    abrirModalConfigPuerta();
   }
 
   const grpRepisas = document.getElementById('grpDetalleRepisas');
@@ -5169,19 +5851,24 @@ function onTogglePuertasModulo(checked) {
   if (!m) return;
 
   m.tiene_puertas = !!checked;
-  if (m.tiene_puertas) {
-    m.puertas_montaje = m.puertas_montaje || 'exterior';
-    m.puertas_posicion_bisagra = m.puertas_posicion_bisagra || m.puertas_apertura || ((m.ancho > 600) ? 'doble' : 'derecha');
-    m.puertas_cant_bisagras = m.puertas_cant_bisagras || 'auto';
-    m.puertas_liston_tope = m.puertas_liston_tope || 'ninguno';
-  }
+
+  const btnConfig = document.getElementById('btnConfigurarPuerta');
+  if (btnConfig) btnConfig.style.display = m.tiene_puertas ? 'inline-block' : 'none';
 
   const grpPuertas = document.getElementById('grpDetallePuertas');
   if (grpPuertas) grpPuertas.style.display = m.tiene_puertas ? 'block' : 'none';
 
-  actualizarCanvas();
-  validarLimitesTecnicosModulo(m, idx);
-  sincronizarFormularioModulo();
+  if (m.tiene_puertas) {
+    m.puertas_montaje = m.puertas_montaje || 'exterior';
+    m.puertas_posicion_bisagra = m.puertas_posicion_bisagra || 'derecha';
+    m.puertas_cant_bisagras = m.puertas_cant_bisagras || 'auto';
+    m.puertas_luz = (m.puertas_luz !== undefined) ? m.puertas_luz : (AppState.luzFrentes || 3.0);
+    abrirModalConfigPuerta();
+  } else {
+    actualizarCanvas();
+    validarLimitesTecnicosModulo(m, idx);
+    sincronizarFormularioModulo();
+  }
 }
 window.onTogglePuertasModulo = onTogglePuertasModulo;
 
@@ -5993,7 +6680,13 @@ function actualizarCanvas() {
     alto_total: AppState.altoTotal,
     prof_total: AppState.profTotal,
     espesor: AppState.espesorMelamina,
+    esquema_color: AppState.esquemaColor,
     material: AppState.materialEstructura,
+    material_frentes: AppState.materialFrentes,
+    material_interior: AppState.materialEstructura,
+    color_mdf: AppState.colorMdf,
+    resistencia: AppState.resistencia,
+    luz_frentes: AppState.luzFrentes,
     modo_seleccion: AppState.modoSeleccion,
     modulo_activo: (AppState.modoSeleccion === 'diseno') ? -1 : AppState.moduloActivoIndex,
     modulos: AppState.modulos,
@@ -6156,6 +6849,107 @@ function solicitarDespiece() {
 function generarDespieceEstimadoLocal() {
   const t = AppState.espesorMelamina;
   const piezas = [];
+  let itemNum = 1;
+  const esUnicolor = (AppState.esquemaColor === 'unicolor');
+  const matFrontis = AppState.materialFrentes || 'Pelikano Blanco Nieve 18mm';
+  const matInterior = AppState.materialEstructura || 'Pelikano Blanco Nieve 18mm';
+  const matMdfBase = AppState.colorMdf || 'MDF Fondo Blanco 3mm';
+
+  /**
+   * Determina los tapacantos normativos, deduce la medida neta de corte y asigna colores:
+   * 1. Unicolor: todos los tapacantos del mismo color de la melamina.
+   * 2. Bicolor: 
+   *    - Frontis/exterior (puertas, frentes de cajón): tapacanto del color del frontis.
+   *    - Interior (costados, repisas, piso, techo, parantes):
+   *      * Lado frontal L1 (que da al frontis del mueble): tapacanto del color de la melamina del frontis.
+   *      * Lados interiores L2/A1/A2: tapacanto del color de la melamina interior.
+   * 3. Deducción estricta:
+   *    Largo_neto = Largo_bruto - (Canto_L1 + Canto_L2)
+   *    Ancho_neto = Ancho_bruto - (Canto_A1 + Canto_A2)
+   */
+  function calcularTapacantosYMedidaNeta(nombrePieza, largoBruto, anchoBruto, opts = {}) {
+    const nom = (nombrePieza || '').toLowerCase();
+    let cL1 = 0.0, cL2 = 0.0, cA1 = 0.0, cA2 = 0.0;
+    let colorL1 = matInterior;
+    let colorOtros = matInterior;
+
+    if (opts.esMdf || nom.includes('mdf')) {
+      cL1 = 0.0; cL2 = 0.0; cA1 = 0.0; cA2 = 0.0;
+      colorL1 = 'Sin canto';
+      colorOtros = 'Sin canto';
+    } else if (opts.esMesaPuerta || nom.includes('puerta') || nom.includes('frente cajón') || nom.includes('cubierta') || nom.includes('mesa') || nom.includes('escritorio') || nom.includes('tapa techo')) {
+      cL1 = 2.0; cL2 = 2.0; cA1 = 2.0; cA2 = 2.0;
+      colorL1 = matFrontis;
+      colorOtros = matFrontis;
+    } else if (nom.includes('costado') || (nom.includes('lateral') && !nom.includes('zócalo') && !nom.includes('gaveta')) || nom.includes('repisa') || nom.includes('piso carcasa') || nom.includes('techo carcasa') || nom.includes('parante') || nom.includes('zócalo frontal')) {
+      cL1 = 2.0; cL2 = 0.5; cA1 = 0.5; cA2 = 0.5;
+      colorL1 = esUnicolor ? matInterior : matFrontis;
+      colorOtros = matInterior;
+    } else {
+      cL1 = 0.5; cL2 = 0.5; cA1 = 0.5; cA2 = 0.5;
+      colorL1 = matInterior;
+      colorOtros = matInterior;
+    }
+
+    if (opts.canto_L1 !== undefined) cL1 = parseFloat(opts.canto_L1);
+    if (opts.canto_L2 !== undefined) cL2 = parseFloat(opts.canto_L2);
+    if (opts.canto_A1 !== undefined) cA1 = parseFloat(opts.canto_A1);
+    if (opts.canto_A2 !== undefined) cA2 = parseFloat(opts.canto_A2);
+
+    const largoNeto = Math.round((largoBruto - (cL1 + cL2)) * 10) / 10;
+    const anchoNeto = Math.round((anchoBruto - (cA1 + cA2)) * 10) / 10;
+
+    let descColor = '';
+    if (cL1 === 0 && cL2 === 0 && cA1 === 0 && cA2 === 0) {
+      descColor = 'Sin tapacanto';
+    } else if (esUnicolor || colorL1 === colorOtros) {
+      descColor = colorL1;
+    } else {
+      descColor = `L1: ${colorL1} | Otros: ${colorOtros}`;
+    }
+
+    return {
+      canto_L1: cL1.toFixed(1),
+      canto_L2: cL2.toFixed(1),
+      canto_A1: cA1.toFixed(1),
+      canto_A2: cA2.toFixed(1),
+      color_canto_L1: colorL1,
+      color_canto_otros: colorOtros,
+      desc_color_tapacanto: descColor,
+      largo_neto: largoNeto,
+      ancho_neto: anchoNeto
+    };
+  }
+
+  function crearItemDespiece(modId, nomPieza, material, cant, largoBruto, anchoBruto, espesor, ranura = 'Ninguna', opts = {}) {
+    const tap = calcularTapacantosYMedidaNeta(nomPieza, largoBruto, anchoBruto, opts);
+    let matFinal = material;
+    if (AppState.resistencia === 'RH' && !nomPieza.toLowerCase().includes('mdf') && !material.toLowerCase().includes('acero') && !material.toLowerCase().includes('herraje')) {
+      if (!matFinal.includes('[RH]')) matFinal = `${matFinal} [RH]`;
+    }
+    return {
+      item: itemNum++,
+      modulo: modId,
+      pieza: nomPieza,
+      material: matFinal,
+      cant: cant,
+      largo_bruto: Math.round(largoBruto),
+      ancho_bruto: Math.round(anchoBruto),
+      espesor: espesor,
+      largo_neto: tap.largo_neto,
+      ancho_neto: tap.ancho_neto,
+      canto_L1: tap.canto_L1,
+      canto_L2: tap.canto_L2,
+      canto_A1: tap.canto_A1,
+      canto_A2: tap.canto_A2,
+      color_tapacanto: tap.desc_color_tapacanto,
+      color_canto_L1: tap.color_canto_L1,
+      color_canto_otros: tap.color_canto_otros,
+      ranura: ranura,
+      ...opts
+    };
+  }
+
   // Piezas de Zócalo Base Inferior Global (si el mueble tiene zócalo perimétrico activo)
   if (AppState.tieneZocalo && AppState.altoZocalo > 0) {
     const zH = AppState.altoZocalo;
@@ -6165,40 +6959,16 @@ function generarDespieceEstimadoLocal() {
     const largoTrans = Math.max(10, AppState.profTotal - retransZocalo - (2 * t));
 
     // 1. Zócalo Frontal Continuo (Abarca todo el ancho del mueble: 0 a W)
-    piezas.push({
-      item: itemNum++, modulo: "Zócalo Base", pieza: "Zócalo Frontal Continuo",
-      material: AppState.materialEstructura, cant: 1,
-      largo_bruto: AppState.anchoTotal, ancho_bruto: zH, espesor: t,
-      largo_neto: AppState.anchoTotal - 1.0, ancho_neto: zH - 1.0,
-      canto_L1: '0.5', canto_L2: '0.0', canto_A1: '0.5', canto_A2: '0.5', ranura: 'Ninguna'
-    });
+    piezas.push(crearItemDespiece("Zócalo Base", "Zócalo Frontal Continuo", (esUnicolor ? matInterior : matFrontis), 1, AppState.anchoTotal, zH, t, 'Ninguna'));
 
     // 2. Zócalo Posterior Continuo (Abarca todo el ancho del mueble: 0 a W)
-    piezas.push({
-      item: itemNum++, modulo: "Zócalo Base", pieza: "Zócalo Posterior Continuo",
-      material: AppState.materialEstructura, cant: 1,
-      largo_bruto: AppState.anchoTotal, ancho_bruto: zH, espesor: t,
-      largo_neto: AppState.anchoTotal, ancho_neto: zH,
-      canto_L1: '0.0', canto_L2: '0.0', canto_A1: '0.0', canto_A2: '0.0', ranura: 'Ninguna'
-    });
+    piezas.push(crearItemDespiece("Zócalo Base", "Zócalo Posterior Continuo", matInterior, 1, AppState.anchoTotal, zH, t, 'Ninguna'));
 
     // 3. Lateral Izquierdo de Zócalo (Entre frontal y posterior: longitud = largoTrans)
-    piezas.push({
-      item: itemNum++, modulo: "Zócalo Base", pieza: "Zócalo Lateral Izquierdo",
-      material: AppState.materialEstructura, cant: 1,
-      largo_bruto: largoTrans, ancho_bruto: zH, espesor: t,
-      largo_neto: largoTrans - 1.0, ancho_neto: zH,
-      canto_L1: '0.5', canto_L2: '0.0', canto_A1: '0.5', canto_A2: '0.0', ranura: 'Ninguna'
-    });
+    piezas.push(crearItemDespiece("Zócalo Base", "Zócalo Lateral Izquierdo", matInterior, 1, largoTrans, zH, t, 'Ninguna'));
 
     // 4. Lateral Derecho de Zócalo (Entre frontal y posterior: longitud = largoTrans)
-    piezas.push({
-      item: itemNum++, modulo: "Zócalo Base", pieza: "Zócalo Lateral Derecho",
-      material: AppState.materialEstructura, cant: 1,
-      largo_bruto: largoTrans, ancho_bruto: zH, espesor: t,
-      largo_neto: largoTrans - 1.0, ancho_neto: zH,
-      canto_L1: '0.5', canto_L2: '0.0', canto_A1: '0.5', canto_A2: '0.0', ranura: 'Ninguna'
-    });
+    piezas.push(crearItemDespiece("Zócalo Base", "Zócalo Lateral Derecho", matInterior, 1, largoTrans, zH, t, 'Ninguna'));
 
     // 5. Listones transversales interiores de soporte del zócalo perimétrico según estándares
     const calcFnDesp = (window.Preview3D && window.Preview3D.calcularListonesZocaloEstandar) || window.calcularListonesZocaloEstandar;
@@ -6209,25 +6979,13 @@ function generarDespieceEstimadoLocal() {
       );
       if (resZocaloDesp && resZocaloDesp.listones && resZocaloDesp.listones.length > 0) {
         resZocaloDesp.listones.forEach((l, lIdx) => {
-          piezas.push({
-            item: itemNum++, modulo: "Zócalo Base", pieza: l.nombre || `Zócalo Listón Soporte ${lIdx + 1}`,
-            material: AppState.materialEstructura, cant: 1,
-            largo_bruto: largoTrans, ancho_bruto: zH, espesor: t,
-            largo_neto: largoTrans, ancho_neto: zH,
-            canto_L1: '0.0', canto_L2: '0.0', canto_A1: '0.0', canto_A2: '0.0', ranura: 'Ninguna'
-          });
+          piezas.push(crearItemDespiece("Zócalo Base", l.nombre || `Zócalo Listón Soporte ${lIdx + 1}`, matInterior, 1, largoTrans, zH, t, 'Ninguna'));
         });
       }
     } else {
       const cantListones = (AppState.cantListonesZocalo === 'auto') ? 2 : (parseInt(AppState.cantListonesZocalo) || 0);
       if (cantListones > 0 && largoTrans > 0) {
-        piezas.push({
-          item: itemNum++, modulo: "Zócalo Base", pieza: "Zócalo Refuerzo Transversal Interior",
-          material: AppState.materialEstructura, cant: cantListones,
-          largo_bruto: largoTrans, ancho_bruto: zH, espesor: t,
-          largo_neto: largoTrans, ancho_neto: zH,
-          canto_L1: '0.0', canto_L2: '0.0', canto_A1: '0.0', canto_A2: '0.0', ranura: 'Ninguna'
-        });
+        piezas.push(crearItemDespiece("Zócalo Base", "Zócalo Refuerzo Transversal Interior", matInterior, cantListones, largoTrans, zH, t, 'Ninguna'));
       }
     }
   }
@@ -6272,20 +7030,12 @@ function generarDespieceEstimadoLocal() {
 
     // Laterales (Costados): usan profCarcasa (descontando espesor si el frente es exterior)
     if (tieneLaterales) {
-      piezas.push({
-        item: itemNum++, modulo: modId, pieza: "Costado Izquierdo",
-        material: AppState.materialEstructura, cant: 1,
-        largo_bruto: hLateral, ancho_bruto: profCarcasa, espesor: t,
-        largo_neto: hLateral - 2.5, ancho_neto: profCarcasa - 1.0,
-        canto_L1: '2.0', canto_L2: '0.5', canto_A1: '0.5', canto_A2: '0.5', ranura: ranuraCarcasa
-      });
-      piezas.push({
-        item: itemNum++, modulo: modId, pieza: "Costado Derecho",
-        material: AppState.materialEstructura, cant: 1,
-        largo_bruto: hLateral, ancho_bruto: profCarcasa, espesor: t,
-        largo_neto: hLateral - 2.5, ancho_neto: profCarcasa - 1.0,
-        canto_L1: '2.0', canto_L2: '0.5', canto_A1: '0.5', canto_A2: '0.5', ranura: ranuraCarcasa
-      });
+      piezas.push(crearItemDespiece(modId, "Costado Izquierdo", matInterior, 1, hLateral, profCarcasa, t, ranuraCarcasa, {
+        canto_L1: 2.0, canto_L2: 0.5, canto_A1: 0.5, canto_A2: 0.5
+      }));
+      piezas.push(crearItemDespiece(modId, "Costado Derecho", matInterior, 1, hLateral, profCarcasa, t, ranuraCarcasa, {
+        canto_L1: 2.0, canto_L2: 0.5, canto_A1: 0.5, canto_A2: 0.5
+      }));
     }
 
     // Piso Carcasa (Sólido o Listones de Amarre de Piso)
@@ -6293,30 +7043,18 @@ function generarDespieceEstimadoLocal() {
       if (usaAmarresPiso) {
         const cantPiso = m.cant_listones_piso || 2;
         const wListonPiso = parseFloat(m.ancho_liston_piso || m.medida_liston_piso || 80);
-        piezas.push({
-          item: itemNum++, modulo: modId, pieza: `Amarre Piso Frontal (x1)`,
-          material: AppState.materialEstructura, cant: 1,
-          largo_bruto: anchoInt, ancho_bruto: wListonPiso, espesor: t,
-          largo_neto: anchoInt - 1.0, ancho_neto: wListonPiso - 1.0,
-          canto_L1: '2.0', canto_L2: '0.5', canto_A1: '0.5', canto_A2: '0.5', ranura: 'Ninguna'
-        });
+        piezas.push(crearItemDespiece(modId, "Amarre Piso Frontal (x1)", matInterior, 1, anchoInt, wListonPiso, t, 'Ninguna', {
+          canto_L1: 2.0, canto_L2: 0.5, canto_A1: 0.5, canto_A2: 0.5
+        }));
         if (cantPiso >= 2) {
-          piezas.push({
-            item: itemNum++, modulo: modId, pieza: `Amarres Piso Posteriores/Refuerzo (x${cantPiso - 1})`,
-            material: AppState.materialEstructura, cant: cantPiso - 1,
-            largo_bruto: anchoInt, ancho_bruto: wListonPiso, espesor: t,
-            largo_neto: anchoInt - 1.0, ancho_neto: wListonPiso - 1.0,
-            canto_L1: '0.5', canto_L2: '0.5', canto_A1: '0.5', canto_A2: '0.5', ranura: 'Ninguna'
-          });
+          piezas.push(crearItemDespiece(modId, `Amarres Piso Posteriores/Refuerzo (x${cantPiso - 1})`, matInterior, cantPiso - 1, anchoInt, wListonPiso, t, 'Ninguna', {
+            canto_L1: 0.5, canto_L2: 0.5, canto_A1: 0.5, canto_A2: 0.5
+          }));
         }
       } else {
-        piezas.push({
-          item: itemNum++, modulo: modId, pieza: "Piso Carcasa",
-          material: AppState.materialEstructura, cant: 1,
-          largo_bruto: anchoInt, ancho_bruto: profCarcasa, espesor: t,
-          largo_neto: anchoInt - 1.0, ancho_neto: profCarcasa - 1.0,
-          canto_L1: '2.0', canto_L2: '0.0', canto_A1: '0.5', canto_A2: '0.5', ranura: ranuraCarcasa
-        });
+        piezas.push(crearItemDespiece(modId, "Piso Carcasa", matInterior, 1, anchoInt, profCarcasa, t, ranuraCarcasa, {
+          canto_L1: 2.0, canto_L2: 0.0, canto_A1: 0.5, canto_A2: 0.5
+        }));
       }
     }
 
@@ -6325,51 +7063,33 @@ function generarDespieceEstimadoLocal() {
       if (usaAmarresTecho) {
         const cantTecho = m.cant_listones_techo || m.cant_listones_amarre || 2;
         const wListonTecho = parseFloat(m.ancho_liston_techo || m.medida_liston_techo || m.alto_liston_amarre || 80);
-        piezas.push({
-          item: itemNum++, modulo: modId, pieza: `Amarre Techo Frontal (x${cantTecho > 1 ? '1' : '1'})`,
-          material: AppState.materialEstructura, cant: 1,
-          largo_bruto: anchoInt, ancho_bruto: wListonTecho, espesor: t,
-          largo_neto: anchoInt - 1.0, ancho_neto: wListonTecho - 1.0,
-          canto_L1: '2.0', canto_L2: '0.5', canto_A1: '0.5', canto_A2: '0.5', ranura: 'Ninguna'
-        });
+        piezas.push(crearItemDespiece(modId, "Amarre Techo Frontal (x1)", matInterior, 1, anchoInt, wListonTecho, t, 'Ninguna', {
+          canto_L1: 2.0, canto_L2: 0.5, canto_A1: 0.5, canto_A2: 0.5
+        }));
         if (cantTecho >= 2) {
-          piezas.push({
-            item: itemNum++, modulo: modId, pieza: `Amarres Techo Posteriores/Refuerzo (x${cantTecho - 1})`,
-            material: AppState.materialEstructura, cant: cantTecho - 1,
-            largo_bruto: anchoInt, ancho_bruto: wListonTecho, espesor: t,
-            largo_neto: anchoInt - 1.0, ancho_neto: wListonTecho - 1.0,
-            canto_L1: '0.5', canto_L2: '0.5', canto_A1: '0.5', canto_A2: '0.5', ranura: 'Ninguna'
-          });
+          piezas.push(crearItemDespiece(modId, `Amarres Techo Posteriores/Refuerzo (x${cantTecho - 1})`, matInterior, cantTecho - 1, anchoInt, wListonTecho, t, 'Ninguna', {
+            canto_L1: 0.5, canto_L2: 0.5, canto_A1: 0.5, canto_A2: 0.5
+          }));
         }
 
         // Techo Sobrepuesto
         if (tieneTechoSobre) {
           if (esDobleMelamina) {
-            piezas.push({
-              item: itemNum++, modulo: modId, pieza: "Tapa Techo Doble Melamina (Engrosado 36mm)",
-              material: AppState.materialEstructura, cant: 2,
-              largo_bruto: m.ancho, ancho_bruto: profCarcasa, espesor: t,
-              largo_neto: m.ancho - 1.0, ancho_neto: profCarcasa - 1.0,
-              canto_L1: '2.0', canto_L2: '2.0', canto_A1: '2.0', canto_A2: '2.0', ranura: 'Ninguna'
-            });
+            piezas.push(crearItemDespiece(modId, "Tapa Techo Doble Melamina (Engrosado 36mm)", matFrontis, 2, m.ancho, profCarcasa, t, 'Ninguna', {
+              esMesaPuerta: true,
+              canto_L1: 2.0, canto_L2: 2.0, canto_A1: 2.0, canto_A2: 2.0
+            }));
           } else {
-            piezas.push({
-              item: itemNum++, modulo: modId, pieza: "Tapa Techo Sobrepuesta Simple",
-              material: AppState.materialEstructura, cant: 1,
-              largo_bruto: m.ancho, ancho_bruto: profCarcasa, espesor: t,
-              largo_neto: m.ancho - 1.0, ancho_neto: profCarcasa - 1.0,
-              canto_L1: '2.0', canto_L2: '2.0', canto_A1: '2.0', canto_A2: '2.0', ranura: 'Ninguna'
-            });
+            piezas.push(crearItemDespiece(modId, "Tapa Techo Sobrepuesta Simple", matFrontis, 1, m.ancho, profCarcasa, t, 'Ninguna', {
+              esMesaPuerta: true,
+              canto_L1: 2.0, canto_L2: 2.0, canto_A1: 2.0, canto_A2: 2.0
+            }));
           }
         }
       } else {
-        piezas.push({
-          item: itemNum++, modulo: modId, pieza: "Techo Carcasa Sólido",
-          material: AppState.materialEstructura, cant: 1,
-          largo_bruto: anchoInt, ancho_bruto: profCarcasa, espesor: t,
-          largo_neto: anchoInt - 1.0, ancho_neto: profCarcasa - 1.0,
-          canto_L1: '2.0', canto_L2: '0.0', canto_A1: '0.5', canto_A2: '0.5', ranura: ranuraCarcasa
-        });
+        piezas.push(crearItemDespiece(modId, "Techo Carcasa Sólido", matInterior, 1, anchoInt, profCarcasa, t, ranuraCarcasa, {
+          canto_L1: 2.0, canto_L2: 0.0, canto_A1: 0.5, canto_A2: 0.5
+        }));
       }
     }
 
@@ -6385,21 +7105,13 @@ function generarDespieceEstimadoLocal() {
       const hVanoUtilPost = Math.max(50, hCarcasa - (m.tiene_piso !== false ? t : 0) - (m.tiene_techo !== false ? t : 0));
 
       if (orientacionPost === 'vertical') {
-        piezas.push({
-          item: itemNum++, modulo: modId, pieza: `Listones Fondo Verticales (x${cantPost})`,
-          material: AppState.materialEstructura, cant: cantPost,
-          largo_bruto: hVanoUtilPost, ancho_bruto: wListonPost, espesor: t,
-          largo_neto: hVanoUtilPost - 1.0, ancho_neto: wListonPost - 1.0,
-          canto_L1: '0.5', canto_L2: '0.0', canto_A1: '0.5', canto_A2: '0.5', ranura: 'Ninguna'
-        });
+        piezas.push(crearItemDespiece(modId, `Listones Fondo Verticales (x${cantPost})`, matInterior, cantPost, hVanoUtilPost, wListonPost, t, 'Ninguna', {
+          canto_L1: 0.5, canto_L2: 0.0, canto_A1: 0.5, canto_A2: 0.5
+        }));
       } else {
-        piezas.push({
-          item: itemNum++, modulo: modId, pieza: `Listones Posteriores Pared (x${cantPost})`,
-          material: AppState.materialEstructura, cant: cantPost,
-          largo_bruto: anchoInt, ancho_bruto: wListonPost, espesor: t,
-          largo_neto: anchoInt - 1.0, ancho_neto: wListonPost - 1.0,
-          canto_L1: '0.5', canto_L2: '0.0', canto_A1: '0.5', canto_A2: '0.5', ranura: 'Ninguna'
-        });
+        piezas.push(crearItemDespiece(modId, `Listones Posteriores Pared (x${cantPost})`, matInterior, cantPost, anchoInt, wListonPost, t, 'Ninguna', {
+          canto_L1: 0.5, canto_L2: 0.0, canto_A1: 0.5, canto_A2: 0.5
+        }));
       }
     }
 
@@ -6413,63 +7125,39 @@ function generarDespieceEstimadoLocal() {
       const anchoZocaloPerim = Math.max(0, m.ancho - (2 * t));
 
       // 1. Zócalo Frontal
-      piezas.push({
-        item: itemNum++, modulo: modId, pieza: "Zócalo Frontal",
-        material: AppState.materialEstructura, cant: 1,
-        largo_bruto: anchoZocaloPerim, ancho_bruto: zH, espesor: t,
-        largo_neto: anchoZocaloPerim - 1.0, ancho_neto: zH - 1.0,
-        canto_L1: '0.5', canto_L2: '0.0', canto_A1: '0.5', canto_A2: '0.5', ranura: 'Ninguna'
-      });
+      piezas.push(crearItemDespiece(modId, "Zócalo Frontal", (esUnicolor ? matInterior : matFrontis), 1, anchoZocaloPerim, zH, t, 'Ninguna', {
+        canto_L1: 0.5, canto_L2: 0.0, canto_A1: 0.5, canto_A2: 0.5
+      }));
       // 2. Zócalo Posterior
-      piezas.push({
-        item: itemNum++, modulo: modId, pieza: "Zócalo Posterior",
-        material: AppState.materialEstructura, cant: 1,
-        largo_bruto: anchoZocaloPerim, ancho_bruto: zH, espesor: t,
-        largo_neto: anchoZocaloPerim, ancho_neto: zH,
-        canto_L1: '0.0', canto_L2: '0.0', canto_A1: '0.0', canto_A2: '0.0', ranura: 'Ninguna'
-      });
+      piezas.push(crearItemDespiece(modId, "Zócalo Posterior", matInterior, 1, anchoZocaloPerim, zH, t, 'Ninguna', {
+        canto_L1: 0.0, canto_L2: 0.0, canto_A1: 0.0, canto_A2: 0.0
+      }));
       // 3. Lateral Izquierdo de Zócalo (perímetro)
-      piezas.push({
-        item: itemNum++, modulo: modId, pieza: "Zócalo Lateral Izquierdo",
-        material: AppState.materialEstructura, cant: 1,
-        largo_bruto: largoLatZocalo, ancho_bruto: zH, espesor: t,
-        largo_neto: largoLatZocalo - 1.0, ancho_neto: zH,
-        canto_L1: '0.5', canto_L2: '0.0', canto_A1: '0.5', canto_A2: '0.0', ranura: 'Ninguna'
-      });
+      piezas.push(crearItemDespiece(modId, "Zócalo Lateral Izquierdo", matInterior, 1, largoLatZocalo, zH, t, 'Ninguna', {
+        canto_L1: 0.5, canto_L2: 0.0, canto_A1: 0.5, canto_A2: 0.0
+      }));
       // 4. Lateral Derecho de Zócalo (perímetro)
-      piezas.push({
-        item: itemNum++, modulo: modId, pieza: "Zócalo Lateral Derecho",
-        material: AppState.materialEstructura, cant: 1,
-        largo_bruto: largoLatZocalo, ancho_bruto: zH, espesor: t,
-        largo_neto: largoLatZocalo - 1.0, ancho_neto: zH,
-        canto_L1: '0.5', canto_L2: '0.0', canto_A1: '0.5', canto_A2: '0.0', ranura: 'Ninguna'
-      });
+      piezas.push(crearItemDespiece(modId, "Zócalo Lateral Derecho", matInterior, 1, largoLatZocalo, zH, t, 'Ninguna', {
+        canto_L1: 0.5, canto_L2: 0.0, canto_A1: 0.5, canto_A2: 0.0
+      }));
 
       // 5. Listones transversales interiores de soporte y refuerzo del zócalo
       const cantInternos = resolverCantListonesInternosZocalo(m);
       if (cantInternos > 0) {
         const largoTrans = m.profundidad - retransZocalo - (2 * t);
         if (largoTrans > 0) {
-          piezas.push({
-            item: itemNum++, modulo: modId, pieza: "Zócalo Refuerzo Transversal Interior",
-            material: AppState.materialEstructura, cant: cantInternos,
-            largo_bruto: largoTrans, ancho_bruto: zH, espesor: t,
-            largo_neto: largoTrans, ancho_neto: zH,
-            canto_L1: '0.0', canto_L2: '0.0', canto_A1: '0.0', canto_A2: '0.0', ranura: 'Ninguna'
-          });
+          piezas.push(crearItemDespiece(modId, "Zócalo Refuerzo Transversal Interior", matInterior, cantInternos, largoTrans, zH, t, 'Ninguna', {
+            canto_L1: 0.0, canto_L2: 0.0, canto_A1: 0.0, canto_A2: 0.0
+          }));
         }
       }
     }
 
     // Zócalo Superior (Frontal de melamina en todo el ancho interior)
     if (m.tiene_zocalo_sup && zSupH > 0) {
-      piezas.push({
-        item: itemNum++, modulo: modId, pieza: "Frontal Zócalo Superior",
-        material: AppState.materialEstructura, cant: 1,
-        largo_bruto: anchoInt, ancho_bruto: zSupH, espesor: t,
-        largo_neto: anchoInt - 1.0, ancho_neto: zSupH - 1.0,
-        canto_L1: '0.5', canto_L2: '0.0', canto_A1: '0.5', canto_A2: '0.5', ranura: 'Ninguna'
-      });
+      piezas.push(crearItemDespiece(modId, "Frontal Zócalo Superior", (esUnicolor ? matInterior : matFrontis), 1, anchoInt, zSupH, t, 'Ninguna', {
+        canto_L1: 0.5, canto_L2: 0.0, canto_A1: 0.5, canto_A2: 0.5
+      }));
     }
 
     // Fondo Posterior (MDF o Melamina)
@@ -6477,24 +7165,14 @@ function generarDespieceEstimadoLocal() {
       if (posMdf === 'delante_liston') {
         const wMdf = anchoInt + (2 * profRanura) - 2;
         const hMdf = (hCarcasa - (2 * t)) + (2 * profRanura) - 2;
-        piezas.push({
-          item: itemNum++, modulo: modId, pieza: `Fondo Posterior MDF ${grosorMdf}mm Enranurado`,
-          material: `MDF Fondo Blanco ${grosorMdf}mm`, cant: 1,
-          largo_bruto: hMdf, ancho_bruto: wMdf, espesor: grosorMdf,
-          largo_neto: hMdf, ancho_neto: wMdf,
-          canto_L1: '0.0', canto_L2: '0.0', canto_A1: '0.0', canto_A2: '0.0',
-          ranura: `Incrustado en ranura ${anchoRanura}x${profRanura}mm a ${distRanura}mm`
-        });
+        piezas.push(crearItemDespiece(modId, `Fondo Posterior MDF ${grosorMdf}mm Enranurado`, matMdfBase, 1, hMdf, wMdf, grosorMdf, `Incrustado en ranura ${anchoRanura}x${profRanura}mm a ${distRanura}mm`, {
+          esMdf: true
+        }));
       } else {
         // Sobrepuesto detrás del listón con las medidas completas del módulo
-        piezas.push({
-          item: itemNum++, modulo: modId, pieza: `Fondo Posterior MDF ${grosorMdf}mm Sobrepuesto`,
-          material: `MDF Fondo Blanco ${grosorMdf}mm`, cant: 1,
-          largo_bruto: m.alto, ancho_bruto: m.ancho, espesor: grosorMdf,
-          largo_neto: m.alto, ancho_neto: m.ancho,
-          canto_L1: '0.0', canto_L2: '0.0', canto_A1: '0.0', canto_A2: '0.0',
-          ranura: 'Sobrepuesto clavado'
-        });
+        piezas.push(crearItemDespiece(modId, `Fondo Posterior MDF ${grosorMdf}mm Sobrepuesto`, matMdfBase, 1, m.alto, m.ancho, grosorMdf, 'Sobrepuesto clavado', {
+          esMdf: true
+        }));
       }
     } else if (tipoFondo === 'melamina') {
       const hPisoEspLocal = tienePiso ? t : 0;
@@ -6506,17 +7184,14 @@ function generarDespieceEstimadoLocal() {
 
       const distFondoMel = (m.dist_fondo_melamina !== undefined) ? Math.max(0, parseFloat(m.dist_fondo_melamina)) : 0;
 
-      piezas.push({
-        item: itemNum++, modulo: modId,
-        pieza: altoFondoMel < hVanoUtilLocal
+      piezas.push(crearItemDespiece(modId, altoFondoMel < hVanoUtilLocal
           ? `Fondo Posterior Melamina (${altoFondoMel}x${anchoInt}mm, Ajustado Sup.)`
           : "Fondo Posterior Melamina Embutido",
-        material: AppState.materialEstructura, cant: 1,
-        largo_bruto: altoFondoMel, ancho_bruto: anchoInt, espesor: t,
-        largo_neto: altoFondoMel - 1.0, ancho_neto: anchoInt - 1.0,
-        canto_L1: '0.5', canto_L2: '0.5', canto_A1: '0.5', canto_A2: '0.5',
-        ranura: `${distFondoMel > 0 ? `Retranqueado a ${distFondoMel}mm de pared` : 'Al borde posterior'}${altoFondoMel < hVanoUtilLocal ? ` (ajustado arriba, libre inf ${hVanoUtilLocal - altoFondoMel}mm)` : ''}`
-      });
+        matInterior, 1, altoFondoMel, anchoInt, t,
+        `${distFondoMel > 0 ? `Retranqueado a ${distFondoMel}mm de pared` : 'Al borde posterior'}${altoFondoMel < hVanoUtilLocal ? ` (ajustado arriba, libre inf ${hVanoUtilLocal - altoFondoMel}mm)` : ''}`, {
+          canto_L1: 0.5, canto_L2: 0.5, canto_A1: 0.5, canto_A2: 0.5
+        }
+      ));
     } else if (tipoFondo === 'panel' || (esModuloVacio && tieneFondo)) {
       const tieneListonesPared = (m.panel_tiene_listones_pared !== false && m.panel_tiene_listones_pared !== 'false');
       const cantPanelList = Math.max(1, Math.min(4, parseInt(m.cant_listones_panel) || 2));
@@ -6524,42 +7199,25 @@ function generarDespieceEstimadoLocal() {
 
       if (esModuloVacio) {
         // Fondo Panel Completo abarcando toda la dimensión
-        piezas.push({
-          item: itemNum++, modulo: modId,
-          pieza: `Fondo Panel Completo (${m.ancho}x${m.alto}mm)`,
-          material: AppState.materialEstructura, cant: 1,
-          largo_bruto: m.alto, ancho_bruto: m.ancho, espesor: t,
-          largo_neto: m.alto - 1.0, ancho_neto: m.ancho - 1.0,
-          canto_L1: '2.0', canto_L2: '2.0', canto_A1: '2.0', canto_A2: '2.0',
-          ranura: 'Ninguna (Abarca toda la dimensión)'
-        });
+        piezas.push(crearItemDespiece(modId, `Fondo Panel Completo (${m.ancho}x${m.alto}mm)`, matFrontis, 1, m.alto, m.ancho, t, 'Ninguna (Abarca toda la dimensión)', {
+          esMesaPuerta: true,
+          canto_L1: 2.0, canto_L2: 2.0, canto_A1: 2.0, canto_A2: 2.0
+        }));
       } else {
         const hPisoEspLocal = tienePiso ? t : 0;
         const hTechoEspLocal = tieneTecho ? t : 0;
         const hVanoUtilLocal = Math.max(0, hCarcasa - hPisoEspLocal - hTechoEspLocal);
-        piezas.push({
-          item: itemNum++, modulo: modId,
-          pieza: `Fondo Panel Melamina (${anchoInt}x${hVanoUtilLocal}mm)`,
-          material: AppState.materialEstructura, cant: 1,
-          largo_bruto: hVanoUtilLocal, ancho_bruto: anchoInt, espesor: t,
-          largo_neto: hVanoUtilLocal - 1.0, ancho_neto: anchoInt - 1.0,
-          canto_L1: '0.5', canto_L2: '0.5', canto_A1: '0.5', canto_A2: '0.5',
-          ranura: 'Ninguna'
-        });
+        piezas.push(crearItemDespiece(modId, `Fondo Panel Melamina (${anchoInt}x${hVanoUtilLocal}mm)`, matInterior, 1, hVanoUtilLocal, anchoInt, t, 'Ninguna', {
+          canto_L1: 0.5, canto_L2: 0.5, canto_A1: 0.5, canto_A2: 0.5
+        }));
       }
 
       // Listones posteriores atornillados a pared
       if (tieneListonesPared) {
         const largoListonPanel = esModuloVacio ? Math.max(50, m.ancho - 60) : anchoInt;
-        piezas.push({
-          item: itemNum++, modulo: modId,
-          pieza: `Listón Posterior Anclaje a Pared (x${cantPanelList})`,
-          material: AppState.materialEstructura, cant: cantPanelList,
-          largo_bruto: largoListonPanel, ancho_bruto: hListonPanel, espesor: t,
-          largo_neto: largoListonPanel - 1.0, ancho_neto: hListonPanel - 1.0,
-          canto_L1: '0.5', canto_L2: '0.5', canto_A1: '0.5', canto_A2: '0.5',
-          ranura: 'Atornillado a pared'
-        });
+        piezas.push(crearItemDespiece(modId, `Listón Posterior Anclaje a Pared (x${cantPanelList})`, matInterior, cantPanelList, largoListonPanel, hListonPanel, t, 'Atornillado a pared', {
+          canto_L1: 0.5, canto_L2: 0.5, canto_A1: 0.5, canto_A2: 0.5
+        }));
       }
     }
 
@@ -6570,14 +7228,9 @@ function generarDespieceEstimadoLocal() {
       // Piezas de Parantes Principales
       geo.parantes.forEach((p, pIdx) => {
         const esV = (geo.limites.tipo === 'vertical');
-        piezas.push({
-          item: itemNum++, modulo: modId,
-          pieza: `Parante ${esV ? 'Vertical' : 'Horizontal'} ${pIdx + 1}`,
-          material: AppState.materialEstructura, cant: 1,
-          largo_bruto: esV ? p.dz : p.dx, ancho_bruto: p.dy, espesor: t,
-          largo_neto: (esV ? p.dz : p.dx) - 1.0, ancho_neto: p.dy - 1.0,
-          canto_L1: '0.5', canto_L2: '0.5', canto_A1: '0.5', canto_A2: '0.5', ranura: 'Ninguna'
-        });
+        piezas.push(crearItemDespiece(modId, `Parante ${esV ? 'Vertical' : 'Horizontal'} ${pIdx + 1}`, matInterior, 1, esV ? p.dz : p.dx, p.dy, t, 'Ninguna', {
+          canto_L1: 2.0, canto_L2: 0.5, canto_A1: 0.5, canto_A2: 0.5
+        }));
       });
 
       // Piezas de Sub-Parantes y Repisas por cada Espacio
@@ -6585,27 +7238,17 @@ function generarDespieceEstimadoLocal() {
         if (Array.isArray(esp.subParantes) && esp.subParantes.length > 0) {
           esp.subParantes.forEach((sp, spIdx) => {
             const esV = (sp.tipo === 'vertical');
-            piezas.push({
-              item: itemNum++, modulo: modId,
-              pieza: `${esp.nombre} Sub-Parante ${esV ? 'Vertical' : 'Horizontal'} ${spIdx + 1}`,
-              material: AppState.materialEstructura, cant: 1,
-              largo_bruto: esV ? sp.dz : sp.dx, ancho_bruto: sp.dy, espesor: t,
-              largo_neto: (esV ? sp.dz : sp.dx) - 1.0, ancho_neto: sp.dy - 1.0,
-              canto_L1: '0.5', canto_L2: '0.5', canto_A1: '0.5', canto_A2: '0.5', ranura: 'Ninguna'
-            });
+            piezas.push(crearItemDespiece(modId, `${esp.nombre} Sub-Parante ${esV ? 'Vertical' : 'Horizontal'} ${spIdx + 1}`, matInterior, 1, esV ? sp.dz : sp.dx, sp.dy, t, 'Ninguna', {
+              canto_L1: 2.0, canto_L2: 0.5, canto_A1: 0.5, canto_A2: 0.5
+            }));
           });
         }
 
         if (esp.repisas.length > 0) {
           esp.repisas.forEach((rep, rIdx) => {
-            piezas.push({
-              item: itemNum++, modulo: modId,
-              pieza: `Repisa ${esp.nombre} R${rIdx + 1}${rep.subVanoIndex !== undefined ? ` (Sub-vano ${rep.subVanoIndex + 1})` : ''}`,
-              material: AppState.materialEstructura, cant: 1,
-              largo_bruto: rep.ancho, ancho_bruto: rep.prof, espesor: t,
-              largo_neto: rep.ancho - 1.0, ancho_neto: rep.prof - 1.0,
-              canto_L1: '2.0', canto_L2: '0.0', canto_A1: '0.5', canto_A2: '0.5', ranura: 'Ninguna'
-            });
+            piezas.push(crearItemDespiece(modId, `Repisa ${esp.nombre} R${rIdx + 1}${rep.subVanoIndex !== undefined ? ` (Sub-vano ${rep.subVanoIndex + 1})` : ''}`, matInterior, 1, rep.ancho, rep.prof, t, 'Ninguna', {
+              canto_L1: 2.0, canto_L2: 0.0, canto_A1: 0.5, canto_A2: 0.5
+            }));
           });
         }
       });
@@ -6617,8 +7260,8 @@ function generarDespieceEstimadoLocal() {
       const montajeCaj = m.cajones_montaje || 'exterior';
       const tipoCorr = m.cajones_tipo_corredera || 'telescopica';
       const posCorr = m.cajones_posicion_corredera || 'baja';
-      const luzCaj = 2.0;
-      const tCaja = 15.0; // melamina 15mm/18mm para caja interna
+      const luzCaj = (m.cajones_luz !== undefined && m.cajones_luz !== null) ? parseFloat(m.cajones_luz) : (AppState.luzFrentes || 3.0);
+      const tCaja = 15.0; // melamina 15mm para gaveta interna
 
       const descCorr = (tipoCorr === 'oculta') ? 21.0 : (tipoCorr === 'metalica' ? 37.5 : 26.0);
       const wExtCaja = Math.max(80, anchoInt - descCorr);
@@ -6649,52 +7292,27 @@ function generarDespieceEstimadoLocal() {
 
       for (let c = 0; c < cantCaj; c++) {
         // 1. Frente de cajón
-        piezas.push({
-          item: itemNum++, modulo: modId, pieza: `Frente Cajón ${c + 1} (${montajeCaj === 'exterior' ? 'Sobrepuesto' : 'Embutido'})`,
-          material: m.material_frentes || AppState.materialEstructura, cant: 1,
-          largo_bruto: Math.round(anchoFrente), ancho_bruto: Math.round(altoFrente), espesor: t,
-          largo_neto: Math.round(anchoFrente) - 4.0, ancho_neto: Math.round(altoFrente) - 4.0,
-          canto_L1: '2.0', canto_L2: '2.0', canto_A1: '2.0', canto_A2: '2.0',
-          ranura: `Tirador central, montaje ${montajeCaj}`
-        });
+        piezas.push(crearItemDespiece(modId, `Frente Cajón ${c + 1} (${montajeCaj === 'exterior' ? 'Sobrepuesto' : 'Embutido'})`, (m.material_frentes || matFrontis), 1, Math.round(anchoFrente), Math.round(altoFrente), t, `Tirador central, montaje ${montajeCaj}`, {
+          esMesaPuerta: true
+        }));
 
         if (tipoCorr !== 'metalica') {
           // 2. Laterales de gaveta (x2)
-          piezas.push({
-            item: itemNum++, modulo: modId, pieza: `Laterales Gaveta Cajón ${c + 1} (x2)`,
-            material: 'Melamina Blanca 15mm', cant: 2,
-            largo_bruto: largoSlide, ancho_bruto: altoCaja, espesor: tCaja,
-            largo_neto: largoSlide - 1.0, ancho_neto: altoCaja - 1.0,
-            canto_L1: '0.5', canto_L2: '0.0', canto_A1: '0.0', canto_A2: '0.0',
-            ranura: `Ranura Fondo 3mm a 12mm de la base (${tipoCorr}, pos: ${posCorr})`
-          });
+          piezas.push(crearItemDespiece(modId, `Laterales Gaveta Cajón ${c + 1} (x2)`, 'Melamina Blanca 15mm', 2, largoSlide, altoCaja, tCaja, `Ranura Fondo 3mm a 12mm de la base (${tipoCorr}, pos: ${posCorr})`, {
+            canto_L1: 0.5, canto_L2: 0.0, canto_A1: 0.0, canto_A2: 0.0
+          }));
           // 3. Contrafrente
-          piezas.push({
-            item: itemNum++, modulo: modId, pieza: `Contrafrente Gaveta Cajón ${c + 1}`,
-            material: 'Melamina Blanca 15mm', cant: 1,
-            largo_bruto: Math.round(wIntCaja), ancho_bruto: altoCaja, espesor: tCaja,
-            largo_neto: Math.round(wIntCaja) - 1.0, ancho_neto: altoCaja - 1.0,
-            canto_L1: '0.5', canto_L2: '0.0', canto_A1: '0.0', canto_A2: '0.0',
-            ranura: 'Ranura Fondo 3mm a 12mm de la base'
-          });
+          piezas.push(crearItemDespiece(modId, `Contrafrente Gaveta Cajón ${c + 1}`, 'Melamina Blanca 15mm', 1, Math.round(wIntCaja), altoCaja, tCaja, 'Ranura Fondo 3mm a 12mm de la base', {
+            canto_L1: 0.5, canto_L2: 0.0, canto_A1: 0.0, canto_A2: 0.0
+          }));
           // 4. Trasera
-          piezas.push({
-            item: itemNum++, modulo: modId, pieza: `Trasera Gaveta Cajón ${c + 1}`,
-            material: 'Melamina Blanca 15mm', cant: 1,
-            largo_bruto: Math.round(wIntCaja), ancho_bruto: altoCaja, espesor: tCaja,
-            largo_neto: Math.round(wIntCaja) - 1.0, ancho_neto: altoCaja - 1.0,
-            canto_L1: '0.5', canto_L2: '0.0', canto_A1: '0.0', canto_A2: '0.0',
-            ranura: 'Ranura Fondo 3mm a 12mm de la base'
-          });
+          piezas.push(crearItemDespiece(modId, `Trasera Gaveta Cajón ${c + 1}`, 'Melamina Blanca 15mm', 1, Math.round(wIntCaja), altoCaja, tCaja, 'Ranura Fondo 3mm a 12mm de la base', {
+            canto_L1: 0.5, canto_L2: 0.0, canto_A1: 0.0, canto_A2: 0.0
+          }));
           // 5. Fondo MDF 3mm
-          piezas.push({
-            item: itemNum++, modulo: modId, pieza: `Fondo MDF 3mm Cajón ${c + 1}`,
-            material: 'MDF Fondo Blanco 3mm', cant: 1,
-            largo_bruto: largoSlide - 4, ancho_bruto: Math.round(wExtCaja) - 4, espesor: 3,
-            largo_neto: largoSlide - 4, ancho_neto: Math.round(wExtCaja) - 4,
-            canto_L1: '0.0', canto_L2: '0.0', canto_A1: '0.0', canto_A2: '0.0',
-            ranura: 'Incrustado en ranura 3x8mm'
-          });
+          piezas.push(crearItemDespiece(modId, `Fondo MDF 3mm Cajón ${c + 1}`, matMdfBase, 1, largoSlide - 4, Math.round(wExtCaja) - 4, 3, 'Incrustado en ranura 3x8mm', {
+            esMdf: true
+          }));
         }
       }
 
@@ -6705,6 +7323,7 @@ function generarDespieceEstimadoLocal() {
         largo_bruto: largoSlide, ancho_bruto: descCorr, espesor: 12,
         largo_neto: largoSlide, ancho_neto: descCorr,
         canto_L1: '0.0', canto_L2: '0.0', canto_A1: '0.0', canto_A2: '0.0',
+        color_tapacanto: 'Sin tapacanto',
         ranura: `Posición: ${posCorr} (descuento lateral: ${descCorr}mm)`
       });
     }
@@ -6714,7 +7333,7 @@ function generarDespieceEstimadoLocal() {
     if (tienePuertas) {
       const montajeP = m.puertas_montaje || 'exterior';
       const posicionP = m.puertas_posicion_bisagra || m.puertas_apertura || ((m.ancho > 600) ? 'doble' : 'derecha');
-      const luzP = parseFloat(m.puertas_luz) || 2.0;
+      const luzP = (m.puertas_luz !== undefined && m.puertas_luz !== null) ? parseFloat(m.puertas_luz) : (AppState.luzFrentes || 3.0);
       const cantHojas = (posicionP === 'doble') ? 2 : 1;
 
       let altoP = 0, anchoP = 0;
@@ -6759,39 +7378,27 @@ function generarDespieceEstimadoLocal() {
         const nomPuerta = (cantHojas === 2)
           ? `Puerta Hoja ${p + 1} (${p === 0 ? 'Izq' : 'Der'}${xCentroParante !== null ? ' -> Cierre a Parante Central' : ''})`
           : `Puerta (${posicionP})`;
-        piezas.push({
-          item: itemNum++, modulo: modId, pieza: nomPuerta,
-          material: m.material_frentes || AppState.materialEstructura, cant: 1,
-          largo_bruto: Math.round(altoP), ancho_bruto: Math.round(anchoHojaP), espesor: t,
-          largo_neto: Math.round(altoP) - 4.0, ancho_neto: Math.round(anchoHojaP) - 4.0,
-          canto_L1: '2.0', canto_L2: '2.0', canto_A1: '2.0', canto_A2: '2.0',
-          ranura: specRanuraBis,
+
+        piezas.push(crearItemDespiece(modId, nomPuerta, (m.material_frentes || matFrontis), 1, Math.round(altoP), Math.round(anchoHojaP), t, specRanuraBis, {
+          esMesaPuerta: true,
           esPuerta: true,
           cantBisagras: bisInfo.cantBis,
           posicionBisagras: posicionP,
           bisagrasInfo: bisInfo
-        });
+        }));
       }
 
       // Listón de tope interior de puerta
       const listonTope = m.puertas_liston_tope || 'ninguno';
       if (listonTope === 'superior' || listonTope === 'ambos') {
-        piezas.push({
-          item: itemNum++, modulo: modId, pieza: "Listón de Tope Superior Puerta",
-          material: AppState.materialEstructura, cant: 1,
-          largo_bruto: anchoInt, ancho_bruto: 40, espesor: t,
-          largo_neto: anchoInt - 1.0, ancho_neto: 40 - 1.0,
-          canto_L1: '0.5', canto_L2: '0.0', canto_A1: '0.5', canto_A2: '0.5', ranura: 'Ninguna'
-        });
+        piezas.push(crearItemDespiece(modId, "Listón de Tope Superior Puerta", matInterior, 1, anchoInt, 40, t, 'Ninguna', {
+          canto_L1: 0.5, canto_L2: 0.0, canto_A1: 0.5, canto_A2: 0.5
+        }));
       }
       if (listonTope === 'inferior' || listonTope === 'ambos') {
-        piezas.push({
-          item: itemNum++, modulo: modId, pieza: "Listón de Tope Inferior Puerta",
-          material: AppState.materialEstructura, cant: 1,
-          largo_bruto: anchoInt, ancho_bruto: 40, espesor: t,
-          largo_neto: anchoInt - 1.0, ancho_neto: 40 - 1.0,
-          canto_L1: '0.5', canto_L2: '0.0', canto_A1: '0.5', canto_A2: '0.5', ranura: 'Ninguna'
-        });
+        piezas.push(crearItemDespiece(modId, "Listón de Tope Inferior Puerta", matInterior, 1, anchoInt, 40, t, 'Ninguna', {
+          canto_L1: 0.5, canto_L2: 0.0, canto_A1: 0.5, canto_A2: 0.5
+        }));
       }
     }
   });
@@ -6801,19 +7408,40 @@ function generarDespieceEstimadoLocal() {
 }
 
 /**
- * Renderiza la tabla HTML de despiece con medidas brutas, netas y tapacantos.
+ * Renderiza la tabla HTML de despiece con medidas brutas, netas, tapacantos y colores asociados.
  */
 function renderizarTablaDespiece(piezas) {
   const tbody = document.getElementById('tablaDespieceBody');
   if (!tbody) return;
 
   if (!piezas || piezas.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; padding: 20px;">No hay piezas registradas en el despiece.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; padding: 20px;">No hay piezas registradas en el despiece.</td></tr>`;
     return;
   }
 
+  let totalMetrosGrueso = 0;
+  let totalMetrosDelgado = 0;
+  let totalPiezas = 0;
+
   let html = '';
   piezas.forEach(p => {
+    const cant = parseInt(p.cant) || 1;
+    totalPiezas += cant;
+
+    const lM = (parseFloat(p.largo_bruto) || 0) / 1000.0;
+    const aM = (parseFloat(p.ancho_bruto) || 0) / 1000.0;
+
+    [p.canto_L1, p.canto_L2].forEach(c => {
+      if (c === '2.0') totalMetrosGrueso += (lM * cant);
+      else if (c === '0.5') totalMetrosDelgado += (lM * cant);
+    });
+    [p.canto_A1, p.canto_A2].forEach(c => {
+      if (c === '2.0') totalMetrosGrueso += (aM * cant);
+      else if (c === '0.5') totalMetrosDelgado += (aM * cant);
+    });
+
+    const badgeColorCanto = formatearBadgeColorCanto(p);
+
     html += `
       <tr>
         <td><strong>${p.item}</strong></td>
@@ -6825,12 +7453,62 @@ function renderizarTablaDespiece(piezas) {
         <td style="color: var(--primary); font-weight: bold;">${p.largo_neto} x ${p.ancho_neto}</td>
         <td>${p.espesor} mm</td>
         <td>${p.canto_L1}/${p.canto_L2}/${p.canto_A1}/${p.canto_A2}</td>
+        <td>${badgeColorCanto}</td>
         <td>${p.ranura || 'Ninguna'}</td>
       </tr>
     `;
   });
 
   tbody.innerHTML = html;
+
+  // Actualizar resumen técnico
+  const bGrueso = document.getElementById('badgeMetrosGrueso');
+  if (bGrueso) bGrueso.textContent = `Canto Grueso 2mm: ${totalMetrosGrueso.toFixed(1)} m`;
+
+  const bDelgado = document.getElementById('badgeMetrosDelgado');
+  if (bDelgado) bDelgado.textContent = `Canto Delgado 0.5mm: ${totalMetrosDelgado.toFixed(1)} m`;
+
+  const bTotal = document.getElementById('badgeTotalPiezas');
+  if (bTotal) bTotal.textContent = `${totalPiezas} piezas`;
+
+  const bRH = document.getElementById('badgeDespieceRH');
+  if (bRH) {
+    if (AppState.resistencia === 'RH') {
+      bRH.className = 'badge badge-success';
+      bRH.style.background = '#059669';
+      bRH.style.color = '#FFFFFF';
+      bRH.textContent = '🛡️ Melamina RH Hidrófuga';
+    } else {
+      bRH.className = 'badge badge-normal';
+      bRH.style.background = '';
+      bRH.style.color = '';
+      bRH.textContent = 'Tablero Estándar';
+    }
+  }
+}
+
+function formatearBadgeColorCanto(p) {
+  if (p.canto_L1 === '0.0' && p.canto_L2 === '0.0' && p.canto_A1 === '0.0' && p.canto_A2 === '0.0') {
+    return `<span style="color: var(--text-muted); font-size: 10px;">—</span>`;
+  }
+  const esUnicolor = (AppState.esquemaColor === 'unicolor');
+  if (esUnicolor) {
+    return `<span class="badge" style="background: rgba(59, 130, 246, 0.1); color: var(--primary); font-size: 9px; font-weight: 600;">${p.color_tapacanto || AppState.materialEstructura}</span>`;
+  }
+  // Bicolor
+  if (p.color_canto_L1 && p.color_canto_otros && p.color_canto_L1 !== p.color_canto_otros) {
+    return `
+      <div style="display: flex; flex-direction: column; gap: 2px;">
+        <span class="badge" style="background: rgba(59, 130, 246, 0.15); color: var(--primary); font-size: 8.5px; font-weight: 700;">
+          L1 Frontal: ${p.color_canto_L1}
+        </span>
+        <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #059669; font-size: 8.5px;">
+          Otros: ${p.color_canto_otros}
+        </span>
+      </div>
+    `;
+  }
+  return `<span class="badge" style="background: rgba(59, 130, 246, 0.1); color: var(--primary); font-size: 9px; font-weight: 600;">${p.color_tapacanto || AppState.materialFrentes}</span>`;
 }
 
 // ==============================================================================

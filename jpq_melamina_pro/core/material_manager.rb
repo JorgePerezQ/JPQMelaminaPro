@@ -45,11 +45,71 @@ module JPQMelaminaPro
         { 'id' => 'mdf_blanco_3',          'marca' => 'Universal', 'categoria' => 'Fondos',     'nombre' => 'MDF Fondo Blanco 3mm',      'espesor' => 3.0,  'veta' => 'libre',        'color' => '#E8E2D6', 'precio_m2' => 8.5 }
       ].freeze
 
+      # Mapeo exhaustivo a archivos reales de texturas PNG en la carpeta textures/
+      MAPA_TEXTURAS_PNG = {
+        'bellota'            => 'pelikano_bellota.png',
+        'blanco nieve'       => 'pelikano_blanco_nieve.png',
+        'caramel'            => 'pelikano_caramel.png',
+        'carbono'            => 'pelikano_carbono.png',
+        'coñac'              => 'pelikano_cognac.png',
+        'cognac'             => 'pelikano_cognac.png',
+        'duna'               => 'pelikano_duna.png',
+        'macadamia'          => 'pelikano_macadamia.png',
+        'niebla'             => 'pelikano_niebla.png',
+        'óxido'              => 'pelikano_oxido.png',
+        'oxido'              => 'pelikano_oxido.png',
+        'rovere'             => 'pelikano_rovere.png',
+
+        'aserrado'           => 'vesto_aserrado.png',
+        'blanco frost'       => 'vesto_blanco_frost.png',
+        'cendra escandinavo' => 'vesto_cendra_escandinavo.png',
+        'linosa'             => 'vesto_linosa.png',
+        'nogal terracota'    => 'vesto_nogal_terracota.png',
+        'roble cendra'       => 'vesto_roble_cendra.png',
+        'seda giorno'        => 'vesto_seda_giorno.png',
+        'teca lira'          => 'vesto_teca_lira.png',
+        'titán'              => 'vesto_titan.png',
+        'titan'              => 'vesto_titan.png',
+        'wengue'             => 'vesto_wengue.png',
+
+        'blanco'             => 'blanco_melamina.png',
+        'roble natural'      => 'roble_natural.png',
+        'gris'               => 'gris_antracita.png',
+        'negro'              => 'pelikano_carbono.png',
+        'haya'               => 'vesto_aserrado.png',
+        'cedro'              => 'nogal_terracota.png',
+
+        'mdf fondo blanco'   => 'mdf_blanco.png',
+        'mdf fondo negro'    => 'pelikano_carbono.png',
+        'mdf fondo grafito'  => 'gris_antracita.png',
+        'mdf fondo roble'    => 'roble_natural.png',
+        'mdf fondo haya'     => 'vesto_aserrado.png',
+        'mdf fondo crudo'    => 'pelikano_duna.png'
+      }.freeze
+
       # ========================================================================
       # Método: obtener_catalogo
       # ========================================================================
       def obtener_catalogo
         CATALOGO_PREDETERMINADO
+      end
+
+      # ========================================================================
+      # Método: cargar_catalogo_texturas_json
+      # Descripción: Carga las 443 texturas reales con sus rutas relativas en textures/
+      # ========================================================================
+      def cargar_catalogo_texturas_json
+        archivo = File.join(__dir__, '..', 'catalogo_texturas.json')
+        if File.exist?(archivo)
+          begin
+            require 'json'
+            JSON.parse(File.read(archivo))
+          rescue => e
+            []
+          end
+        else
+          []
+        end
       end
 
       # ========================================================================
@@ -235,16 +295,42 @@ module JPQMelaminaPro
 
         # Buscar archivo de textura en la carpeta textures/ si aplica
         texturas_dir = File.join(__dir__, '..', 'textures')
-        if item && Dir.exist?(texturas_dir)
-          archivo_png = Dir[File.join(texturas_dir, "*#{item['id']}*.png")].first
-          if archivo_png && File.exist?(archivo_png)
-            begin
-              mat.texture = archivo_png
-              if mat.texture && mat.texture.respond_to?(:size=)
-                mat.texture.size = 1200.mm # Mapeo a escala real de veta en SketchUp
+        if Dir.exist?(texturas_dir)
+          nom_low = nombre_clean.downcase
+          archivo_nombre = nil
+
+          # 1. Buscar en el catálogo maestro de 443 texturas reales
+          cat_texturas = cargar_catalogo_texturas_json
+          item_tex = cat_texturas.find do |t|
+            t_nom = t['nombre'].to_s.downcase
+            t_mod = (t['nombre_modelo'] || '').downcase
+            t_nom == nom_low || nom_low.include?(t_nom) || t_nom.include?(nom_low) || (t_mod.length >= 4 && nom_low.include?(t_mod))
+          end
+
+          archivo_nombre = item_tex ? item_tex['archivo'] : nil
+
+          # 2. Fallback a mapa rápido
+          if archivo_nombre.nil?
+            MAPA_TEXTURAS_PNG.each do |k, v|
+              if nom_low.include?(k)
+                archivo_nombre = v
+                break
               end
-            rescue => e
-              puts "[JPQMelaminaPro] Advertencia al asignar textura a '#{nombre_final}': #{e.message}"
+            end
+            archivo_nombre ||= "#{item['id']}.png" if item
+          end
+
+          if archivo_nombre
+            archivo_png = File.join(texturas_dir, archivo_nombre)
+            if File.exist?(archivo_png)
+              begin
+                mat.texture = archivo_png
+                if mat.texture && mat.texture.respond_to?(:size=)
+                  mat.texture.size = 1200.mm # Mapeo a escala real de veta en SketchUp
+                end
+              rescue => e
+                puts "[JPQMelaminaPro] Advertencia al asignar textura '#{archivo_nombre}' a '#{nombre_final}': #{e.message}"
+              end
             end
           end
         end
@@ -262,12 +348,15 @@ module JPQMelaminaPro
 
         nom_est = params['material'] || 'Pelikano Blanco Nieve 18mm'
         nom_fre = params['material_frentes'] || nom_est
+        nom_mdf = params['color_mdf'] || 'MDF Fondo Blanco 3mm'
+        esquema = params['esquema_color'] || 'unicolor'
         resistencia = params['resistencia'] || 'Normal'
 
         su_mat_est = obtener_o_crear_material_su(model, nom_est, resistencia)
-        su_mat_fre = obtener_o_crear_material_su(model, nom_fre, resistencia)
+        su_mat_fre = (esquema == 'bicolor') ? obtener_o_crear_material_su(model, nom_fre, resistencia) : su_mat_est
+        su_mat_mdf = obtener_o_crear_material_su(model, nom_mdf, 'Normal')
 
-        model.start_operation('JPQ: Aplicar Materiales de Melamina', true)
+        model.start_operation('JPQ: Aplicar Materiales y Texturas de Melamina', true)
 
         objetivos = if model.selection && !model.selection.empty?
                       model.selection.to_a
@@ -280,9 +369,17 @@ module JPQMelaminaPro
         pintar_entidad = lambda do |ent|
           nom = ent.name.to_s
           def_nom = ent.respond_to?(:definition) ? ent.definition.name.to_s : ''
-          es_frente = (nom =~ /Puerta|Frente|Tapa Frente|Gaveta/i) || (def_nom =~ /Puerta|Frente|Tapa Frente|Gaveta/i)
+          es_frente = (nom =~ /Puerta|Frente|Tapa Frente|Gaveta|Cubierta|Mesa|Escritorio|Tapa Techo/i) || (def_nom =~ /Puerta|Frente|Tapa Frente|Gaveta|Cubierta|Mesa|Escritorio|Tapa Techo/i)
+          es_mdf = (nom =~ /MDF|Fondo/i) || (def_nom =~ /MDF|Fondo/i)
 
-          mat_a_usar = es_frente ? su_mat_fre : su_mat_est
+          mat_a_usar = if es_frente
+                         su_mat_fre
+                       elsif es_mdf
+                         su_mat_mdf
+                       else
+                         su_mat_est
+                       end
+
           ent.material = mat_a_usar
           piezas_pintadas += 1
 
@@ -295,8 +392,15 @@ module JPQMelaminaPro
                   end
 
           hijas.grep(Sketchup::Face).each do |f|
-            f.material = mat_a_usar
-            f.back_material = mat_a_usar
+            # Regla de Tapacanto Bicolor: el borde frontal de piezas interiores lleva el material del frontis
+            cara_mat = mat_a_usar
+            if esquema == 'bicolor' && !es_frente && !es_mdf
+              if f.normal.y < -0.85 # Cara frontal que da al frontis del mueble
+                cara_mat = su_mat_fre
+              end
+            end
+            f.material = cara_mat
+            f.back_material = cara_mat
           end
 
           hijas.grep(Sketchup::ComponentInstance).each { |sub| pintar_entidad.call(sub) }
@@ -309,7 +413,9 @@ module JPQMelaminaPro
 
         {
           'ok' => true,
-          'mensaje' => "Se aplicó '#{nom_est}' a #{piezas_pintadas} piezas en SketchUp.",
+          'mensaje' => (esquema == 'bicolor') ?
+            "Se aplicó esquema bicolor: Frontis '#{nom_fre}', Interior '#{nom_est}', Fondo MDF '#{nom_mdf}' a #{piezas_pintadas} piezas." :
+            "Se aplicó textura '#{nom_est}' a todo el mueble (#{piezas_pintadas} piezas).",
           'piezas_afectadas' => piezas_pintadas
         }
       rescue => e

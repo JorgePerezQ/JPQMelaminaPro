@@ -45,7 +45,7 @@ module JPQMelaminaPro
 
           entidades.each do |ent|
             # Buscar diccionario DespieceMela recursivamente
-            procesar_pieza(ent, cL1, cL2, cA1, cA2) do
+            procesar_pieza(ent, cL1, cL2, cA1, cA2, params) do
               piezas_actualizadas += 1
             end
           end
@@ -63,7 +63,7 @@ module JPQMelaminaPro
       # Descripción: Actualiza los atributos del diccionario de despiece y recalcula
       #              la medida neta de corte de la pieza.
       # ========================================================================
-      def procesar_pieza(ent, cL1, cL2, cA1, cA2, &block)
+      def procesar_pieza(ent, cL1, cL2, cA1, cA2, params = {}, &block)
         if ent.is_a?(Sketchup::Group) || ent.is_a?(Sketchup::ComponentInstance)
           dict = ent.attribute_dictionary('DespieceMela')
           if dict
@@ -74,17 +74,22 @@ module JPQMelaminaPro
             l_neto = l_bruto - (cL1 + cL2)
             a_neto = a_bruto - (cA1 + cA2)
 
-            dict['canto_L1']      = cL1
-            dict['canto_L2']      = cL2
-            dict['canto_A1']      = cA1
-            dict['canto_A2']      = cA2
-            dict['largo_neto_mm'] = l_neto.round(2)
-            dict['ancho_neto_mm'] = a_neto.round(2)
+            color_L1 = params['color_canto_L1'] || params['color_tapacanto'] || ''
+            color_otros = params['color_canto_otros'] || params['color_tapacanto'] || ''
+
+            dict['canto_L1']          = cL1
+            dict['canto_L2']          = cL2
+            dict['canto_A1']          = cA1
+            dict['canto_A2']          = cA2
+            dict['color_canto_L1']    = color_L1
+            dict['color_canto_otros'] = color_otros
+            dict['largo_neto_mm']     = l_neto.round(2)
+            dict['ancho_neto_mm']     = a_neto.round(2)
 
             yield if block_given?
           else
             # Explorar subentidades si es un contenedor
-            ent.entities.each { |child| procesar_pieza(child, cL1, cL2, cA1, cA2, &block) } if ent.respond_to?(:entities)
+            ent.entities.each { |child| procesar_pieza(child, cL1, cL2, cA1, cA2, params, &block) } if ent.respond_to?(:entities)
           end
         end
       end

@@ -75,7 +75,12 @@ const Preview3D = (function() {
     'Vesto Blanco Frost 18mm': { base: [242, 244, 245], border: '#CBD5E1', edge: '#E2E8F0' },
     'Melamina Blanca 18mm': { base: [245, 247, 250], border: '#94A3B8', edge: '#E2E8F0' },
     'Melamina Blanca 15mm': { base: [248, 250, 252], border: '#94A3B8', edge: '#E2E8F0' },
-    'MDF Fondo Blanco 3mm': { base: [241, 245, 249], border: '#94A3B8', edge: '#CBD5E1' },
+    'MDF Fondo Blanco 3mm': { base: [248, 249, 250], border: '#94A3B8', edge: '#CBD5E1' },
+    'MDF Fondo Negro 3mm': { base: [26, 26, 26], border: '#0A0A0A', edge: '#1F1F1F' },
+    'MDF Fondo Grafito 3mm': { base: [55, 65, 81], border: '#1F2937', edge: '#374151' },
+    'MDF Fondo Roble 3mm': { base: [160, 120, 85], border: '#684E2E', edge: '#8F6F47' },
+    'MDF Fondo Haya 3mm': { base: [222, 184, 135], border: '#A6804B', edge: '#C49D65' },
+    'MDF Fondo Crudo 3mm': { base: [200, 173, 141], border: '#8A7050', edge: '#A88D6F' },
     'Herraje Metal Satinado': { base: [148, 163, 184], border: '#475569', edge: '#64748B' },
     'Cazoleta Perforacion': { base: [30, 41, 59], border: '#0F172A', edge: '#1E293B' },
     'Melamina Roble Natural 18mm': { base: [214, 166, 117], border: '#8C5B32', edge: '#B87A40' },
@@ -83,32 +88,217 @@ const Preview3D = (function() {
     'Melamina Gris Antracita 18mm': { base: [56, 62, 68], border: '#1E293B', edge: '#334155' }
   };
 
+  // Mapeo exhaustivo a archivos reales de texturas PNG en la carpeta textures/
+  const RUTA_TEXTURAS = 'textures/';
+  const MAPA_ARCHIVOS_TEXTURAS = {
+    // MDF Fondos específicos primero
+    'mdf fondo blanco': 'mdf_blanco.png',
+    'mdf fondo negro': 'pelikano_carbono.png',
+    'mdf fondo grafito': 'gris_antracita.png',
+    'mdf fondo roble': 'roble_natural.png',
+    'mdf fondo haya': 'vesto_aserrado.png',
+    'mdf fondo crudo': 'pelikano_duna.png',
+    'mdf blanco': 'mdf_blanco.png',
+
+    // Pelikano
+    'bellota': 'pelikano_bellota.png',
+    'blanco nieve': 'pelikano_blanco_nieve.png',
+    'caramel': 'pelikano_caramel.png',
+    'carbono': 'pelikano_carbono.png',
+    'coñac': 'pelikano_cognac.png',
+    'cognac': 'pelikano_cognac.png',
+    'duna': 'pelikano_duna.png',
+    'macadamia': 'pelikano_macadamia.png',
+    'niebla': 'pelikano_niebla.png',
+    'óxido': 'pelikano_oxido.png',
+    'oxido': 'pelikano_oxido.png',
+    'rovere': 'pelikano_rovere.png',
+
+    // Vesto
+    'aserrado': 'vesto_aserrado.png',
+    'blanco frost': 'vesto_blanco_frost.png',
+    'cendra escandinavo': 'vesto_cendra_escandinavo.png',
+    'linosa': 'vesto_linosa.png',
+    'nogal terracota': 'vesto_nogal_terracota.png',
+    'roble cendra': 'vesto_roble_cendra.png',
+    'seda giorno': 'vesto_seda_giorno.png',
+    'teca lira': 'vesto_teca_lira.png',
+    'titán': 'vesto_titan.png',
+    'titan': 'vesto_titan.png',
+    'wengue': 'vesto_wengue.png',
+
+    // Universales y genéricos
+    'roble natural': 'roble_natural.png',
+    'gris antracita': 'gris_antracita.png',
+    'gris humo': 'gris_antracita.png',
+    'gris': 'gris_antracita.png',
+    'negro': 'pelikano_carbono.png',
+    'haya': 'vesto_aserrado.png',
+    'cedro': 'nogal_terracota.png',
+    'blanca': 'blanco_melamina.png',
+    'blanco': 'blanco_melamina.png'
+  };
+
+  // Claves ordenadas por longitud descendente para garantizar prioridad a nombres específicos
+  const clavesTexturasOrdenadas = Object.keys(MAPA_ARCHIVOS_TEXTURAS).sort((a, b) => b.length - a.length);
+
+  const textureImageCache = {};
+  const texturePatternCache = {};
+
+  /**
+   * Resuelve el nombre del archivo de textura PNG según el nombre del material.
+   * @param {string} matNombre - Nombre del material
+   * @returns {string|null} Nombre de archivo en textures/ o null
+   */
+  function resolverArchivoTextura(matNombre) {
+    if (!matNombre) return null;
+    const norm = matNombre.toLowerCase();
+
+    // 1. Fondos MDF específicos
+    if (norm.includes('mdf')) {
+      for (const k of clavesTexturasOrdenadas) {
+        if (k.startsWith('mdf') && norm.includes(k)) {
+          return MAPA_ARCHIVOS_TEXTURAS[k];
+        }
+      }
+      return 'mdf_blanco.png';
+    }
+
+    // 2. Buscar en Catálogo Maestro de 443 texturas reales
+    if (typeof window !== 'undefined' && Array.isArray(window.CATALOGO_TEXTURAS_MAESTRO)) {
+      const stripAccents = s => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      const normClean = stripAccents(norm);
+      const normFuzzy = normClean.replace(/h/g, '');
+
+      // Prioridad A: Coincidencia simultánea de Marca y Modelo
+      const matchMarcaYModelo = window.CATALOGO_TEXTURAS_MAESTRO.find(item => {
+        const marca = stripAccents(item.marca);
+        const mod = stripAccents(item.nombre_modelo);
+        const modFuzzy = mod.replace(/h/g, '');
+        if (mod.length < 3) return false;
+        const marcaCoincide = normClean.includes(marca) || (marca === 'fablac' && normClean.includes('faplac'));
+        if (!marcaCoincide) return false;
+        const resto = normClean.replace(marca, '').replace(/15mm|18mm|19mm|3mm/g, '');
+        const restoFuzzy = resto.replace(/h/g, '');
+        return resto.includes(mod) || mod.includes(resto) || restoFuzzy.includes(modFuzzy) || modFuzzy.includes(restoFuzzy);
+      });
+      if (matchMarcaYModelo && matchMarcaYModelo.archivo) {
+        return matchMarcaYModelo.archivo;
+      }
+
+      // Prioridad B: Coincidencia por nombre completo del ítem
+      const matchCompleto = window.CATALOGO_TEXTURAS_MAESTRO.find(item => {
+        const itemNom = stripAccents(item.nombre);
+        return itemNom.length >= 4 && (normClean.includes(itemNom) || itemNom.includes(normClean));
+      });
+      if (matchCompleto && matchCompleto.archivo) {
+        return matchCompleto.archivo;
+      }
+
+      // Prioridad C: Coincidencia por modelo (mínimo 4 letras)
+      const matchModelo = window.CATALOGO_TEXTURAS_MAESTRO.find(item => {
+        const mod = stripAccents(item.nombre_modelo);
+        const modFuzzy = mod.replace(/h/g, '');
+        return mod.length >= 4 && (normClean.includes(mod) || normFuzzy.includes(modFuzzy));
+      });
+      if (matchModelo && matchModelo.archivo) {
+        return matchModelo.archivo;
+      }
+    }
+
+    // 3. Fallback heurístico por claves ordenadas
+    for (const k of clavesTexturasOrdenadas) {
+      if (norm.includes(k)) return MAPA_ARCHIVOS_TEXTURAS[k];
+    }
+    return null;
+  }
+
+  /**
+   * Obtiene o carga asíncronamente el CanvasPattern para un material dado.
+   * Dispara render() automático al cargar la imagen.
+   * @param {string} matNombre - Nombre del material
+   * @returns {CanvasPattern|null}
+   */
+  function obtenerTexturaPatron(matNombre) {
+    if (!ctx || !matNombre) return null;
+    const archivo = resolverArchivoTextura(matNombre);
+    if (!archivo) return null;
+
+    if (!textureImageCache[archivo]) {
+      const img = new Image();
+      img.src = RUTA_TEXTURAS + archivo;
+      img.onload = () => {
+        try {
+          if (ctx) {
+            texturePatternCache[archivo] = ctx.createPattern(img, 'repeat');
+            render();
+          }
+        } catch (e) {}
+      };
+      textureImageCache[archivo] = img;
+      return null;
+    }
+
+    if (texturePatternCache[archivo]) {
+      return texturePatternCache[archivo];
+    }
+
+    const img = textureImageCache[archivo];
+    if (img && img.complete && img.naturalWidth > 0) {
+      try {
+        texturePatternCache[archivo] = ctx.createPattern(img, 'repeat');
+        return texturePatternCache[archivo];
+      } catch (e) {}
+    }
+    return null;
+  }
+
   /**
    * Resuelve los colores fotorrealistas para un material determinado.
    */
   function obtenerPaleta(matNombre) {
-    if (!matNombre) return materialColors['Pelikano Blanco Nieve 18mm'];
-    if (materialColors[matNombre]) return materialColors[matNombre];
-
-    const norm = matNombre.toLowerCase();
-    for (const [k, v] of Object.entries(materialColors)) {
-      if (norm.includes(k.toLowerCase()) || k.toLowerCase().includes(norm)) {
-        return v;
+    let p = null;
+    if (!matNombre) {
+      p = Object.assign({}, materialColors['Pelikano Blanco Nieve 18mm']);
+    } else if (materialColors[matNombre]) {
+      p = Object.assign({}, materialColors[matNombre]);
+    } else {
+      const norm = matNombre.toLowerCase();
+      for (const [k, v] of Object.entries(materialColors)) {
+        if (norm.includes(k.toLowerCase()) || k.toLowerCase().includes(norm)) {
+          p = Object.assign({}, v);
+          break;
+        }
       }
     }
 
-    if (matNombre.startsWith('#') && matNombre.length >= 7) {
+    if (!p && matNombre && matNombre.startsWith('#') && matNombre.length >= 7) {
       const r = parseInt(matNombre.slice(1, 3), 16) || 200;
       const g = parseInt(matNombre.slice(3, 5), 16) || 160;
       const b = parseInt(matNombre.slice(5, 7), 16) || 120;
-      return {
+      p = {
         base: [r, g, b],
         border: `rgb(${Math.max(0, r - 40)}, ${Math.max(0, g - 40)}, ${Math.max(0, b - 40)})`,
         edge: `rgb(${Math.max(0, r - 20)}, ${Math.max(0, g - 20)}, ${Math.max(0, b - 20)})`
       };
     }
 
-    return materialColors['Pelikano Blanco Nieve 18mm'];
+    if (!p) {
+      p = Object.assign({}, materialColors['Pelikano Blanco Nieve 18mm']);
+    }
+
+    // Identificador visual de Melamina RH: Núcleo verde hidrófugo (Pelikano / Vesto RH)
+    const esRH = (currentData && currentData.resistencia === 'RH') || (matNombre && matNombre.includes('[RH]'));
+    const esMdfOArra = matNombre && (matNombre.includes('MDF') || matNombre.includes('Herraje'));
+    if (esRH && !esMdfOArra) {
+      p = Object.assign({}, p, {
+        edge: '#059669', // Tono verde del núcleo hidrófugo
+        border: '#047857',
+        esRH: true
+      });
+    }
+
+    return p;
   }
 
   /**
@@ -579,7 +769,10 @@ const Preview3D = (function() {
   function generarPrismasModulos(dataOverride) {
     const d = dataOverride || currentData;
     const t = d.espesor || 18;
-    const mat = d.material || 'Pelikano Blanco Nieve 18mm';
+    const matInterior = d.material_interior || d.material || 'Pelikano Blanco Nieve 18mm';
+    const matFrentes = d.material_frentes || d.material || 'Pelikano Blanco Nieve 18mm';
+    const matMdf = d.color_mdf || 'MDF Fondo Blanco 3mm';
+    const mat = matInterior;
     const modulos = d.modulos || [];
     const prismas = [];
 
@@ -714,14 +907,16 @@ const Preview3D = (function() {
           x: xMod, y: yCarcasaStart, z: zBase,
           dx: t, dy: profCarcasa, dz: hLateral,
           mat, name: `M${idx + 1} Lateral Izq`,
-          moduloIndex: idx
+          moduloIndex: idx,
+          esInteriorConCantoFrontis: true
         });
 
         prismas.push({
           x: xMod + wMod - t, y: yCarcasaStart, z: zBase,
           dx: t, dy: profCarcasa, dz: hLateral,
           mat, name: `M${idx + 1} Lateral Der`,
-          moduloIndex: idx
+          moduloIndex: idx,
+          esInteriorConCantoFrontis: true
         });
       }
 
@@ -825,7 +1020,8 @@ const Preview3D = (function() {
             x: xMod + xOffsetInt, y: yCarcasaStart, z: zBase,
             dx: anchoInt, dy: profCarcasa, dz: t,
             mat, name: `M${idx + 1} Piso Carcasa`,
-            moduloIndex: idx
+            moduloIndex: idx,
+            esInteriorConCantoFrontis: true
           });
         }
       }
@@ -997,7 +1193,7 @@ const Preview3D = (function() {
       const grosorMdf = parseFloat(m.grosor_mdf) || 3;
       const profRanura = (m.prof_ranura_mdf !== undefined) ? parseFloat(m.prof_ranura_mdf) : 8;
       const distRanura = (m.dist_ranura_mdf !== undefined) ? Math.max(0, parseFloat(m.dist_ranura_mdf)) : 0;
-      const matMdf = `MDF Fondo Blanco ${grosorMdf}mm`;
+      const matMdfFondo = d.color_mdf || `MDF Fondo Blanco ${grosorMdf}mm`;
 
       if (tipoFondo === 'panel' || (esModuloVacio && tieneFondo)) {
         const tieneListonesPared = (m.panel_tiene_listones_pared !== false && m.panel_tiene_listones_pared !== 'false');
@@ -1260,7 +1456,7 @@ const Preview3D = (function() {
         const montajeCaj = m.cajones_montaje || 'exterior';
         const tipoCorr = m.cajones_tipo_corredera || 'telescopica';
         const posCorr = m.cajones_posicion_corredera || 'baja';
-        const luz = (m.cajones_luz !== undefined) ? parseFloat(m.cajones_luz) : 2.0;
+        const luz = (m.cajones_luz !== undefined) ? parseFloat(m.cajones_luz) : (d && d.luz_frentes !== undefined ? parseFloat(d.luz_frentes) : 3.0);
         const tCaja = 15.0; // melamina 15mm para caja de gaveta
 
         const descSlide = (tipoCorr === 'oculta') ? 21.0 : (tipoCorr === 'metalica' ? 37.5 : 26.0);
@@ -1305,7 +1501,7 @@ const Preview3D = (function() {
           prismas.push({
             x: xFr, y: yFr, z: zFr,
             dx: anchoFr, dy: t, dz: altoFr,
-            mat: m.material_frentes || mat,
+            mat: m.material_frentes || d.material_frentes || matFrentes,
             name: `M${idx + 1} Frente Cajón ${c + 1} (${montajeCaj === 'exterior' ? 'Tapa Exterior' : 'Embutido'})`,
             moduloIndex: idx
           });
@@ -1367,7 +1563,7 @@ const Preview3D = (function() {
           prismas.push({
             x: xBox + 4, y: yBox + 4, z: zBox + 12,
             dx: Math.max(10, wExtBox - 8), dy: Math.max(10, largoSlide - 8), dz: 3,
-            mat: 'MDF Fondo Blanco 3mm',
+            mat: d.color_mdf || 'MDF Fondo Blanco 3mm',
             name: `M${idx + 1} Fondo MDF 3mm Gaveta ${c + 1}`,
             moduloIndex: idx
           });
@@ -1405,7 +1601,7 @@ const Preview3D = (function() {
       if (tienePuertas) {
         const montajeP = m.puertas_montaje || 'exterior';
         const posicionP = m.puertas_posicion_bisagra || m.puertas_apertura || ((wMod > 600) ? 'doble' : 'derecha');
-        const luz = (m.puertas_luz !== undefined) ? parseFloat(m.puertas_luz) : 2.0;
+        const luz = (m.puertas_luz !== undefined) ? parseFloat(m.puertas_luz) : (d && d.luz_frentes !== undefined ? parseFloat(d.luz_frentes) : 3.0);
         const cantP = (posicionP === 'doble') ? 2 : 1;
 
         let altoP = 0, anchoP = 0, yP = 0, zP = 0;
@@ -1520,7 +1716,7 @@ const Preview3D = (function() {
           prismas.push({
             x: xP, y: yP, z: zP,
             dx: anchoHojaP, dy: t, dz: altoP,
-            mat: m.material_frentes || mat,
+            mat: m.material_frentes || d.material_frentes || matFrentes,
             name: `M${idx + 1} Puerta Hoja ${p + 1} (${montajeP === 'exterior' ? 'Puerta Externa' : 'Puerta Embutida'}${xCentroParante !== null ? ' -> Cierre a Parante Central' : ''})`,
             moduloIndex: idx,
             customCaras: customCarasPuerta
@@ -1818,7 +2014,7 @@ const Preview3D = (function() {
             centro2D: projCentro,
             profundidadVista: projCentro.profundidadVista + prioridadFrontal,
             factorLuz,
-            mat,
+            mat: (fc.mat || ((prisma.esInteriorConCantoFrontis && fc.norm.y < -0.85 && d.esquema_color === 'bicolor' && d.material_frentes) ? d.material_frentes : mat)),
             moduloIndex,
             esZocaloFrontal: !!esZocaloFrontal,
             esListonSoporteZocalo: !!esListonSoporteZocalo,
@@ -1870,8 +2066,22 @@ const Preview3D = (function() {
       ctx.closePath();
 
       if (!modoAlambre) {
-        ctx.fillStyle = fill;
-        ctx.fill();
+        const patron = (cara.esCazoleta || (cara.esListonSoporteZocalo && cara.esNoPermitido)) ? null : obtenerTexturaPatron(cara.mat);
+        if (patron) {
+          ctx.fillStyle = patron;
+          ctx.fill();
+          // Aplicar sombreado 3D de luz direccional sobre la textura real
+          if (f < 0.98) {
+            ctx.fillStyle = `rgba(0, 0, 0, ${Math.min(0.65, (1.0 - f) * 0.85)})`;
+            ctx.fill();
+          } else if (f > 1.02) {
+            ctx.fillStyle = `rgba(255, 255, 255, ${Math.min(0.35, (f - 1.0) * 0.6)})`;
+            ctx.fill();
+          }
+        } else {
+          ctx.fillStyle = fill;
+          ctx.fill();
+        }
         ctx.strokeStyle = cara.esCazoleta
           ? '#38BDF8'
           : (cara.esZocaloFrontal
@@ -2566,6 +2776,29 @@ const Preview3D = (function() {
     ctx.font = '10.5px -apple-system, sans-serif';
     ctx.fillText(subtitulo, x + pad, y + 34);
 
+    // Si la melamina activa es RH, mostrar badge de certificación antihumedad
+    if (currentData && currentData.resistencia === 'RH') {
+      const rhX = x + boxW + 8;
+      const rhW = 195;
+      ctx.fillStyle = 'rgba(5, 150, 105, 0.92)';
+      ctx.strokeStyle = '#34D399';
+      ctx.lineWidth = 1.5;
+
+      ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(rhX, y, rhW, boxH, 8) : ctx.rect(rhX, y, rhW, boxH);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 11px -apple-system, sans-serif';
+      ctx.fillText('🛡️ TABLERO RH ACTIVO', rhX + 10, y + 18);
+
+      ctx.fillStyle = '#D1FAE5';
+      ctx.font = '10px -apple-system, sans-serif';
+      ctx.fillText('Hidrófugo • Núcleo Verde', rhX + 10, y + 34);
+    }
+
     ctx.restore();
   }
 
@@ -2624,7 +2857,9 @@ const Preview3D = (function() {
     resize: ajustarTamano,
     render,
     generarPrismas: generarPrismasModulos,
-    calcularListonesZocaloEstandar
+    calcularListonesZocaloEstandar,
+    resolverArchivoTextura,
+    obtenerTexturaPatron
   };
 
   if (typeof window !== 'undefined') {
