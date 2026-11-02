@@ -601,7 +601,7 @@ window.JPQ_PERFILES_CONFIG = {
       "prof_baja": 580,
       "altura_zocalo": 100,
       "retrans_zocalo": 50,
-      "cant_listones_zocalo": 3,
+      "cant_listones_zocalo": 4,
       "material_resistencia": "RH",
       "modulos_sugeridos": [
         {
@@ -767,7 +767,7 @@ window.JPQ_PERFILES_CONFIG = {
       "prof_alta": 600,
       "altura_zocalo": 100,
       "retrans_zocalo": 35,
-      "cant_listones_zocalo": 3,
+      "cant_listones_zocalo": 4,
       "tipo_montaje": "exterior",
       "luz_frentes": 2,
       "tipo_corredera": "telescopica",
@@ -1136,7 +1136,8 @@ window.JPQ_PERFILES_CONFIG = {
           "cant_repisas": 0,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "cant_listones_zocalo": 1
     },
     "ropero_puertas_corredizas": {
       "id": "ropero_puertas_corredizas",
@@ -1297,7 +1298,8 @@ window.JPQ_PERFILES_CONFIG = {
           "cant_repisas": 0,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "cant_listones_zocalo": 2
     },
     "ropero_4_cuerpos": {
       "id": "ropero_4_cuerpos",
@@ -1407,7 +1409,8 @@ window.JPQ_PERFILES_CONFIG = {
           "cant_repisas": 0,
           "tiene_fondo": true
         }
-      ]
+      ],
+      "cant_listones_zocalo": 3
     },
     "velador": {
       "id": "velador",
@@ -1494,8 +1497,8 @@ window.JPQ_PERFILES_CONFIG = {
         {
           "nombre": "Nicho TV 40\" y Consolas",
           "ancho_proporcional": 1.0,
-          "tipo_interior": "repisas",
-          "cant_repisas": 1,
+          "tipo_interior": "carcasa",
+          "cant_repisas": 0,
           "tiene_fondo": true
         }
       ],
@@ -1530,8 +1533,8 @@ window.JPQ_PERFILES_CONFIG = {
         {
           "nombre": "Nicho Central TV 48\" & Soundbar",
           "ancho_proporcional": 1.0,
-          "tipo_interior": "repisas",
-          "cant_repisas": 1,
+          "tipo_interior": "carcasa",
+          "cant_repisas": 0,
           "tiene_fondo": true
         },
         {
@@ -1560,7 +1563,7 @@ window.JPQ_PERFILES_CONFIG = {
       "prof_baja": 420,
       "altura_zocalo": 80,
       "retrans_zocalo": 35,
-      "cant_listones_zocalo": 2,
+      "cant_listones_zocalo": 3,
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
         {
@@ -1573,8 +1576,8 @@ window.JPQ_PERFILES_CONFIG = {
         {
           "nombre": "Nicho Central TV 55\" & Consolas",
           "ancho_proporcional": 1.0,
-          "tipo_interior": "repisas",
-          "cant_repisas": 1,
+          "tipo_interior": "carcasa",
+          "cant_repisas": 0,
           "tiene_fondo": true
         },
         {
@@ -1603,7 +1606,7 @@ window.JPQ_PERFILES_CONFIG = {
       "prof_baja": 450,
       "altura_zocalo": 80,
       "retrans_zocalo": 35,
-      "cant_listones_zocalo": 3,
+      "cant_listones_zocalo": 4,
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
         {
@@ -1616,8 +1619,8 @@ window.JPQ_PERFILES_CONFIG = {
         {
           "nombre": "Nicho Central Master TV 65\"",
           "ancho_proporcional": 1.0,
-          "tipo_interior": "repisas",
-          "cant_repisas": 1,
+          "tipo_interior": "carcasa",
+          "cant_repisas": 0,
           "tiene_fondo": true
         },
         {
@@ -1887,7 +1890,7 @@ window.JPQ_PERFILES_CONFIG = {
       "prof_baja": 650,
       "altura_zocalo": 80,
       "retrans_zocalo": 35,
-      "cant_listones_zocalo": 2,
+      "cant_listones_zocalo": 3,
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
         {
@@ -1922,8 +1925,8 @@ window.JPQ_PERFILES_CONFIG = {
           "ancho_proporcional": 1.0,
           "alto": 1250,
           "profundidad": 350,
-          "tipo_interior": "repisas",
-          "cant_repisas": 1,
+          "tipo_interior": "carcasa",
+          "cant_repisas": 0,
           "tiene_piso": true,
           "tiene_techo": true,
           "tiene_fondo": true
@@ -2609,7 +2612,7 @@ window.JPQ_PERFILES_CONFIG = {
       "prof_alta": 400,
       "altura_zocalo": 100,
       "retrans_zocalo": 35,
-      "cant_listones_zocalo": 2,
+      "cant_listones_zocalo": 3,
       "tipo_montaje": "exterior",
       "luz_frentes": 2,
       "tipo_corredera": "telescopica",
@@ -2907,7 +2910,7 @@ window.JPQ_PERFILES_CONFIG = {
       "prof_alta": 300,
       "altura_zocalo": 100,
       "retrans_zocalo": 50,
-      "cant_listones_zocalo": 2,
+      "cant_listones_zocalo": 3,
       "tipo_montaje": "exterior",
       "luz_frentes": 2,
       "tipo_corredera": "telescopica",
@@ -3006,7 +3009,8 @@ window.JPQ_PERFILES_CONFIG = {
           "ancho_proporcional": 1.0,
           "tipo_interior": "repisas",
           "cant_repisas": 4,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "parantes_verticales": 1
         }
       ]
     }

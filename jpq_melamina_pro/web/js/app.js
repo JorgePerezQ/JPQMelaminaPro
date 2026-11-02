@@ -5245,11 +5245,6 @@ function evaluarEstandaresYSinColisiones(m, idx, t) {
       tipo: 'danger',
       msg: `⛔ Colisión detectada: ${colisiones.join(', ')}. Ninguna pieza debe atravesar otra.`
     });
-  } else if (piezasFueraEstandar.length === 0) {
-    alertas.push({
-      tipo: 'info',
-      msg: `✓ Validación de piezas aprobada: 0 colisiones detectadas y todas las piezas cumplen estándares comerciales (mín: 50 mm, máx: 2750 mm).`
-    });
   }
 
   return alertas;
@@ -5282,16 +5277,43 @@ function validarLimitesTecnicosModulo(m, idx) {
   if (w < 150) {
     alertas.push({ tipo: 'danger', msg: `Ancho crítico (${w} mm): Menos de 150 mm no permite maniobrar un atornillador.` });
   } else if (w > 1000) {
-    alertas.push({ tipo: 'warning', msg: `Ancho excesivo (${w} mm): Más de 1000 mm sin división vertical ocasiona pandeo del techo y piso por gravedad y carga.` });
+    // Si el módulo es un vano técnico (escritorio para piernas, nicho de TV, puente para pantallas)
+    // o cuenta con respaldo estructural rígido (fondo con listones o melamina), la carcasa no pandea.
+    const esVanoTecnico = (m.tipo_interior === 'carcasa' || !m.tiene_piso);
+    const tieneRefuerzoEstructural = (m.tiene_fondo && (m.tiene_liston_post || m.tipo_fondo === 'melamina'));
+    const geo = (m.tipo_interior === 'repisas') ? calcularDivisionesYEspaciosModulo(m, t) : null;
+    const tieneParantes = geo && geo.parantes && geo.parantes.length > 0;
+
+    if (!tieneParantes && !esVanoTecnico && !tieneRefuerzoEstructural) {
+      alertas.push({
+        tipo: 'warning',
+        msg: `Ancho amplio (${w} mm): Más de 1000 mm sin parante intermedio o soporte posterior ocasiona pandeo del techo y piso por gravedad y carga.`
+      });
+    }
   }
 
   if (h > 2400) {
     alertas.push({ tipo: 'warning', msg: `Altura límite excedida (${h} mm): La plancha comercial permite un largo útil máximo de 2400 mm para laterales continuos de una pieza.` });
   }
 
+  const esTipologiaProfundaValida = (p <= 1200 && (
+    (m.nombre && (
+      m.nombre.toLowerCase().includes('cama') ||
+      m.nombre.toLowerCase().includes('isla') ||
+      m.nombre.toLowerCase().includes('mesa') ||
+      m.nombre.toLowerCase().includes('escritorio') ||
+      m.nombre.toLowerCase().includes('gamer') ||
+      m.nombre.toLowerCase().includes('battlestation')
+    )) ||
+    (AppState.categoriaActual && (
+      AppState.categoriaActual.toLowerCase().includes('gaming') ||
+      AppState.categoriaActual.toLowerCase().includes('infantil')
+    ))
+  ));
+
   if (p < 150) {
     alertas.push({ tipo: 'danger', msg: `Profundidad deficiente (${p} mm): Menos de 150 mm carece de estabilidad estructural.` });
-  } else if (p > 650) {
+  } else if (p > 650 && !esTipologiaProfundaValida) {
     alertas.push({ tipo: 'warning', msg: `Profundidad amplia (${p} mm): Más de 650 mm dificulta el alcance de objetos al fondo y genera desperdicio en el seccionado del tablero comercial.` });
   }
 
@@ -5303,11 +5325,16 @@ function validarLimitesTecnicosModulo(m, idx) {
     let hayPandeo = false;
     geo.espacios.forEach((esp) => {
       if (esp.ancho > limitePandeo && esp.repisas.length > 0) {
-        hayPandeo = true;
-        alertas.push({
-          tipo: 'warning',
-          msg: `⚠️ ALERTA DE PANDEO en ${esp.nombre}: El vano (${esp.ancho} mm) supera los ${limitePandeo} mm en melamina de ${t}mm. Se requiere agregar un parante vertical intermedio para evitar arqueo por carga.`
-        });
+        // En muebles y vanos que cuentan con fondo estructural rígido (MDF ranurado a 18mm con soporte posterior o melamina),
+        // la arista trasera de la repisa va apoyada y atornillada, duplicando su resistencia al pandeo hasta 1300mm.
+        const tieneApoyoTrasero = m.tiene_fondo && (m.tipo_fondo === 'melamina' || m.tiene_liston_post || m.dist_ranura_mdf === 18);
+        if (!tieneApoyoTrasero || esp.ancho > 1300) {
+          hayPandeo = true;
+          alertas.push({
+            tipo: 'warning',
+            msg: `⚠️ ALERTA DE PANDEO en ${esp.nombre}: El vano (${esp.ancho} mm) supera los ${limitePandeo} mm en melamina de ${t}mm sin apoyo. Se requiere agregar un parante vertical intermedio para evitar arqueo por carga.`
+          });
+        }
       }
     });
 
@@ -5334,8 +5361,8 @@ function validarLimitesTecnicosModulo(m, idx) {
       alertas.push({ tipo: 'warning', msg: `Cajonera ancha (${w} mm): Se debe colocar un listón de amarre de refuerzo bajo el fondo y correderas Heavy Duty, o dividir en 2 columnas.` });
     }
 
-    if (p < 250 || p > 550) {
-      alertas.push({ tipo: 'warning', msg: `Profundidad de corredera: Medidas comerciales estándar disponibles son 25, 30, 35, 40, 45, 50 y 55 cm. Profundidad actual: ${p} mm.` });
+    if (p < 250) {
+      alertas.push({ tipo: 'warning', msg: `Profundidad deficiente para cajón (${p} mm): La corredera comercial más corta disponible en el mercado es de 250 mm (25 cm).` });
     }
   }
 
@@ -5370,8 +5397,8 @@ function validarLimitesTecnicosModulo(m, idx) {
     }
   }
 
-  // Filtrar para mostrar únicamente alertas reales (peligros, advertencias o notas técnicas)
-  const alertasRelevantes = alertas.filter(a => a.tipo === 'warning' || a.tipo === 'danger' || a.tipo === 'info');
+  // Filtrar para mostrar únicamente alertas reales (peligros o advertencias)
+  const alertasRelevantes = alertas.filter(a => a.tipo === 'warning' || a.tipo === 'danger');
 
   if (alertasRelevantes.length === 0) {
     container.innerHTML = '';
@@ -5431,7 +5458,7 @@ function evaluarAlertasGeneralesYModulo() {
   }
 
   // Filtrar y renderizar alertas en el contenedor flotante
-  const alertasRelevantes = alertas.filter(a => a.tipo === 'warning' || a.tipo === 'danger' || a.tipo === 'info');
+  const alertasRelevantes = alertas.filter(a => a.tipo === 'warning' || a.tipo === 'danger');
   if (alertasRelevantes.length === 0) {
     container.innerHTML = '';
     return;
