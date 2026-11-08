@@ -47,6 +47,25 @@ module JPQMelaminaPro
     # Parámetros:
     #   - vista_inicial (String): Hub a activar (ej. 'hub-espacio', 'hub-despiece')
     # ==========================================================================
+    def abrir_estudio_espacial
+      datos = ParametricModifier.leer_seleccion_completa
+      dialogo_ya_abierto = (@main_dialog && @main_dialog.visible?)
+      @datos_pendientes_cargar = datos
+      @accion_pendiente = datos.nil? ? :vaciar : :cargar
+
+      abrir_dialogo_principal('hub-espacio')
+
+      if dialogo_ya_abierto
+        if datos
+          json_str = JSON.generate(datos)
+          ejecutar_en_dialogo("window.cambiarHub && window.cambiarHub('hub-espacio'); window.cargarDisenoDesdeSketchup && window.cargarDisenoDesdeSketchup(#{json_str});")
+          @datos_pendientes_cargar = nil
+        else
+          ejecutar_en_dialogo("window.cambiarHub && window.cambiarHub('hub-espacio'); window.vaciarDiseno && window.vaciarDiseno();")
+        end
+      end
+    end
+
     def abrir_dialogo_principal(vista_inicial = 'hub-espacio')
       if @main_dialog && @main_dialog.visible?
         @main_dialog.set_size(1360, 860)
@@ -78,9 +97,23 @@ module JPQMelaminaPro
       # Conectar el controlador central
       Controller.registrar_callbacks(@main_dialog)
 
-      # Al cargar el DOM, activar el hub solicitado
+      # Al cargar el DOM, activar el hub solicitado y cargar datos pendientes si los hay
       @main_dialog.add_action_callback('domListo') do |_context, _params|
         ejecutar_en_dialogo("window.cambiarHub && window.cambiarHub('#{vista_inicial}')")
+        if @datos_pendientes_cargar
+          ejecutar_en_dialogo("window.cargarDisenoDesdeSketchup && window.cargarDisenoDesdeSketchup(#{JSON.generate(@datos_pendientes_cargar)});")
+          @datos_pendientes_cargar = nil
+        elsif @accion_pendiente == :vaciar
+          ejecutar_en_dialogo("window.vaciarDiseno && window.vaciarDiseno();")
+          @accion_pendiente = nil
+        else
+          datos_sel = ParametricModifier.leer_seleccion_completa
+          if datos_sel
+            ejecutar_en_dialogo("window.cargarDisenoDesdeSketchup && window.cargarDisenoDesdeSketchup(#{JSON.generate(datos_sel)});")
+          else
+            ejecutar_en_dialogo("window.vaciarDiseno && window.vaciarDiseno();")
+          end
+        end
       end
 
       @main_dialog.show
@@ -104,16 +137,16 @@ module JPQMelaminaPro
       toolbar = UI::Toolbar.new('JPQMelaminaPro')
       icons_dir = File.join(__dir__, 'icons')
 
-      # 1. Estudio Espacial & Grilla Modular
-      cmd_base = UI::Command.new('Estudio Espacial') { abrir_dialogo_principal('hub-espacio') }
-      cmd_base.tooltip = 'Estudio Espacial y Grilla Modular (W, H, D)'
-      cmd_base.status_bar_text = 'Diseña muebles modulares y matrices en 3 zonas verticales'
+      # 1. Estudio Espacial & Grilla Modular (Carga diseño si hay selección activa)
+      cmd_base = UI::Command.new('Estudio Espacial') { abrir_estudio_espacial }
+      cmd_base.tooltip = 'Estudio Espacial y Grilla Modular (Cargar selección 3D)'
+      cmd_base.status_bar_text = 'Carga el mueble seleccionado o diseña nuevas composiciones paramétricas'
       cmd_base.small_icon = File.join(icons_dir, 'mod_base_16.png')
       cmd_base.large_icon = File.join(icons_dir, 'mod_base_24.png')
       toolbar.add_item(cmd_base)
 
       # 2. Modificar Módulo Seleccionado
-      cmd_edit = UI::Command.new('Editar Módulo') { Controller.editar_modulo_seleccionado }
+      cmd_edit = UI::Command.new('Editar Módulo') { abrir_estudio_espacial }
       cmd_edit.tooltip = 'Editar Módulo Paramétrico en Tiempo Real'
       cmd_edit.status_bar_text = 'Ajusta cotas milimétricas del mueble seleccionado'
       cmd_edit.small_icon = File.join(icons_dir, 'mod_edit_16.png')
@@ -137,6 +170,16 @@ module JPQMelaminaPro
       cmd_cinematica.small_icon = File.join(icons_dir, 'puertas_16.png')
       cmd_cinematica.large_icon = File.join(icons_dir, 'puertas_24.png')
       toolbar.add_item(cmd_cinematica)
+
+      # 4b. Selector de Modo Simulación Interactiva (Abre/Cierra por Clic)
+      cmd_sim_tool = UI::Command.new('Modo Simulación') do
+        Sketchup.active_model.select_tool(JPQMelaminaPro::SimulacionInteractivaTool.new)
+      end
+      cmd_sim_tool.tooltip = 'Modo Simulación Interactiva: Clic sobre puertas o cajones para abrir/cerrar'
+      cmd_sim_tool.status_bar_text = 'Activa herramienta para abrir o cerrar puertas y cajones al hacer clic sobre ellos'
+      cmd_sim_tool.small_icon = File.join(icons_dir, 'puertas_16.png')
+      cmd_sim_tool.large_icon = File.join(icons_dir, 'puertas_24.png')
+      toolbar.add_item(cmd_sim_tool)
 
       toolbar.add_separator
 
@@ -176,7 +219,7 @@ module JPQMelaminaPro
     # ==========================================================================
     def inicializar_menus
       menu = UI.menu('Plugins').add_submenu('JPQMelaminaPro')
-      menu.add_item('1. Estudio Espacial & Grilla Modular') { abrir_dialogo_principal('hub-espacio') }
+      menu.add_item('1. Estudio Espacial & Grilla Modular') { abrir_estudio_espacial }
       menu.add_item('2. Frentes, Mecanismos y Fondos') { abrir_dialogo_principal('hub-frentes') }
       menu.add_item('3. Inspección Técnica y Cinemática 3D') { abrir_dialogo_principal('hub-inspeccion') }
       menu.add_item('4. Melaminas, RH y Tapacantos') { abrir_dialogo_principal('hub-materiales') }
@@ -184,6 +227,9 @@ module JPQMelaminaPro
       menu.add_separator
       menu.add_item('Simular Apertura (Abrir / Cerrar Todo)') do
         KinematicsEngine.alternar_apertura('alternar')
+      end
+      menu.add_item('Herramienta Modo Simulación (Clic para Abrir / Cerrar)') do
+        Sketchup.active_model.select_tool(JPQMelaminaPro::SimulacionInteractivaTool.new)
       end
       menu.add_item('Alternar Cotas Técnicas 3D') do
         capa = Sketchup.active_model.layers['JPQ_Cotas_Tecnicas']

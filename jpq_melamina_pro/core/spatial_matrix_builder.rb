@@ -15,6 +15,20 @@ require 'json'
 require_relative 'cabinet_builder'
 require_relative 'material_manager'
 
+# Forzar recarga dinámica de cabinet_builder para asegurar visibilidad de crear_panel
+begin
+  load File.join(__dir__, 'cabinet_builder.rb')
+rescue => _e
+end
+
+# Registro diagnóstico automático al cargar el archivo en SketchUp
+begin
+  log_path = File.join(ENV['APPDATA'] || 'C:/Users/jorge/AppData/Roaming', 'SketchUp', 'jpq_debug.log')
+  File.open(log_path, 'a') { |f| f.puts("[#{Time.now}] spatial_matrix_builder.rb CARGADO con éxito en Ruby") }
+rescue => _e
+  # Ignorar si no se puede escribir
+end
+
 module JPQMelaminaPro
   class SpatialMatrixBuilder
     class << self
@@ -574,6 +588,8 @@ module JPQMelaminaPro
         end
       end
 
+      public
+
       # ========================================================================
       # Método: construir_modulos_parametricos
       # Descripción: Modela en SketchUp 3D una composición de N módulos individuales
@@ -586,8 +602,19 @@ module JPQMelaminaPro
       #   - params (Hash): Estructura enviada desde el panel web de JPQMelaminaPro.
       # ========================================================================
       def construir_modulos_parametricos(params)
+        log_path = File.join(ENV['APPDATA'] || 'C:/Users/jorge/AppData/Roaming', 'SketchUp', 'jpq_debug.log')
+        File.open(log_path, 'a') do |f|
+          f.puts("\n=======================================================")
+          f.puts("[#{Time.now}] INICIO construir_modulos_parametricos")
+          f.puts("Parametros recibidos: #{params.inspect rescue 'error'}")
+        end
+
         model = Sketchup.active_model
-        return { 'ok' => false, 'error' => 'No hay un modelo activo en SketchUp.' } unless model
+        unless model
+          File.open(log_path, 'a') { |f| f.puts("[#{Time.now}] ERROR: No hay un modelo activo en SketchUp.") }
+          UI.messagebox("JPQMelaminaPro: No hay un modelo activo en SketchUp.")
+          return { 'ok' => false, 'error' => 'No hay un modelo activo en SketchUp.' }
+        end
 
         model.start_operation('JPQMelaminaPro: Construcción Modular Paramétrica', true)
 
@@ -597,6 +624,9 @@ module JPQMelaminaPro
           prof_total_num  = params['prof_total'].to_f
           t_num           = (params['espesor'] && params['espesor'].to_f > 0) ? params['espesor'].to_f : 18.0
           t               = t_num.mm
+          ancho_total     = ancho_total_num.mm
+          alto_total      = alto_total_num.mm
+          prof_total      = prof_total_num.mm
 
           mat_estructura = params['material_estructura'] || 'Pelikano Blanco Nieve 18mm'
           mat_frentes    = params['material_frentes'] || mat_estructura
@@ -627,6 +657,10 @@ module JPQMelaminaPro
           dict_comp['espesor_mm'] = t_num
           dict_comp['resistencia'] = resistencia
           dict_comp['material'] = mat_estructura
+          dict_comp['params_json'] = JSON.generate(params)
+          dict_comp['modulos_json'] = JSON.generate(modulos_data)
+
+          CabinetBuilder.ultimo_modulo_activo = grupo_composicion if defined?(CabinetBuilder)
 
           # 1. ZÓCALO INFERIOR CONTINUO GENERAL (Ocupa todo el perímetro inferior del mueble)
           tiene_zocalo_global = (params['tiene_zocalo'] == true || params['tiene_zocalo'] == 'true')
@@ -833,6 +867,9 @@ module JPQMelaminaPro
             x_pos = esp['x_pos'].mm
             z_pos = esp['z_pos'].mm
 
+            prof_carcasa_num = d_mod_num
+            y_carcasa_start = 0.mm
+
             nom_mod = (m_data['nombre'] && !m_data['nombre'].to_s.strip.empty?) ? m_data['nombre'].to_s : "Módulo #{idx + 1}"
             mod_id = "#{composicion_id}-M#{idx + 1}"
             grupo_mod = grupo_composicion.entities.add_group
@@ -1021,7 +1058,7 @@ module JPQMelaminaPro
             grosor_mdf_num = (m_data['grosor_mdf'] || 3.0).to_f
             ancho_ranura_num = (m_data['ancho_ranura_mdf'] || (grosor_mdf_num + 1.0)).to_f
             prof_ranura_num = (m_data['prof_ranura_mdf'] || 8.0).to_f
-            dist_ranura_num = m_data['dist_ranura_mdf'] ? m_data['dist_ranura_mdf'].to_f : 0.0
+            dist_ranura_num = (m_data['dist_ranura_mdf'] && m_data['dist_ranura_mdf'].to_f > 0) ? m_data['dist_ranura_mdf'].to_f : (pos_fondo_mdf == 'delante_liston' ? t_num : 0.0)
 
             ranura_carcasa = if tiene_fondo_mdf && pos_fondo_mdf == 'delante_liston'
                                "Ranura #{ancho_ranura_num.to_i}x#{prof_ranura_num.to_i}mm a #{dist_ranura_num.to_i}mm"
@@ -1317,19 +1354,27 @@ module JPQMelaminaPro
               h_vano_util_post = h_vano_util_post_num.mm
               z_start_post = z_base + (tiene_piso ? t : 0.mm)
 
+              # Si es MDF enranurado (delante_liston), el listón se ubica DETRÁS del fondo
+              # a eff_dist_amarre (18mm estándar) del borde posterior.
+              es_mdf_delante = (tipo_fondo == 'mdf' || tiene_fondo_mdf) && (pos_fondo_mdf == 'delante_liston')
+              eff_dist_amarre = (dist_ranura_num >= 18.0) ? dist_ranura_num : 18.0
+              y_liston_pos = es_mdf_delante ? (d_mod - eff_dist_amarre.mm) : (d_mod - t)
+              esp_liston_pos = es_mdf_delante ? eff_dist_amarre.mm : t
+              esp_liston_num = esp_liston_pos.to_mm
+
               if orientacion_post == 'vertical'
                 # Listones VERTICALES en el fondo / parte posterior
                 if cant_post == 1
                   x_pos_liston = x_pos + x_offset_int + (ancho_int / 2.0) - (w_liston_post / 2.0)
                   CabinetBuilder.crear_panel(
                     grupo_mod, "M#{idx + 1} Listón Fondo Vertical Central",
-                    x_pos_liston, d_mod - t, z_start_post,
-                    w_liston_post, t, h_vano_util_post,
+                    x_pos_liston, y_liston_pos, z_start_post,
+                    w_liston_post, esp_liston_pos, h_vano_util_post,
                     {
                       'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-LISTON-POST-VERT-CENTRAL",
                       'pieza_nombre' => "M#{idx + 1} Listón Fondo Vertical Central", 'material' => mat_estructura,
                       'resistencia' => resistencia,
-                      'largo_bruto_mm' => h_vano_util_post_num, 'ancho_bruto_mm' => w_liston_post_num, 'espesor_mm' => t_num,
+                      'largo_bruto_mm' => h_vano_util_post_num, 'ancho_bruto_mm' => w_liston_post_num, 'espesor_mm' => esp_liston_num,
                       'largo_neto_mm' => h_vano_util_post_num - 1.0, 'ancho_neto_mm' => w_liston_post_num - 1.0,
                       'cantidad' => 1, 'veta' => 'longitudinal',
                       'canto_L1' => 0.5, 'canto_L2' => 0.0, 'canto_A1' => 0.5, 'canto_A2' => 0.5,
@@ -1360,13 +1405,13 @@ module JPQMelaminaPro
 
                     CabinetBuilder.crear_panel(
                       grupo_mod, "M#{idx + 1} Listón Fondo Vertical #{nom_sub}",
-                      x_pos_liston, d_mod - t, z_start_post,
-                      w_liston_post, t, h_vano_util_post,
+                      x_pos_liston, y_liston_pos, z_start_post,
+                      w_liston_post, esp_liston_pos, h_vano_util_post,
                       {
                         'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-LISTON-POST-VERT-#{pieza_code}",
                         'pieza_nombre' => "M#{idx + 1} Listón Fondo Vertical #{nom_sub}", 'material' => mat_estructura,
                         'resistencia' => resistencia,
-                        'largo_bruto_mm' => h_vano_util_post_num, 'ancho_bruto_mm' => w_liston_post_num, 'espesor_mm' => t_num,
+                        'largo_bruto_mm' => h_vano_util_post_num, 'ancho_bruto_mm' => w_liston_post_num, 'espesor_mm' => esp_liston_num,
                         'largo_neto_mm' => h_vano_util_post_num - 1.0, 'ancho_neto_mm' => w_liston_post_num - 1.0,
                         'cantidad' => 1, 'veta' => 'longitudinal',
                         'canto_L1' => 0.5, 'canto_L2' => 0.0, 'canto_A1' => 0.5, 'canto_A2' => 0.5,
@@ -1380,13 +1425,13 @@ module JPQMelaminaPro
                 if cant_post == 1
                   CabinetBuilder.crear_panel(
                     grupo_mod, "M#{idx + 1} Listón Posterior Superior",
-                    x_pos + x_offset_int, d_mod - t, z_base + h_carcasa - t - w_liston_post,
-                    ancho_int, t, w_liston_post,
+                    x_pos + x_offset_int, y_liston_pos, z_base + h_carcasa - t - w_liston_post,
+                    ancho_int, esp_liston_pos, w_liston_post,
                     {
                       'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-LISTON-POST-SUP",
                       'pieza_nombre' => "M#{idx + 1} Listón Amarre Posterior Superior", 'material' => mat_estructura,
                       'resistencia' => resistencia,
-                      'largo_bruto_mm' => ancho_int_num, 'ancho_bruto_mm' => w_liston_post_num, 'espesor_mm' => t_num,
+                      'largo_bruto_mm' => ancho_int_num, 'ancho_bruto_mm' => w_liston_post_num, 'espesor_mm' => esp_liston_num,
                       'largo_neto_mm' => ancho_int_num - 1.0, 'ancho_neto_mm' => w_liston_post_num - 1.0,
                       'cantidad' => 1, 'veta' => 'longitudinal',
                       'canto_L1' => 0.5, 'canto_L2' => 0.0, 'canto_A1' => 0.5, 'canto_A2' => 0.5,
@@ -1395,7 +1440,7 @@ module JPQMelaminaPro
                   )
                 else
                   espacio_gaps_post = [h_vano_util_post_num - (cant_post * w_liston_post_num), 0.0].max
-                  paso_gap_post = espacio_gaps_post / (cant_post - 1.0)
+                  paso_gap_post = (cant_post > 1) ? (espacio_gaps_post / (cant_post - 1.0)) : 0.0
 
                   cant_post.times do |k|
                     z_pos_num = (k * (w_liston_post_num + paso_gap_post)).round
@@ -1416,13 +1461,13 @@ module JPQMelaminaPro
 
                     CabinetBuilder.crear_panel(
                       grupo_mod, "M#{idx + 1} Listón Posterior #{nom_sub}",
-                      x_pos + x_offset_int, d_mod - t, z_start_post + z_pos_num.mm,
-                      ancho_int, t, w_liston_post,
+                      x_pos + x_offset_int, y_liston_pos, z_start_post + z_pos_num.mm,
+                      ancho_int, esp_liston_pos, w_liston_post,
                       {
                         'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-LISTON-POST-#{pieza_code}",
                         'pieza_nombre' => "M#{idx + 1} Listón Amarre Posterior #{nom_sub}", 'material' => mat_estructura,
                         'resistencia' => resistencia,
-                        'largo_bruto_mm' => ancho_int_num, 'ancho_bruto_mm' => w_liston_post_num, 'espesor_mm' => t_num,
+                        'largo_bruto_mm' => ancho_int_num, 'ancho_bruto_mm' => w_liston_post_num, 'espesor_mm' => esp_liston_num,
                         'largo_neto_mm' => ancho_int_num - 1.0, 'ancho_neto_mm' => w_liston_post_num - 1.0,
                         'cantidad' => 1, 'veta' => 'longitudinal',
                         'canto_L1' => 0.5, 'canto_L2' => 0.0, 'canto_A1' => 0.5, 'canto_A2' => 0.5,
@@ -1439,15 +1484,30 @@ module JPQMelaminaPro
 
             if tiene_fondo_mdf || tipo_fondo == 'mdf'
               if pos_fondo_mdf == 'delante_liston'
-                ancho_mdf_num = ancho_int_num + (2.0 * prof_ranura_num) - 2.0
+                # Tolerancia térmica oficial de 2mm (1mm por lado) según reglas_del_proyecto.md Section 2.3:
+                # Ancho Fondo MDF = Ancho Interior Vano + (2 * Profundidad Ranura) - 2 mm
+                # Alto Fondo MDF  = Alto Interior Vano  + (2 * Profundidad Ranura) - 2 mm
+                holgura_mdf = 1.0   # holgura térmica por lado
+                eff_prof_ranura = (prof_ranura_num > 0) ? prof_ranura_num : 8.0
+                eff_dist_ranura = (dist_ranura_num >= 18.0) ? dist_ranura_num : 18.0
+
+                ancho_mdf_num = ancho_int_num + (2.0 * eff_prof_ranura) - (2.0 * holgura_mdf)
+
                 h_vano_mdf_num = [h_carcasa_num - (tiene_piso ? t_num : 0.0) - (tiene_techo ? t_num : 0.0), 0.0].max
-                alto_mdf_num  = h_vano_mdf_num + (2.0 * prof_ranura_num) - 2.0
-                y_mdf = d_mod - dist_ranura_num.mm - grosor_mdf_num.mm
-                z_mdf = z_int_base - prof_ranura_num.mm + 1.0.mm
+                alto_mdf_num   = h_vano_mdf_num + (2.0 * eff_prof_ranura) - (2.0 * holgura_mdf)
+
+                # Posición Y: a eff_dist_ranura + grosor_mdf desde el borde posterior bruto
+                y_mdf = d_mod - eff_dist_ranura.mm - grosor_mdf_num.mm
+
+                # Posición X: fondo entra en ranura del lateral izquierdo (1mm antes del fondo del canal)
+                x_mdf = x_pos + t - eff_prof_ranura.mm + holgura_mdf.mm
+
+                # Posición Z: fondo entra en ranura del piso (1mm antes del fondo del canal)
+                z_mdf = z_int_base - eff_prof_ranura.mm + holgura_mdf.mm
 
                 CabinetBuilder.crear_panel(
                   grupo_mod, "M#{idx + 1} Fondo MDF Enranurado #{grosor_mdf_num.to_i}mm",
-                  x_pos + t - prof_ranura_num.mm + 1.0.mm, y_mdf, z_mdf,
+                  x_mdf, y_mdf, z_mdf,
                   ancho_mdf_num.mm, grosor_mdf_num.mm, alto_mdf_num.mm,
                   {
                     'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-FONDO-MDF-RAN",
@@ -1457,7 +1517,7 @@ module JPQMelaminaPro
                     'largo_neto_mm' => alto_mdf_num, 'ancho_neto_mm' => ancho_mdf_num,
                     'cantidad' => 1, 'veta' => 'longitudinal',
                     'canto_L1' => 0.0, 'canto_L2' => 0.0, 'canto_A1' => 0.0, 'canto_A2' => 0.0,
-                    'ranura' => "Incrustado en ranura #{ancho_ranura_num.to_i}x#{prof_ranura_num.to_i}mm a #{dist_ranura_num.to_i}mm"
+                    'ranura' => "Incrustado en ranura #{ancho_ranura_num.to_i}x#{prof_ranura_num.to_i}mm a #{eff_dist_ranura.to_i}mm"
                   }
                 )
               else
@@ -1642,7 +1702,7 @@ module JPQMelaminaPro
             h_vano_util = h_vano_util_num.mm
 
             case tipo_interior
-            when 'repisas'
+            when 'repisas', 'puertas'
               # Parantes y Repisas Interiores por Espacio
               parantes_tipo = m_data['parantes_tipo'] || 'ninguno'
               parantes_raw = m_data['parantes'] || []
@@ -1924,7 +1984,7 @@ module JPQMelaminaPro
               cant_caj = [(m_data['cant_cajones'] || 3).to_i, 2].max
               montaje_caj = m_data['cajones_montaje'] || 'exterior'
               tipo_corr = m_data['cajones_tipo_corredera'] || 'telescopica'
-              luz_caj_num = 2.0
+              luz_caj_num = (m_data['cajones_luz'] || params['luz_frentes'] || 3.0).to_f
               luz_caj = luz_caj_num.mm
               t_caja_num = 15.0
               t_caja = t_caja_num.mm
@@ -1937,8 +1997,16 @@ module JPQMelaminaPro
               desc_corr = desc_corr_num.mm
               w_ext_box_num = [ancho_int_num - desc_corr_num, 60.0].max
               w_ext_box = w_ext_box_num.mm
-              max_slide_num = prof_carcasa_num - 30.0
-              largo_slide_num = [max_slide_num, 450.0].min
+              max_slide_num = [prof_carcasa_num - 30.0, 250.0].max
+              largo_slide_num = if m_data['cajones_largo_corredera'] && m_data['cajones_largo_corredera'].to_s != 'auto' && m_data['cajones_largo_corredera'].to_f > 0
+                                  [max_slide_num, m_data['cajones_largo_corredera'].to_f].min
+                                else
+                                  slide_calc = 250.0
+                                  [250.0, 300.0, 350.0, 400.0, 450.0, 500.0, 550.0, 600.0].each do |s|
+                                    slide_calc = s if s <= max_slide_num
+                                  end
+                                  slide_calc
+                                end
               largo_slide = largo_slide_num.mm
 
               alto_fr_num = if montaje_caj == 'exterior'
@@ -1976,7 +2044,9 @@ module JPQMelaminaPro
                     'largo_neto_mm' => ancho_fr_num - 4.0, 'ancho_neto_mm' => alto_fr_num - 4.0,
                     'cantidad' => 1, 'veta' => 'longitudinal',
                     'canto_L1' => 2.0, 'canto_L2' => 2.0, 'canto_A1' => 2.0, 'canto_A2' => 2.0,
-                    'ranura' => "Tirador central, montaje #{montaje_caj}"
+                    'ranura' => "Tirador central, montaje #{montaje_caj}",
+                    'Tipo_Herraje' => 'corredera_telescopica',
+                    'Profundidad_Corredera' => largo_slide_num
                   }
                 )
 
@@ -2024,11 +2094,11 @@ module JPQMelaminaPro
             end
 
             # D. Puertas Independientes (compatibles con repisas, cajoneras o carcasa)
-            tiene_puertas_mod = (m_data['tiene_puertas'] == true || m_data['tiene_puertas'] == 'true' || tipo_int == 'puertas')
+            tiene_puertas_mod = (m_data['tiene_puertas'] == true || m_data['tiene_puertas'] == 'true' || tipo_interior == 'puertas')
             if tiene_puertas_mod
               montaje_p = m_data['puertas_montaje'] || 'exterior'
               posicion_p = m_data['puertas_posicion_bisagra'] || ((w_mod_num > 600.0) ? 'doble' : 'derecha')
-              luz_p_num = (m_data['puertas_luz'] || 2.0).to_f
+              luz_p_num = (m_data['puertas_luz'] || params['luz_frentes'] || 3.0).to_f
               luz_p = luz_p_num.mm
               cant_p = (posicion_p == 'doble') ? 2 : 1
 
@@ -2053,9 +2123,10 @@ module JPQMelaminaPro
                          end
 
               x_centro_parante_num = nil
-              if tipo_int == 'repisas' && m_data['parantes_tipo'] == 'vertical' && defined?(parantes_resueltos) && parantes_resueltos && parantes_resueltos.length == 1
+              if tipo_interior == 'repisas' && m_data['parantes_tipo'] == 'vertical' && defined?(parantes_resueltos) && parantes_resueltos && parantes_resueltos.length == 1
                 p_v = parantes_resueltos.first
-                x_centro_parante_num = (tiene_laterales ? t_num : 0.0) + p_v[:x] + (t_num / 2.0)
+                p_v_num = p_v.is_a?(Hash) ? (p_v[:x] || p_v['x'] || 0.0).to_f : p_v.to_f
+                x_centro_parante_num = (tiene_laterales ? t_num : 0.0) + p_v_num + (t_num / 2.0)
               end
 
               cant_p.times do |p_idx|
@@ -2100,21 +2171,58 @@ module JPQMelaminaPro
                     'ranura' => "#{cant_bis} cazoletas Ø35x11.5mm (K=4.5mm) - [Bisagras #{posicion_p}]",
                     'bisagras_cant' => cant_bis,
                     'bisagras_posicion' => posicion_p,
-                    'perforacion_cazoleta' => "#{cant_bis}x Ø35mm K=4.5mm"
+                    'perforacion_cazoleta' => "#{cant_bis}x Ø35mm K=4.5mm",
+                    'Tipo_Herraje' => (posicion_p == 'superior') ? 'piston_gas_superior' : ((posicion_p == 'inferior') ? 'piston_gas_inverso' : 'bisagra_batiente'),
+                    'Lado_Bisagra' => (cant_p == 2) ? ((p_idx == 0) ? 'izquierdo' : 'derecho') : posicion_p
                   }
                 )
               end
             end
           end
 
+          # ====================================================================
+          # Posicionamiento inteligente no destructivo:
+          # Si ya existen otros muebles o componentes en el espacio de trabajo,
+          # ubicar el nuevo mueble al lado (a lo largo del eje X) con una
+          # separación de 300 mm para evitar sobreponerse con los diseños previos.
+          # ====================================================================
+          otros_elementos = model.active_entities.select do |e|
+            e != grupo_composicion && e.valid? && (e.is_a?(Sketchup::Group) || e.is_a?(Sketchup::ComponentInstance))
+          end
+          otros_elementos.reject! { |e| e.bounds.empty? }
+
+          unless otros_elementos.empty?
+            max_x = otros_elementos.map { |e| e.bounds.max.x }.max
+            if max_x && max_x.to_f.finite?
+              separacion = 300.mm
+              desplazamiento_x = max_x + separacion
+              tr = Geom::Transformation.translation([desplazamiento_x, 0, 0])
+              grupo_composicion.transform!(tr)
+            end
+          end
+
           model.commit_operation
+          model.selection.clear rescue nil
+          model.selection.add(grupo_composicion) rescue nil
           model.active_view.zoom_extents if model.active_view
           model.active_view.invalidate if model.active_view
+
+          File.open(log_path, 'a') do |f|
+            f.puts("[#{Time.now}] EXITO TOTAL: Mueble #{composicion_id} construido con #{modulos_data.length} modulos.")
+          end
+
+          UI.messagebox("JPQMelaminaPro: ¡Diseño insertado con éxito en SketchUp 3D!\n\nSe crearon #{modulos_data.length} módulos (#{ancho_total_num.to_i} x #{alto_total_num.to_i} x #{prof_total_num.to_i} mm).")
+
           { 'ok' => true, 'mensaje' => "Composición modular de #{modulos_data.length} módulos creada exitosamente.", 'modulo_id' => composicion_id }
         rescue => e
           model.abort_operation
+          File.open(log_path, 'a') do |f|
+            f.puts("[#{Time.now}] ERROR FATAL al construir: #{e.class} - #{e.message}")
+            f.puts(e.backtrace.first(15).join("\n")) if e.backtrace
+          end
           puts "[JPQMelaminaPro] ERROR al construir módulos: #{e.message}"
           puts e.backtrace.first(6).join("\n") if e.backtrace
+          UI.messagebox("JPQMelaminaPro ERROR al insertar en SketchUp:\n\n#{e.class}: #{e.message}\n\nEn: #{e.backtrace ? e.backtrace.first : 'desconocido'}")
           { 'ok' => false, 'error' => "#{e.message} (en #{File.basename(e.backtrace.first)})", 'backtrace' => e.backtrace }
         end
       end

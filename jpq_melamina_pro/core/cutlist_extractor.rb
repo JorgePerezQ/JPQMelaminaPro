@@ -67,9 +67,9 @@ module JPQMelaminaPro
             c_a1 = (dict['canto_A1'] || 0.0).to_f
             c_a2 = (dict['canto_A2'] || 0.0).to_f
 
-            # Cálculo de medida neta exacta de corte descontando los cantos
-            largo_n = dict['largo_neto_mm'] ? dict['largo_neto_mm'].to_f : (largo_b - c_l1 - c_l2)
-            ancho_n = dict['ancho_neto_mm'] ? dict['ancho_neto_mm'].to_f : (ancho_b - c_a1 - c_a2)
+            # Cálculo estricto de medida neta exacta de corte deduciendo los tapacantos milimétricamente
+            largo_n = (largo_b - c_l1 - c_l2).round(1)
+            ancho_n = (ancho_b - c_a1 - c_a2).round(1)
 
             # Clasificación de ranura técnica para taller
             ranura_str = dict['ranura'] || 'Ninguna'

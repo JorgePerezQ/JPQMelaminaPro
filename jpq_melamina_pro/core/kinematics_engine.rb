@@ -187,15 +187,30 @@ module JPQMelaminaPro
 
         when 'piston_gas_superior'
           bb = ent.bounds
-          origen_pivote = Geom::Point3d.new(bb.min.x, bb.min.y, bb.max.z)
+          # Bisagras superiores ubicadas en la cara posterior superior de la puerta
+          origen_pivote = Geom::Point3d.new(bb.min.x, bb.max.y, bb.max.z)
           rot = Geom::Transformation.rotation(origen_pivote, Geom::Vector3d.new(1, 0, 0), -85.degrees)
+          centro_prev = ent.bounds.center
           ent.transform!(rot)
+          # Verificar que abra hacia afuera (menor Y hacia la habitación)
+          if ent.bounds.center.y > centro_prev.y
+            ent.transform!(rot.inverse)
+            rot_corr = Geom::Transformation.rotation(origen_pivote, Geom::Vector3d.new(1, 0, 0), 85.degrees)
+            ent.transform!(rot_corr)
+          end
 
         when 'piston_gas_inverso'
           bb = ent.bounds
-          origen_pivote = Geom::Point3d.new(bb.min.x, bb.min.y, bb.min.z)
+          origen_pivote = Geom::Point3d.new(bb.min.x, bb.max.y, bb.min.z)
           rot = Geom::Transformation.rotation(origen_pivote, Geom::Vector3d.new(1, 0, 0), 85.degrees)
+          centro_prev = ent.bounds.center
           ent.transform!(rot)
+          # Verificar que abata hacia afuera (menor Y)
+          if ent.bounds.center.y > centro_prev.y
+            ent.transform!(rot.inverse)
+            rot_corr = Geom::Transformation.rotation(origen_pivote, Geom::Vector3d.new(1, 0, 0), -85.degrees)
+            ent.transform!(rot_corr)
+          end
 
         when 'bisagra_batiente', 'puerta_batiente'
           bb = ent.bounds
@@ -264,6 +279,85 @@ module JPQMelaminaPro
           puts "[JPQMelaminaPro] Error al restaurar transformación: #{e.message}"
         end
       end
+
+      # ========================================================================
+      # Método: encontrar_objeto_movil
+      # Descripción: Busca si la entidad o alguno de sus contenedores es un
+      #              cajón o puerta cinemática.
+      # ========================================================================
+      def encontrar_objeto_movil(ent)
+        curr = ent
+        while curr
+          if curr.respond_to?(:attribute_dictionary)
+            dict = curr.attribute_dictionary('DespieceMela')
+            return curr if dict && dict['Tipo_Herraje']
+            return curr if curr.name =~ /Cajón|Cajon|Puerta|Frente/i
+          end
+          if curr.respond_to?(:parent) && curr.parent.is_a?(Sketchup::ComponentDefinition)
+            curr = curr.parent.instances.first
+          else
+            break
+          end
+        end
+        nil
+      end
+
+      # ========================================================================
+      # Método: alternar_apertura_entidad
+      # Descripción: Abre si está cerrado o cierra si está abierto una pieza
+      #              individual al hacer clic sobre ella en SketchUp 3D.
+      # ========================================================================
+      def alternar_apertura_entidad(ent)
+        target = encontrar_objeto_movil(ent)
+        return false unless target
+
+        model = Sketchup.active_model
+        return false unless model
+
+        model.start_operation("JPQMelaminaPro: Alternar Apertura #{target.name}", true)
+        dict = target.attribute_dictionary('DespieceMela', true)
+        estado_actual = dict['Estado_Animacion'] || 'cerrado'
+        nuevo_estado = (estado_actual == 'abierto') ? 'cerrado' : 'abierto'
+
+        if dict['Tipo_Herraje']
+          aplicar_movimiento_pieza(target, dict, nuevo_estado)
+        else
+          aplicar_movimiento_por_nombre(target, nuevo_estado)
+        end
+
+        dict['Estado_Animacion'] = nuevo_estado
+        model.commit_operation
+
+        Sketchup.status_text = (nuevo_estado == 'abierto') ? "🔓 #{target.name} ABIERTO." : "🔒 #{target.name} CERRADO."
+        true
+      end
+    end
+  end
+
+  # ============================================================================
+  # Herramienta Interactiva de SketchUp: SimulacionInteractivaTool
+  # Permite hacer clic directamente en el modelo 3D de SketchUp para abrir/cerrar
+  # cualquier cajón o puerta de manera inmediata.
+  # ============================================================================
+  class SimulacionInteractivaTool
+    def activate
+      Sketchup.status_text = 'JPQMelaminaPro [Modo Simulación 3D]: Haz clic sobre cualquier puerta o cajón para abrirlo o cerrarlo.'
+    end
+
+    def onLButtonDown(flags, x, y, view)
+      ph = view.pick_helper
+      ph.do_pick(x, y)
+      ent = ph.best_picked
+      if ent
+        exito = KinematicsEngine.alternar_apertura_entidad(ent)
+        unless exito
+          Sketchup.status_text = 'No se detectó un cajón o puerta interactiva en el punto cliqueado.'
+        end
+      end
+    end
+
+    def onSetCursor
+      UI.set_cursor(632) rescue nil # 632 = Cursor interactivo de mano
     end
   end
 end

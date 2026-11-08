@@ -67,9 +67,29 @@ module JPQMelaminaPro
         end
 
         dialog.add_action_callback('construirComposicionModular') do |_ctx, params_json|
-          params = parsear_json(params_json)
-          resultado = SpatialMatrixBuilder.construir_modulos_parametricos(params)
-          responder_js(dialog, 'onComposicionModularCreada', resultado)
+          log_path = File.join(ENV['APPDATA'] || 'C:/Users/jorge/AppData/Roaming', 'SketchUp', 'jpq_debug.log')
+          File.open(log_path, 'a') { |f| f.puts("\n[#{Time.now}] >>> Callback 'construirComposicionModular' RECIBIDO desde JavaScript (tipo: #{params_json.class})") }
+
+          begin
+            load File.join(__dir__, 'core', 'cabinet_builder.rb')
+            load File.join(__dir__, 'core', 'spatial_matrix_builder.rb')
+            File.open(log_path, 'a') { |f| f.puts("[#{Time.now}] cabinet_builder.rb y spatial_matrix_builder.rb recargados OK") }
+
+            params = parsear_json(params_json)
+            File.open(log_path, 'a') { |f| f.puts("[#{Time.now}] Params parseados OK. Modulos: #{params['modulos'] ? params['modulos'].length : 'nil'}, Ancho: #{params['ancho_total']}, Alto: #{params['alto_total']}, Prof: #{params['prof_total']}") }
+
+            resultado = SpatialMatrixBuilder.construir_modulos_parametricos(params)
+            File.open(log_path, 'a') { |f| f.puts("[#{Time.now}] Resultado constructor: #{resultado['ok'] ? 'OK' : 'FALLO'}") }
+
+            responder_js(dialog, 'onComposicionModularCreada', resultado)
+          rescue => err
+            File.open(log_path, 'a') do |f|
+              f.puts("[#{Time.now}] EXCEPCION FATAL en controller callback: #{err.class} - #{err.message}")
+              f.puts(err.backtrace.first(10).join("\n")) if err.backtrace
+            end
+            UI.messagebox("JPQMelaminaPro EXCEPCION Controller:\n#{err.class}: #{err.message}")
+            responder_js(dialog, 'onComposicionModularCreada', { 'ok' => false, 'error' => "#{err.class}: #{err.message}" })
+          end
         end
 
         # --- GESTOR DE ADN TÉCNICO Y PERFILES (CRUD) ---
@@ -143,6 +163,10 @@ module JPQMelaminaPro
           responder_js(dialog, 'onCotasAlternadas', resultado)
         end
 
+        dialog.add_action_callback('activarHerramientaSimulacion') do |_ctx, _params|
+          Sketchup.active_model.select_tool(JPQMelaminaPro::SimulacionInteractivaTool.new)
+        end
+
         # --- HUB 4: MATERIALES, MELAMINA RH Y TAPACANTOS ---
         dialog.add_action_callback('obtenerCatalogoMateriales') do |_ctx, _params|
           catalogo = MaterialManager.obtener_catalogo
@@ -206,8 +230,18 @@ module JPQMelaminaPro
 
         # --- ACCIONES GENERALES Y EDICIÓN RÁPIDA ---
         dialog.add_action_callback('obtenerModuloSeleccionado') do |_ctx, _params|
-          datos = ParametricModifier.leer_seleccion
+          datos = ParametricModifier.leer_seleccion_completa || ParametricModifier.leer_seleccion
           responder_js(dialog, 'onModuloSeleccionado', datos)
+        end
+
+        dialog.add_action_callback('importarDisenoDesdeSketchup') do |_ctx, _params|
+          datos = ParametricModifier.leer_seleccion_completa
+          if datos
+            responder_js(dialog, 'cargarDisenoDesdeSketchup', datos)
+          else
+            responder_js(dialog, 'vaciarDiseno', {})
+            responder_js(dialog, 'onNotificacion', { 'mensaje' => 'No hay ningún mueble seleccionado en SketchUp. Panel reiniciado a estado vacío.', 'tipo' => 'info' })
+          end
         end
 
         dialog.add_action_callback('actualizarModulo') do |_ctx, params_json|
@@ -243,13 +277,7 @@ module JPQMelaminaPro
       # Métodos de acceso rápido desde la barra de herramientas de SketchUp
       # ========================================================================
       def editar_modulo_seleccionado
-        datos = ParametricModifier.leer_seleccion
-        if datos.nil?
-          UI.messagebox("Por favor, selecciona primero un módulo creado con JPQMelaminaPro.")
-        else
-          JPQMelaminaPro.abrir_dialogo_principal('hub-espacio')
-          JPQMelaminaPro.ejecutar_en_dialogo("window.cargarDatosEdicion && window.cargarDatosEdicion(#{JSON.generate(datos)})")
-        end
+        JPQMelaminaPro.abrir_estudio_espacial
       end
 
       def etiquetar_piezas_seleccionadas

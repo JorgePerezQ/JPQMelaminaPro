@@ -35,7 +35,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Altillo 1: Cajonera Superior Puerta Telescópica",
@@ -45,7 +52,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ]
     },
@@ -84,7 +98,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Altillo 1: Puerta Telescópica Pistón",
@@ -94,7 +115,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Aéreo 2: Módulo Campana / Especiero",
@@ -104,7 +132,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Altillo 2: Puerta Telescópica Pistón",
@@ -114,7 +149,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ]
     },
@@ -153,7 +195,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Altillo 1: Puerta Telescópica Pistón",
@@ -163,7 +212,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Aéreo 2: Módulo Campana Extractora",
@@ -173,7 +229,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Altillo 2: Puerta Telescópica Pistón",
@@ -183,7 +246,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Aéreo 3: Alacena Vajilla y Vasos",
@@ -193,7 +263,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Altillo 3: Puerta Telescópica Pistón",
@@ -203,7 +280,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ]
     },
@@ -242,7 +326,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Altillo 1: Puerta Telescópica Pistón",
@@ -252,7 +343,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Aéreo 2: Vajillero Escurridor",
@@ -262,7 +360,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Altillo 2: Puerta Telescópica Pistón",
@@ -272,7 +377,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Aéreo 3: Extractor y Campana",
@@ -282,7 +394,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Altillo 3: Puerta Telescópica Pistón",
@@ -292,7 +411,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Aéreo 4: Cristalería y Copero",
@@ -302,7 +428,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Altillo 4: Puerta Telescópica Pistón",
@@ -312,7 +445,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ]
     },
@@ -351,7 +491,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Altillo 1: Puerta Telescópica Pistón",
@@ -361,7 +508,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Aéreo 2: Alacena Almacén Diario",
@@ -371,7 +525,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Altillo 2: Puerta Telescópica Pistón",
@@ -381,7 +542,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Aéreo 3: Módulo Campana / Cocción",
@@ -391,7 +559,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Altillo 3: Puerta Telescópica Pistón",
@@ -401,7 +576,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Aéreo 4: Vajillero y Cristalería",
@@ -411,7 +593,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Altillo 4: Puerta Telescópica Pistón",
@@ -421,7 +610,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Aéreo 5: Alacena Extremo Derecho",
@@ -431,7 +627,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Altillo 5: Puerta Telescópica Pistón",
@@ -441,7 +644,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ]
     },
@@ -470,7 +680,13 @@
           "tiene_piso": true,
           "tiene_techo": true
         }
-      ]
+      ],
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm",
+      "distancia_ranura": 18,
+      "mdf_metodo": "ranura",
+      "cant_amarres": 2
     },
     "cocina_2_modulos": {
       "id": "cocina_2_modulos",
@@ -505,7 +721,13 @@
           "tiene_piso": true,
           "tiene_techo": true
         }
-      ]
+      ],
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm",
+      "distancia_ranura": 18,
+      "mdf_metodo": "ranura",
+      "cant_amarres": 2
     },
     "cocina_3_modulos": {
       "id": "cocina_3_modulos",
@@ -542,7 +764,13 @@
           "tipo_interior": "puertas",
           "cant_repisas": 2
         }
-      ]
+      ],
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm",
+      "distancia_ranura": 18,
+      "mdf_metodo": "ranura",
+      "cant_amarres": 2
     },
     "cocina_4_modulos": {
       "id": "cocina_4_modulos",
@@ -585,7 +813,13 @@
           "tipo_interior": "puertas",
           "cant_repisas": 2
         }
-      ]
+      ],
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm",
+      "distancia_ranura": 18,
+      "mdf_metodo": "ranura",
+      "cant_amarres": 2
     },
     "cocina_5_modulos": {
       "id": "cocina_5_modulos",
@@ -634,7 +868,13 @@
           "tipo_interior": "puertas",
           "cant_repisas": 2
         }
-      ]
+      ],
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm",
+      "distancia_ranura": 18,
+      "mdf_metodo": "ranura",
+      "cant_amarres": 2
     },
     "isla_cocina": {
       "id": "isla_cocina",
@@ -658,19 +898,36 @@
           "ancho_proporcional": 0.5,
           "tipo_interior": "cajonera",
           "cant_cajones": 3,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Módulo Puertas Almacén",
           "ancho_proporcional": 0.5,
           "tipo_interior": "puertas",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm"
     },
     "alacena": {
       "id": "alacena",
@@ -694,12 +951,22 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "repisas",
           "cant_repisas": 4,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm"
     },
     "cama_cabecera_integrada": {
       "id": "cama_cabecera_integrada",
@@ -733,23 +1000,45 @@
           "ancho_fijo": 450,
           "tipo_interior": "cajonera",
           "cant_cajones": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Panel Central Cabecera",
           "ancho_proporcional": 1.0,
           "tipo_interior": "carcasa",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Velador Derecho Flotante",
           "ancho_fijo": 450,
           "tipo_interior": "cajonera",
           "cant_cajones": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
-      ]
+      ],
+      "espesor_melamina": 18
     },
     "closet_vestidor": {
       "id": "closet_vestidor",
@@ -788,7 +1077,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "repisas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Maletero Superior Cuerpo 1",
@@ -798,7 +1094,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Cuerpo 2: Cajonera Doble y Camisas",
@@ -809,7 +1112,14 @@
           "tipo_interior": "cajonera",
           "cant_cajones": 4,
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Maletero Superior Cuerpo 2",
@@ -819,7 +1129,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Cuerpo 3: Ropa Corta y Pantalones",
@@ -829,7 +1146,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "repisas",
           "cant_repisas": 3,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Maletero Superior Cuerpo 3",
@@ -839,9 +1163,17 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
-      ]
+      ],
+      "espesor_melamina": 18
     },
     "comoda_chifonier": {
       "id": "comoda_chifonier",
@@ -877,9 +1209,17 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "cajonera",
           "cant_cajones": 6,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
-      ]
+      ],
+      "espesor_melamina": 18
     },
     "comoda": {
       "id": "comoda",
@@ -903,12 +1243,22 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "cajonera",
           "cant_cajones": 4,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm"
     },
     "comoda_doble": {
       "id": "comoda_doble",
@@ -932,19 +1282,36 @@
           "ancho_proporcional": 0.5,
           "tipo_interior": "cajonera",
           "cant_cajones": 4,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Columna Cajones Der",
           "ancho_proporcional": 0.5,
           "tipo_interior": "cajonera",
           "cant_cajones": 4,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm"
     },
     "senior_accesibilidad": {
       "id": "senior_accesibilidad",
@@ -980,16 +1347,31 @@
           "ancho_proporcional": 0.5,
           "tipo_interior": "cajonera",
           "cant_cajones": 3,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Repisas Visibles con Puertas",
           "ancho_proporcional": 0.5,
           "tipo_interior": "puertas",
           "cant_repisas": 3,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
-      ]
+      ],
+      "espesor_melamina": 18
     },
     "cabecero": {
       "id": "cabecero",
@@ -1013,12 +1395,22 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "carcasa",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm"
     },
     "ropero_1_cuerpo": {
       "id": "ropero_1_cuerpo",
@@ -1055,7 +1447,14 @@
           "tipo_interior": "cajonera",
           "cant_cajones": 2,
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Maletero Superior (Altillo 1 Puerta)",
@@ -1065,7 +1464,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ]
     },
@@ -1103,7 +1509,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "repisas",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Maletero Superior Cuerpo 1",
@@ -1113,7 +1526,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Cuerpo 2: Cajonera 3C y Camisas",
@@ -1124,7 +1544,14 @@
           "tipo_interior": "cajonera",
           "cant_cajones": 3,
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Maletero Superior Cuerpo 2",
@@ -1134,7 +1561,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "cant_listones_zocalo": 1
@@ -1176,7 +1610,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "carcasa",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Maletero Superior Corredizo Izq",
@@ -1186,7 +1627,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Cuerpo Der Cajones y Repisas",
@@ -1197,7 +1645,14 @@
           "tipo_interior": "cajonera",
           "cant_cajones": 3,
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Maletero Superior Corredizo Der",
@@ -1207,9 +1662,17 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
-      ]
+      ],
+      "espesor_melamina": 18
     },
     "ropero_3_cuerpos": {
       "id": "ropero_3_cuerpos",
@@ -1245,7 +1708,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "repisas",
           "cant_repisas": 4,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Maletero Superior Cuerpo 1",
@@ -1255,7 +1725,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Cuerpo 2: Colgado Central Sacos y Vestidos",
@@ -1265,7 +1742,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "carcasa",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Maletero Superior Cuerpo 2",
@@ -1275,7 +1759,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Cuerpo 3: Cajonera 3C y Camisas",
@@ -1286,7 +1777,14 @@
           "tipo_interior": "cajonera",
           "cant_cajones": 3,
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Maletero Superior Cuerpo 3",
@@ -1296,7 +1794,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "cant_listones_zocalo": 2
@@ -1335,7 +1840,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "repisas",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Maletero Superior Cuerpo 1",
@@ -1345,7 +1857,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Cuerpo 2: Cajonera Dama 4 Cajones",
@@ -1356,7 +1875,14 @@
           "tipo_interior": "cajonera",
           "cant_cajones": 4,
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Maletero Superior Cuerpo 2",
@@ -1366,7 +1892,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Cuerpo 3: Cajonera Varón 4 Cajones",
@@ -1377,7 +1910,14 @@
           "tipo_interior": "cajonera",
           "cant_cajones": 4,
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Maletero Superior Cuerpo 3",
@@ -1387,7 +1927,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Cuerpo 4: Colgado Trajes Varón & Pantalonero",
@@ -1397,7 +1944,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "repisas",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Maletero Superior Cuerpo 4",
@@ -1407,7 +1961,14 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "cant_listones_zocalo": 3
@@ -1434,12 +1995,22 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "cajonera",
           "cant_cajones": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm"
     },
     "zapatera": {
       "id": "zapatera",
@@ -1463,12 +2034,22 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "repisas",
           "cant_repisas": 4,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm"
     },
     "centro_tv_40_pulgadas": {
       "id": "centro_tv_40_pulgadas",
@@ -1492,19 +2073,36 @@
           "ancho_fijo": 500,
           "tipo_interior": "repisas",
           "cant_repisas": 3,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Nicho TV 40\" y Consolas",
           "ancho_proporcional": 1.0,
           "tipo_interior": "carcasa",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm"
     },
     "centro_tv_48_pulgadas": {
       "id": "centro_tv_48_pulgadas",
@@ -1528,26 +2126,50 @@
           "ancho_fijo": 300,
           "tipo_interior": "repisas",
           "cant_repisas": 3,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Nicho Central TV 48\" & Soundbar",
           "ancho_proporcional": 1.0,
           "tipo_interior": "carcasa",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Columna Derecha Puertas",
           "ancho_fijo": 300,
           "tipo_interior": "puertas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm"
     },
     "centro_tv_55_pulgadas": {
       "id": "centro_tv_55_pulgadas",
@@ -1571,26 +2193,50 @@
           "ancho_fijo": 400,
           "tipo_interior": "puertas",
           "cant_repisas": 3,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Nicho Central TV 55\" & Consolas",
           "ancho_proporcional": 1.0,
           "tipo_interior": "carcasa",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Columna Derecha Vitrina Iluminada",
           "ancho_fijo": 400,
           "tipo_interior": "repisas",
           "cant_repisas": 3,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm"
     },
     "centro_tv_65_pulgadas": {
       "id": "centro_tv_65_pulgadas",
@@ -1614,26 +2260,50 @@
           "ancho_fijo": 475,
           "tipo_interior": "puertas",
           "cant_repisas": 4,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Nicho Central Master TV 65\"",
           "ancho_proporcional": 1.0,
           "tipo_interior": "carcasa",
           "cant_repisas": 0,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Vitrina Lateral Der Almacén",
           "ancho_fijo": 475,
           "tipo_interior": "puertas",
           "cant_repisas": 4,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm"
     },
     "estanteria": {
       "id": "estanteria",
@@ -1657,12 +2327,22 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "repisas",
           "cant_repisas": 4,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm"
     },
     "mesa_centro": {
       "id": "mesa_centro",
@@ -1689,7 +2369,13 @@
           "tiene_piso": true,
           "tiene_techo": true
         }
-      ]
+      ],
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm",
+      "distancia_ranura": 18,
+      "mdf_metodo": "ranura",
+      "cant_amarres": 1
     },
     "rack_tv_bajo": {
       "id": "rack_tv_bajo",
@@ -1713,19 +2399,36 @@
           "ancho_proporcional": 0.5,
           "tipo_interior": "cajonera",
           "cant_cajones": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Vanos Receptores",
           "ancho_proporcional": 0.5,
           "tipo_interior": "repisas",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm"
     },
     "recibidor_zapatera": {
       "id": "recibidor_zapatera",
@@ -1761,16 +2464,31 @@
           "ancho_proporcional": 0.5,
           "tipo_interior": "repisas",
           "cant_repisas": 3,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Perchero y Espejo",
           "ancho_proporcional": 0.5,
           "tipo_interior": "carcasa",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
-      ]
+      ],
+      "espesor_melamina": 18
     },
     "repisa": {
       "id": "repisa",
@@ -1794,12 +2512,22 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "repisas",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm"
     },
     "escritorio_gamer": {
       "id": "escritorio_gamer",
@@ -1845,7 +2573,8 @@
           "tiene_piso": false,
           "tiene_fondo": false
         }
-      ]
+      ],
+      "espesor_melamina": 18
     },
     "repisero_gamer_coleccionables": {
       "id": "repisero_gamer_coleccionables",
@@ -1869,12 +2598,22 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "repisas",
           "cant_repisas": 4,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm"
     },
     "setup_gamer_pro": {
       "id": "setup_gamer_pro",
@@ -1904,7 +2643,14 @@
           "cant_repisas": 4,
           "tiene_piso": true,
           "tiene_techo": true,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Mesa Escritorio Gamer Ergonómico",
@@ -1916,7 +2662,14 @@
           "tipo_interior": "carcasa",
           "tiene_piso": false,
           "tiene_techo": true,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Puente Superior 2 Pantallas & Repisa RGB",
@@ -1929,7 +2682,14 @@
           "cant_repisas": 0,
           "tiene_piso": true,
           "tiene_techo": true,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Pedestal Gabinete CPU & Periféricos",
@@ -1942,12 +2702,22 @@
           "cant_cajones": 3,
           "tiene_piso": true,
           "tiene_techo": true,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm"
     },
     "cama_juvenil_cajones": {
       "id": "cama_juvenil_cajones",
@@ -1971,19 +2741,36 @@
           "ancho_proporcional": 0.5,
           "tipo_interior": "cajonera",
           "cant_cajones": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Cajonera Frontal Cama B",
           "ancho_proporcional": 0.5,
           "tipo_interior": "cajonera",
           "cant_cajones": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm"
     },
     "closet_juvenil_estudio": {
       "id": "closet_juvenil_estudio",
@@ -2007,19 +2794,36 @@
           "ancho_fijo": 500,
           "tipo_interior": "repisas",
           "cant_repisas": 4,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Ropero Juvenil 2 Cuerpos",
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm"
     },
     "tocador_hollywood_led": {
       "id": "tocador_hollywood_led",
@@ -2045,7 +2849,14 @@
           "cant_cajones": 5,
           "tiene_piso": true,
           "tiene_techo": true,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Mesa y Vano Banqueta",
@@ -2058,7 +2869,10 @@
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm"
     },
     "tocador_juvenil": {
       "id": "tocador_juvenil",
@@ -2090,7 +2904,14 @@
           "tiene_piso": true,
           "tiene_techo": true,
           "tiene_laterales": true,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Mesa Tocador con Vano Piernas",
@@ -2106,7 +2927,8 @@
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18
     },
     "infantil_estudio_creativo": {
       "id": "infantil_estudio_creativo",
@@ -2142,7 +2964,14 @@
           "ancho_fijo": 380,
           "tipo_interior": "cajonera",
           "cant_cajones": 3,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Vano Mesa Dibujo y Repisas",
@@ -2150,9 +2979,17 @@
           "tipo_interior": "carcasa",
           "cant_repisas": 1,
           "tiene_piso": false,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
-      ]
+      ],
+      "espesor_melamina": 18
     },
     "infantil_montessori": {
       "id": "infantil_montessori",
@@ -2188,16 +3025,31 @@
           "ancho_proporcional": 0.5,
           "tipo_interior": "repisas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Gavetas Jugueteras Montessori",
           "ancho_proporcional": 0.5,
           "tipo_interior": "cajonera",
           "cant_cajones": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
-      ]
+      ],
+      "espesor_melamina": 18
     },
     "infantil_ropero_autonomia": {
       "id": "infantil_ropero_autonomia",
@@ -2221,19 +3073,36 @@
           "ancho_proporcional": 0.5,
           "tipo_interior": "puertas",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Gavetas Accesibles",
           "ancho_proporcional": 0.5,
           "tipo_interior": "cajonera",
           "cant_cajones": 3,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm"
     },
     "botiquin": {
       "id": "botiquin",
@@ -2257,12 +3126,22 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm"
     },
     "columna_bano": {
       "id": "columna_bano",
@@ -2287,7 +3166,13 @@
           "tipo_interior": "puertas",
           "cant_repisas": 3
         }
-      ]
+      ],
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm",
+      "distancia_ranura": 18,
+      "mdf_metodo": "ranura",
+      "cant_amarres": 3
     },
     "bano_vanitorio_flotante": {
       "id": "bano_vanitorio_flotante",
@@ -2324,7 +3209,8 @@
           "tiene_piso": true,
           "tiene_techo": true
         }
-      ]
+      ],
+      "espesor_melamina": 18
     },
     "vanitorio": {
       "id": "vanitorio",
@@ -2349,7 +3235,13 @@
           "tipo_interior": "puertas",
           "cant_repisas": 0
         }
-      ]
+      ],
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm",
+      "distancia_ranura": 18,
+      "mdf_metodo": "ranura",
+      "cant_amarres": 2
     },
     "librero_biblioteca_32mm": {
       "id": "librero_biblioteca_32mm",
@@ -2385,23 +3277,45 @@
           "ancho_proporcional": 0.33,
           "tipo_interior": "repisas",
           "cant_repisas": 4,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Columna Libros B",
           "ancho_proporcional": 0.34,
           "tipo_interior": "repisas",
           "cant_repisas": 4,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Columna Libros C",
           "ancho_proporcional": 0.33,
           "tipo_interior": "repisas",
           "cant_repisas": 4,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
-      ]
+      ],
+      "espesor_melamina": 18
     },
     "estanteria_libros": {
       "id": "estanteria_libros",
@@ -2425,12 +3339,22 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "repisas",
           "cant_repisas": 5,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm"
     },
     "librero": {
       "id": "librero",
@@ -2454,19 +3378,36 @@
           "ancho_proporcional": 0.5,
           "tipo_interior": "repisas",
           "cant_repisas": 4,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Columna Libros Der",
           "ancho_proporcional": 0.5,
           "tipo_interior": "repisas",
           "cant_repisas": 4,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm"
     },
     "repisero_cubos": {
       "id": "repisero_cubos",
@@ -2490,12 +3431,22 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "repisas",
           "cant_repisas": 3,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm"
     },
     "cajonera_movil": {
       "id": "cajonera_movil",
@@ -2519,12 +3470,22 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "cajonera",
           "cant_cajones": 3,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm"
     },
     "credencia": {
       "id": "credencia",
@@ -2548,19 +3509,36 @@
           "ancho_proporcional": 0.5,
           "tipo_interior": "cajonera",
           "cant_cajones": 3,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Módulo Puertas Auxiliar",
           "ancho_proporcional": 0.5,
           "tipo_interior": "puertas",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm"
     },
     "escritorio": {
       "id": "escritorio",
@@ -2594,7 +3572,13 @@
           "tiene_piso": false,
           "tiene_fondo": false
         }
-      ]
+      ],
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm",
+      "distancia_ranura": 18,
+      "mdf_metodo": "ranura",
+      "cant_amarres": 2
     },
     "home_office_ejecutivo": {
       "id": "home_office_ejecutivo",
@@ -2636,7 +3620,14 @@
           "cant_cajones": 3,
           "tiene_piso": true,
           "tiene_techo": true,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Mesa Escritorio Ejecutivo Ergonómico",
@@ -2648,7 +3639,14 @@
           "tipo_interior": "carcasa",
           "tiene_piso": false,
           "tiene_techo": true,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Módulo Aéreo Librero / Almacén Ejecutivo",
@@ -2661,7 +3659,14 @@
           "cant_repisas": 2,
           "tiene_piso": true,
           "tiene_techo": true,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Torre Archivador con Puertas",
@@ -2674,9 +3679,17 @@
           "cant_repisas": 4,
           "tiene_piso": true,
           "tiene_techo": true,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
-      ]
+      ],
+      "espesor_melamina": 18
     },
     "aparador": {
       "id": "aparador",
@@ -2700,26 +3713,50 @@
           "ancho_fijo": 450,
           "tipo_interior": "puertas",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Cajonera Cubiertos Centro",
           "ancho_proporcional": 1.0,
           "tipo_interior": "cajonera",
           "cant_cajones": 4,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Módulo Mantelería Der",
           "ancho_fijo": 450,
           "tipo_interior": "puertas",
           "cant_repisas": 1,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm"
     },
     "bar_mural": {
       "id": "bar_mural",
@@ -2743,12 +3780,22 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "repisas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm"
     },
     "vitrina": {
       "id": "vitrina",
@@ -2772,12 +3819,22 @@
           "ancho_proporcional": 1.0,
           "tipo_interior": "puertas",
           "cant_repisas": 4,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm"
     },
     "lavanderia_auxiliar": {
       "id": "lavanderia_auxiliar",
@@ -2808,7 +3865,13 @@
           "tipo_interior": "cajonera",
           "cant_cajones": 3
         }
-      ]
+      ],
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm",
+      "distancia_ranura": 18,
+      "mdf_metodo": "ranura",
+      "cant_amarres": 2
     },
     "lavanderia_despensa_rh": {
       "id": "lavanderia_despensa_rh",
@@ -2854,9 +3917,17 @@
           "cant_repisas": 3,
           "tiene_piso": true,
           "tiene_techo": true,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
-      ]
+      ],
+      "espesor_melamina": 18
     },
     "gondola_exhibidora": {
       "id": "gondola_exhibidora",
@@ -2880,19 +3951,36 @@
           "ancho_proporcional": 0.5,
           "tipo_interior": "repisas",
           "cant_repisas": 3,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Góndola Cara B",
           "ancho_proporcional": 0.5,
           "tipo_interior": "repisas",
           "cant_repisas": 3,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm"
     },
     "comercial_mostrador_recepcion": {
       "id": "comercial_mostrador_recepcion",
@@ -2928,16 +4016,31 @@
           "ancho_fijo": 550,
           "tipo_interior": "cajonera",
           "cant_cajones": 3,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Atención al Público y Bolso",
           "ancho_proporcional": 1.0,
           "tipo_interior": "repisas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
-      ]
+      ],
+      "espesor_melamina": 18
     },
     "mostrador_caja": {
       "id": "mostrador_caja",
@@ -2961,19 +4064,36 @@
           "ancho_proporcional": 0.5,
           "tipo_interior": "cajonera",
           "cant_cajones": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         },
         {
           "nombre": "Repisas Atención Mostrador",
           "ancho_proporcional": 0.5,
           "tipo_interior": "repisas",
           "cant_repisas": 2,
-          "tiene_fondo": true
+          "tiene_fondo": true,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "espesor_melamina": 18,
+      "tapacanto_frentes": "Grueso_2mm",
+      "tapacanto_interior": "Delgado_0.5mm"
     },
     "comercial_vitrina_exhibidora": {
       "id": "comercial_vitrina_exhibidora",
@@ -3010,9 +4130,17 @@
           "tipo_interior": "repisas",
           "cant_repisas": 4,
           "tiene_fondo": true,
-          "parantes_verticales": 1
+          "parantes_verticales": 1,
+          "tipo_fondo": "mdf",
+          "posicion_fondo_mdf": "delante_liston",
+          "grosor_mdf": 3,
+          "ancho_ranura_mdf": 4,
+          "prof_ranura_mdf": 8,
+          "dist_ranura_mdf": 18,
+          "tiene_liston_post": true
         }
-      ]
+      ],
+      "espesor_melamina": 18
     }
   }
 }

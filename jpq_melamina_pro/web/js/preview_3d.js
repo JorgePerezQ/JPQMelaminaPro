@@ -32,6 +32,7 @@ const Preview3D = (function() {
   };
 
   // Opciones de visualización técnica
+  // Opciones de visualización técnica
   const renderOptions = {
     modoRender: 'solido',      // 'solido' (melamina con luz) o 'alambre' (CAD técnico)
     mostrarCotas: true,        // Cotas milimétricas visibles
@@ -39,6 +40,12 @@ const Preview3D = (function() {
     mostrarRejilla: true,      // Retícula milimétrica
     aperturaAnim: 0.0          // Simulación de apertura cinemática (0.0 cerrado a 1.0 abierto)
   };
+
+  // Modo Simulación interactiva por clic (abrir/cerrar puertas y cajones individualmente)
+  let modoSimulacion = false;
+  const aperturasPiezas = {};   // Mapa: idPieza -> valor (0.0 cerrado a 1.0 completamente abierto)
+  let carasRenderizadas = [];   // Caras proyectadas en pantalla para hit-testing de clics
+  let onElementoSimuladoCallback = null;
 
   // Callback cuando se hace clic sobre un módulo en el lienzo
   let onModuleSelectCallback = null;
@@ -377,16 +384,28 @@ const Preview3D = (function() {
    * Actualiza el ángulo de la cámara al arrastrar con el ratón.
    */
   function onMouseMove(e) {
-    if (!camera.isDragging) return;
-    const dx = e.clientX - camera.lastMouseX;
-    const dy = e.clientY - camera.lastMouseY;
+    if (camera.isDragging) {
+      const dx = e.clientX - camera.lastMouseX;
+      const dy = e.clientY - camera.lastMouseY;
 
-    camera.azimuth += dx * 0.01;
-    // Permite inclinar la cámara ligeramente hacia arriba (hasta -PI/6) para inspeccionar la parte inferior del zócalo
-    camera.elevation = Math.max(-Math.PI / 6, Math.min(Math.PI / 2.02, camera.elevation + dy * 0.01));
-    camera.lastMouseX = e.clientX;
-    camera.lastMouseY = e.clientY;
-    render();
+      camera.azimuth += dx * 0.01;
+      // Permite inclinar la cámara ligeramente hacia arriba (hasta -PI/6) para inspeccionar la parte inferior del zócalo
+      camera.elevation = Math.max(-Math.PI / 6, Math.min(Math.PI / 2.02, camera.elevation + dy * 0.01));
+      camera.lastMouseX = e.clientX;
+      camera.lastMouseY = e.clientY;
+      render();
+      return;
+    }
+
+    if (modoSimulacion && canvas) {
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      const sobreMovil = carasRenderizadas.slice().reverse().some(c => {
+        return c.esMovil && c.puntos && puntoEnPoligono2D(mx, my, c.puntos);
+      });
+      canvas.style.cursor = sobreMovil ? 'pointer' : 'default';
+    }
   }
 
   /**
@@ -394,7 +413,9 @@ const Preview3D = (function() {
    */
   function onMouseUp() {
     camera.isDragging = false;
-    if (canvas) canvas.style.cursor = 'grab';
+    if (canvas) {
+      canvas.style.cursor = modoSimulacion ? 'default' : 'grab';
+    }
   }
 
   /**
@@ -459,6 +480,10 @@ const Preview3D = (function() {
    */
   function setAperturaAnim(val) {
     renderOptions.aperturaAnim = Math.max(0, Math.min(1.0, parseFloat(val) || 0));
+    // Sincronizar piezas individuales si se ajusta el slider global
+    for (const k in aperturasPiezas) {
+      delete aperturasPiezas[k];
+    }
     render();
   }
 
@@ -468,6 +493,75 @@ const Preview3D = (function() {
    */
   function getAperturaAnim() {
     return renderOptions.aperturaAnim || 0;
+  }
+
+  /**
+   * Activa o desactiva el modo de simulación interactiva por clic.
+   * @param {boolean} activo
+   */
+  function setModoSimulacion(activo) {
+    modoSimulacion = !!activo;
+    if (canvas) {
+      canvas.style.cursor = modoSimulacion ? 'default' : 'grab';
+    }
+    render();
+  }
+
+  function getModoSimulacion() {
+    return modoSimulacion;
+  }
+
+  function toggleModoSimulacion() {
+    setModoSimulacion(!modoSimulacion);
+    return modoSimulacion;
+  }
+
+  /**
+   * Anima la apertura/cierre de una pieza específica (cajón o puerta).
+   * @param {string} idPieza - ID único de la pieza móvil (ej. 'm0_cajon_0')
+   * @param {number} meta - Nivel destino (1.0 = abierto, 0.0 = cerrado)
+   * @param {number} duracionMs - Duración en ms (por defecto 280ms)
+   */
+  function animarAperturaPieza(idPieza, meta, duracionMs = 280) {
+    const inicio = aperturasPiezas[idPieza] !== undefined ? aperturasPiezas[idPieza] : (renderOptions.aperturaAnim || 0);
+    const inicioTiempo = performance.now();
+
+    function paso(ahora) {
+      const progreso = Math.min(1.0, (ahora - inicioTiempo) / duracionMs);
+      // Easing cúbico natural
+      const ease = progreso < 0.5 ? 4 * progreso * progreso * progreso : 1 - Math.pow(-2 * progreso + 2, 3) / 2;
+      aperturasPiezas[idPieza] = inicio + ((meta - inicio) * ease);
+      render();
+
+      if (progreso < 1.0) {
+        requestAnimationFrame(paso);
+      } else {
+        aperturasPiezas[idPieza] = meta;
+        render();
+      }
+    }
+
+    requestAnimationFrame(paso);
+  }
+
+  /**
+   * Verifica si un punto 2D (x, y) en píxeles de canvas cae dentro de un polígono.
+   * Algoritmo Ray-Casting rápido para hit-testing de caras 3D en pantalla.
+   */
+  function puntoEnPoligono2D(px, py, puntos) {
+    if (!puntos || puntos.length < 3) return false;
+    let dentro = false;
+    for (let i = 0, j = puntos.length - 1; i < puntos.length; j = i++) {
+      const xi = puntos[i].px, yi = puntos[i].py;
+      const xj = puntos[j].px, yj = puntos[j].py;
+      const intersecta = ((yi > py) !== (yj > py)) && (px < (xj - xi) * (py - yi) / (yj - yi) + xi);
+      if (intersecta) dentro = !dentro;
+    }
+    return dentro;
+  }
+
+  function setOnElementoSimuladoCallback(cb) {
+    onElementoSimuladoCallback = cb;
   }
 
   /**
@@ -1114,28 +1208,48 @@ const Preview3D = (function() {
       // Identificar si el módulo carece de laterales, techo y piso (módulo abierto/vacío para panel completo)
       const esModuloVacio = (!tieneLaterales && !tieneTecho && !tienePiso);
 
+      // Fondo Posterior (Fondo Panel, MDF, Melamina o Ninguno)
+      const posFondo = m.posicion_fondo_mdf || 'delante_liston';
+      const grosorMdf = parseFloat(m.grosor_mdf) || 3;
+      const profRanura = (m.prof_ranura_mdf !== undefined) ? parseFloat(m.prof_ranura_mdf) : 8;
+      // Retranqueo de ranura: siempre mínimo t (18 mm) en delante_liston para alojar los listones posteriores
+      const distRanura = (posFondo === 'delante_liston')
+        ? Math.max(t, (m.dist_ranura_mdf !== undefined && parseFloat(m.dist_ranura_mdf) > 0) ? parseFloat(m.dist_ranura_mdf) : t)
+        : Math.max(0, parseFloat(m.dist_ranura_mdf) || 0);
+      const matMdfFondo = d.color_mdf || `MDF Fondo Blanco ${grosorMdf}mm`;
+
       // Listones Posteriores de Amarre / Fijación a Pared (solo si lleva laterales y no es fondo melamina ni panel)
       const usaAmarresPost = tieneLaterales && (tipoFondo !== 'melamina') && (tipoFondo !== 'panel') && (
-        (m.tiene_liston_post === true || m.tiene_liston_post === 'true') ||
+        (m.tiene_liston_post !== false && m.tiene_liston_post !== 'false') ||
         ((m.tiene_liston_amarre === true || m.tiene_liston_amarre === 'true') && (m.posicion_liston_amarre === 'posterior' || m.posicion_liston_amarre === 'ambos'))
       );
 
       if (usaAmarresPost) {
-        const cantPost = Math.max(1, parseInt(m.cant_listones_post || m.cant_listones_amarre || 2));
+        const cantPost = Math.max(1, Math.min(6, parseInt(m.cant_listones_post || m.cant_listones_amarre || 2)));
         const orientacionPost = m.orientacion_liston_post || m.orientacion_listones_post || 'horizontal';
         const wUser = parseFloat(m.ancho_liston_post || m.medida_liston_post || m.alto_liston_amarre || m.ancho_liston);
         const wListonPost = (wUser && wUser > 0) ? wUser : 80;
         const hVanoUtilPost = Math.max(50, hCarcasa - (tienePiso ? t : 0) - (tieneTecho ? t : 0));
         const zStartPost = zBase + (tienePiso ? t : 0);
 
+        // Si el fondo es MDF enranurado (delante_liston), el listón se ubica DETRÁS del fondo
+        // a effDistRanura (18mm estándar) del borde posterior.
+        const effDistRanura = Math.max(18, distRanura || 18);
+        const yListonAmarre = (tipoFondo === 'mdf' && posFondo === 'delante_liston')
+          ? (profMod - effDistRanura)
+          : (yCarcasaStart + profCarcasa - t);
+        const espListon = (tipoFondo === 'mdf' && posFondo === 'delante_liston')
+          ? effDistRanura
+          : t;
+
         if (orientacionPost === 'vertical') {
           // Listones VERTICALES en el fondo
           if (cantPost === 1) {
-            const xPos = xMod + xOffsetInt + (anchoInt / 2) - (wListonPost / 2);
+            const xPos = xMod + xOffsetInt + Math.round((anchoInt - wListonPost) / 2);
             prismas.push({
-              x: xPos, y: yCarcasaStart + profCarcasa - t, z: zStartPost,
-              dx: wListonPost, dy: t, dz: hVanoUtilPost,
-              mat, name: `M${idx + 1} Listón Fondo Vertical Central`,
+              x: xPos, y: yListonAmarre, z: zStartPost,
+              dx: wListonPost, dy: espListon, dz: hVanoUtilPost,
+              mat, name: `M${idx + 1} Listón Fondo Vertical Central (${wListonPost}x${hVanoUtilPost}mm)`,
               moduloIndex: idx
             });
           } else {
@@ -1150,8 +1264,8 @@ const Preview3D = (function() {
               else nom += `Intermedio ${k}`;
 
               prismas.push({
-                x: xPos, y: yCarcasaStart + profCarcasa - t, z: zStartPost,
-                dx: wListonPost, dy: t, dz: hVanoUtilPost,
+                x: xPos, y: yListonAmarre, z: zStartPost,
+                dx: wListonPost, dy: espListon, dz: hVanoUtilPost,
                 mat, name: nom,
                 moduloIndex: idx
               });
@@ -1160,13 +1274,30 @@ const Preview3D = (function() {
         } else {
           // Listones HORIZONTALES en el fondo (repartidos a lo alto)
           if (cantPost === 1) {
+            const zPos = zBase + hCarcasa - (tieneTecho ? t : 0) - wListonPost;
             prismas.push({
-              x: xMod + xOffsetInt, y: yCarcasaStart + profCarcasa - t, z: zBase + hCarcasa - t - wListonPost,
-              dx: anchoInt, dy: t, dz: wListonPost,
-              mat, name: `M${idx + 1} Listón Posterior Superior`,
+              x: xMod + xOffsetInt, y: yListonAmarre, z: zPos,
+              dx: anchoInt, dy: espListon, dz: wListonPost,
+              mat, name: `M${idx + 1} Listón Posterior Superior (${anchoInt}x${wListonPost}mm)`,
+              moduloIndex: idx
+            });
+          } else if (cantPost === 2) {
+            // 1 Superior y 1 Inferior
+            const zSup = zBase + hCarcasa - (tieneTecho ? t : 0) - wListonPost;
+            prismas.push({
+              x: xMod + xOffsetInt, y: yListonAmarre, z: zSup,
+              dx: anchoInt, dy: espListon, dz: wListonPost,
+              mat, name: `M${idx + 1} Listón Posterior Superior (${anchoInt}x${wListonPost}mm)`,
+              moduloIndex: idx
+            });
+            prismas.push({
+              x: xMod + xOffsetInt, y: yListonAmarre, z: zStartPost,
+              dx: anchoInt, dy: espListon, dz: wListonPost,
+              mat, name: `M${idx + 1} Listón Posterior Inferior (${anchoInt}x${wListonPost}mm)`,
               moduloIndex: idx
             });
           } else {
+            // 3 o más listones distribuidos proporcionalmente a lo alto
             const espacioGaps = Math.max(0, hVanoUtilPost - (cantPost * wListonPost));
             const pasoGap = (cantPost > 1) ? (espacioGaps / (cantPost - 1)) : 0;
 
@@ -1178,8 +1309,8 @@ const Preview3D = (function() {
               else nom += `Intermedio ${k}`;
 
               prismas.push({
-                x: xMod + xOffsetInt, y: yCarcasaStart + profCarcasa - t, z: zPos,
-                dx: anchoInt, dy: t, dz: wListonPost,
+                x: xMod + xOffsetInt, y: yListonAmarre, z: zPos,
+                dx: anchoInt, dy: espListon, dz: wListonPost,
                 mat, name: nom,
                 moduloIndex: idx
               });
@@ -1187,13 +1318,6 @@ const Preview3D = (function() {
           }
         }
       }
-
-      // Fondo Posterior (Fondo Panel, MDF, Melamina o Ninguno)
-      const posFondo = m.posicion_fondo_mdf || 'delante_liston';
-      const grosorMdf = parseFloat(m.grosor_mdf) || 3;
-      const profRanura = (m.prof_ranura_mdf !== undefined) ? parseFloat(m.prof_ranura_mdf) : 8;
-      const distRanura = (m.dist_ranura_mdf !== undefined) ? Math.max(0, parseFloat(m.dist_ranura_mdf)) : 0;
-      const matMdfFondo = d.color_mdf || `MDF Fondo Blanco ${grosorMdf}mm`;
 
       if (tipoFondo === 'panel' || (esModuloVacio && tieneFondo)) {
         const tieneListonesPared = (m.panel_tiene_listones_pared !== false && m.panel_tiene_listones_pared !== 'false');
@@ -1298,7 +1422,6 @@ const Preview3D = (function() {
                 z: zListon,
                 dx: largoListonPanel,
                 dy: t,
-                dz: hListonPanel,
                 mat,
                 name: `M${idx + 1} Listón Anclaje Pared ${k + 1} (${largoListonPanel}x${hListonPanel}mm)`,
                 moduloIndex: idx
@@ -1308,16 +1431,25 @@ const Preview3D = (function() {
         }
       } else if (tipoFondo === 'mdf') {
         if (posFondo === 'delante_liston') {
-          // Fondo incrustado en ranura con retranqueo posterior (0mm = al borde posterior)
+          // Fondo incrustado en ranura con retranqueo posterior (mínimo 18mm para amarres).
+          // Fórmula oficial de taller (reglas_del_proyecto.md Section 2.3):
+          // Ancho Fondo MDF = Ancho Interior Vano + (2 * Profundidad Ranura) - 2 mm
+          // Alto Fondo MDF  = Alto Interior Vano  + (2 * Profundidad Ranura) - 2 mm
+          const holguraMdf = 1.0;  // holgura térmica por lado (2mm total)
+          const effDistRanura = Math.max(18, distRanura || 18);
           const hVanoPost = Math.max(0, hCarcasa - (tienePiso ? t : 0) - (tieneTecho ? t : 0));
-          const wMdf = anchoInt + (2 * profRanura) - 2;
-          const hMdf = hVanoPost + (2 * profRanura) - 2;
+          const wMdf = anchoInt + (2 * profRanura) - (2 * holguraMdf);
+          const hMdf = hVanoPost + (2 * profRanura) - (2 * holguraMdf);
+          // Posición X: entra profRanura - holgura en el lateral izquierdo
+          const xMdf = xMod + xOffsetInt - profRanura + holguraMdf;
+          // Posición Z: entra profRanura - holgura en el piso
+          const zMdf = zIntBase - profRanura + holguraMdf;
           prismas.push({
-            x: xMod + xOffsetInt - profRanura + 1,
-            y: profMod - distRanura - grosorMdf,
-            z: zIntBase - profRanura + 1,
+            x: xMdf,
+            y: profMod - effDistRanura - grosorMdf,
+            z: zMdf,
             dx: wMdf, dy: grosorMdf, dz: hMdf,
-            mat: matMdf, name: `M${idx + 1} Fondo MDF Ranurado ${grosorMdf}mm (Prof. Post: ${distRanura}mm)`,
+            mat: matMdf, name: `M${idx + 1} Fondo MDF Ranurado ${grosorMdf}mm (Retranqueo: ${effDistRanura}mm)`,
             moduloIndex: idx
           });
         } else {
@@ -1490,10 +1622,14 @@ const Preview3D = (function() {
         }
 
         const altoBox = Math.max(60, Math.min(Math.round(altoFr - 42), 240));
-        const apertura = renderOptions.aperturaAnim || 0;
-        const pullY = -apertura * (largoSlide * 0.72);
 
         for (let c = 0; c < cantCaj; c++) {
+          const idCajon = `m${idx}_cajon_${c}`;
+          const aperturaCaj = (aperturasPiezas[idCajon] !== undefined)
+            ? aperturasPiezas[idCajon]
+            : (renderOptions.aperturaAnim || 0);
+          const pullY = -aperturaCaj * (largoSlide * 0.72);
+
           const zFr = zFrBase + (c * (altoFr + luz));
           const yFr = yFrBase + pullY;
 
@@ -1503,7 +1639,11 @@ const Preview3D = (function() {
             dx: anchoFr, dy: t, dz: altoFr,
             mat: m.material_frentes || d.material_frentes || matFrentes,
             name: `M${idx + 1} Frente Cajón ${c + 1} (${montajeCaj === 'exterior' ? 'Tapa Exterior' : 'Embutido'})`,
-            moduloIndex: idx
+            moduloIndex: idx,
+            esMovil: true,
+            tipoMovil: 'cajon',
+            idMovil: idCajon,
+            nombrePieza: `Cajón ${c + 1} (Módulo ${idx + 1})`
           });
 
           // 2. Tirador metálico satinado en el frente
@@ -1515,12 +1655,16 @@ const Preview3D = (function() {
             dx: wTirador, dy: 18, dz: 12,
             mat: 'Herraje Metal Satinado',
             name: `M${idx + 1} Tirador Cajón ${c + 1}`,
-            moduloIndex: idx
+            moduloIndex: idx,
+            esMovil: true,
+            tipoMovil: 'cajon',
+            idMovil: idCajon,
+            nombrePieza: `Cajón ${c + 1} (Módulo ${idx + 1})`
           });
 
           // 3. Estructura 3D de la gaveta interior (Laterales, Contrafrente, Trasera y Fondo)
           const xBox = xMod + xOffsetInt + (descSlide / 2);
-          const yBox = (montajeCaj === 'exterior' ? yCarcasaStart : (yFr + t)) + pullY;
+          const yBox = (montajeCaj === 'exterior' ? yCarcasaStart : (yFrBase + t)) + pullY;
           const zBox = zFr + 16;
 
           // Lateral Izquierdo de gaveta (15mm)
@@ -1641,6 +1785,11 @@ const Preview3D = (function() {
         }
 
         for (let p = 0; p < cantP; p++) {
+          const idPuerta = `m${idx}_puerta_${p}`;
+          const aperturaPuerta = (aperturasPiezas[idPuerta] !== undefined)
+            ? aperturasPiezas[idPuerta]
+            : (renderOptions.aperturaAnim || 0);
+
           let xP = 0;
           let anchoHojaP = anchoP;
 
@@ -1673,19 +1822,21 @@ const Preview3D = (function() {
 
           // Definición cinemática de apertura
           let rot = null;
-          if (apertura > 0) {
+          if (aperturaPuerta > 0) {
             if (posicionP === 'superior') {
+              // Puerta con pistón a gas de maletero/altillo: abre HACIA AFUERA (-Y hacia el usuario) y hacia ARRIBA (+Z)
               rot = {
                 eje: 'X',
-                anguloRad: apertura * (70 * Math.PI / 180),
+                anguloRad: -aperturaPuerta * (80 * Math.PI / 180),
                 pivotX: xP,
                 pivotY: yP + t,
                 pivotZ: zP + altoP
               };
             } else if (posicionP === 'inferior') {
+              // Puerta abatible hacia abajo: abre HACIA AFUERA (-Y) y hacia ABAJO (-Z)
               rot = {
                 eje: 'X',
-                anguloRad: -apertura * (75 * Math.PI / 180),
+                anguloRad: aperturaPuerta * (80 * Math.PI / 180),
                 pivotX: xP,
                 pivotY: yP + t,
                 pivotZ: zP
@@ -1693,7 +1844,7 @@ const Preview3D = (function() {
             } else if (posicionP === 'derecha' || (posicionP === 'doble' && p === 1)) {
               rot = {
                 eje: 'Z',
-                anguloRad: apertura * (90 * Math.PI / 180),
+                anguloRad: aperturaPuerta * (90 * Math.PI / 180),
                 pivotX: xP + anchoHojaP,
                 pivotY: yP + t,
                 pivotZ: zP
@@ -1702,7 +1853,7 @@ const Preview3D = (function() {
               // Izquierda o doble hoja izquierda (p === 0)
               rot = {
                 eje: 'Z',
-                anguloRad: -apertura * (90 * Math.PI / 180),
+                anguloRad: -aperturaPuerta * (90 * Math.PI / 180),
                 pivotX: xP,
                 pivotY: yP + t,
                 pivotZ: zP
@@ -1719,7 +1870,11 @@ const Preview3D = (function() {
             mat: m.material_frentes || d.material_frentes || matFrentes,
             name: `M${idx + 1} Puerta Hoja ${p + 1} (${montajeP === 'exterior' ? 'Puerta Externa' : 'Puerta Embutida'}${xCentroParante !== null ? ' -> Cierre a Parante Central' : ''})`,
             moduloIndex: idx,
-            customCaras: customCarasPuerta
+            customCaras: customCarasPuerta,
+            esMovil: true,
+            tipoMovil: 'puerta',
+            idMovil: idPuerta,
+            nombrePieza: `Puerta ${p + 1} (Módulo ${idx + 1})`
           });
 
           // Tirador en la puerta
@@ -1735,7 +1890,11 @@ const Preview3D = (function() {
               mat: 'Herraje Metal Satinado',
               name: `M${idx + 1} Tirador Puerta ${p + 1}`,
               moduloIndex: idx,
-              customCaras: carasTirador
+              customCaras: carasTirador,
+              esMovil: true,
+              tipoMovil: 'puerta',
+              idMovil: idPuerta,
+              nombrePieza: `Puerta ${p + 1} (Módulo ${idx + 1})`
             });
           } else if (posicionP === 'inferior') {
             const wTirador = Math.min(180, anchoHojaP * 0.4);
@@ -1749,7 +1908,11 @@ const Preview3D = (function() {
               mat: 'Herraje Metal Satinado',
               name: `M${idx + 1} Tirador Puerta ${p + 1}`,
               moduloIndex: idx,
-              customCaras: carasTirador
+              customCaras: carasTirador,
+              esMovil: true,
+              tipoMovil: 'puerta',
+              idMovil: idPuerta,
+              nombrePieza: `Puerta ${p + 1} (Módulo ${idx + 1})`
             });
           } else {
             // Tirador vertical
@@ -1766,7 +1929,11 @@ const Preview3D = (function() {
               mat: 'Herraje Metal Satinado',
               name: `M${idx + 1} Tirador Puerta ${p + 1}`,
               moduloIndex: idx,
-              customCaras: carasTirador
+              customCaras: carasTirador,
+              esMovil: true,
+              tipoMovil: 'puerta',
+              idMovil: idPuerta,
+              nombrePieza: `Puerta ${p + 1} (Módulo ${idx + 1})`
             });
           }
 
@@ -1900,6 +2067,7 @@ const Preview3D = (function() {
     // ESTADO 1: VACÍO (Lado derecho vacío con retícula milimétrica y guía CAD)
     // =========================================================================
     if (d.estado === 'vacio' || anchoTotal <= 0 || altoTotal <= 0 || profTotal <= 0) {
+      carasRenderizadas = [];
       dibujarEstadoVacio(w, h, isDark);
       return;
     }
@@ -2021,7 +2189,11 @@ const Preview3D = (function() {
             esNoPermitido: !!prisma.esNoPermitido,
             esZocaloBase: !!esZocaloBase,
             esCazoleta: !!fc.esCazoleta || !!prisma.esCazoleta,
-            esHerraje: !!fc.esHerraje || !!prisma.esHerraje
+            esHerraje: !!fc.esHerraje || !!prisma.esHerraje,
+            esMovil: !!prisma.esMovil,
+            idMovil: prisma.idMovil,
+            tipoMovil: prisma.tipoMovil,
+            nombrePieza: prisma.nombrePieza
           });
         }
       });
@@ -2029,6 +2201,7 @@ const Preview3D = (function() {
 
     // Ordenar caras de atrás hacia adelante (Algoritmo del Pintor)
     caras.sort((a, b) => b.profundidadVista - a.profundidadVista);
+    carasRenderizadas = caras;
 
     // Dibujar las caras proyectadas
     const modoAlambre = renderOptions.modoRender === 'alambre';
@@ -2806,11 +2979,37 @@ const Preview3D = (function() {
    * Detecta clics sobre el canvas para seleccionar el módulo correspondiente.
    */
   function onCanvasClick(e) {
-    if (!onModuleSelectCallback || !currentData.modulos || currentData.modulos.length === 0) return;
-
     const rect = canvas.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const clickY = e.clientY - rect.top;
+
+    // 1. MODO SIMULACIÓN INTERACTIVA: Si está activo, un clic sobre una puerta o cajón cerrado lo abre, y si está abierto lo cierra
+    if (modoSimulacion) {
+      // Buscar la cara móvil más cercana al usuario que contenga las coordenadas del clic
+      const caraClickeada = carasRenderizadas.slice().reverse().find(c => {
+        return c.esMovil && c.puntos && puntoEnPoligono2D(clickX, clickY, c.puntos);
+      });
+
+      if (caraClickeada && caraClickeada.idMovil) {
+        const id = caraClickeada.idMovil;
+        const actual = aperturasPiezas[id] !== undefined ? aperturasPiezas[id] : (renderOptions.aperturaAnim || 0);
+        const meta = (actual > 0.4) ? 0.0 : 1.0;
+        animarAperturaPieza(id, meta);
+
+        if (typeof onElementoSimuladoCallback === 'function') {
+          onElementoSimuladoCallback({
+            idMovil: id,
+            tipoMovil: caraClickeada.tipoMovil,
+            nombrePieza: caraClickeada.nombrePieza,
+            estado: (meta === 1.0) ? 'abierto' : 'cerrado'
+          });
+        }
+        return;
+      }
+    }
+
+    // 2. MODO NORMAL: Detección de clics para selección de módulos
+    if (!onModuleSelectCallback || !currentData.modulos || currentData.modulos.length === 0) return;
 
     const d = currentData;
     const geomMapeo = calcularGeometriaColumnasYApilado(d.modulos);
@@ -2854,6 +3053,11 @@ const Preview3D = (function() {
     toggleCotas,
     setAperturaAnim,
     getAperturaAnim,
+    setModoSimulacion,
+    getModoSimulacion,
+    toggleModoSimulacion,
+    animarAperturaPieza,
+    setOnElementoSimuladoCallback,
     resize: ajustarTamano,
     render,
     generarPrismas: generarPrismasModulos,

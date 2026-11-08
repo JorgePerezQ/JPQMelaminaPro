@@ -1021,16 +1021,35 @@ module JPQMelaminaPro
 
       # ========================================================================
       # Método: agregar_fondo_enranurado
-      # Descripción: Crea el fondo MDF 3mm ajustado a la ranura con holgura térmica.
+      # Descripción: Crea el fondo MDF 3mm ajustado a la ranura con descuento
+      #              correcto de tapacanto (delgado 0.45mm en cara trasera de
+      #              laterales y cara de ranura en piso/techo) y holgura térmica.
+      # Parámetros:
+      #   - ancho_int_num : ancho interior bruto (sin tapacantos)
+      #   - alto_util_num : alto útil bruto del vano (sin tapacantos)
+      #   - prof_ran_num  : profundidad de la ranura en mm (ej: 8)
+      #   - dist_ran_num  : distancia del borde trasero a la ranura en mm (ej: 18)
+      #   - z_base        : posición Z de inicio del vano (ej: alto_zocalo)
       # ========================================================================
       def agregar_fondo_enranurado(parent, mod_id, t, prof_total, alto_util, ancho_int_num, alto_util_num, t_num, prof_ran_num, dist_ran_num, z_base = 0.mm)
-        fondo_ancho_num = ancho_int_num + (2 * prof_ran_num) - 2.0
-        fondo_alto_num  = alto_util_num + (2 * prof_ran_num) - 2.0
+        # Tolerancia térmica de 2mm (1mm por lado) según reglas_del_proyecto.md Section 2.3:
+        # Ancho Fondo MDF = Ancho Interior Vano + (2 * Profundidad Ranura) - 2 mm
+        # Alto Fondo MDF  = Alto Interior Vano  + (2 * Profundidad Ranura) - 2 mm
+        holgura = 1.0    # holgura térmica por lado
+        eff_dist_ran = (dist_ran_num >= 18.0) ? dist_ran_num : 18.0
+
+        fondo_ancho_num = ancho_int_num + (2.0 * prof_ran_num) - (2.0 * holgura)
+        fondo_alto_num  = alto_util_num + (2.0 * prof_ran_num) - (2.0 * holgura)
         t_fondo = 3.0.mm
 
-        pos_y = prof_total - dist_ran_num.mm - t_fondo
-        pos_x = t - prof_ran_num.mm + 1.mm
-        pos_z = z_base + t - prof_ran_num.mm + 1.mm
+        # Posición Y: a eff_dist_ran del borde posterior bruto
+        pos_y = prof_total - eff_dist_ran.mm - t_fondo
+
+        # Posición X: el fondo entra prof_ran - holgura en la ranura del lateral izquierdo
+        pos_x = t - prof_ran_num.mm + holgura.mm
+
+        # Posición Z: el fondo entra prof_ran - holgura en la ranura del piso
+        pos_z = z_base + t - prof_ran_num.mm + holgura.mm
 
         crear_panel(
           parent, 'Fondo MDF 3mm',
@@ -1047,6 +1066,8 @@ module JPQMelaminaPro
           }
         )
       end
+
+      public
 
       # ========================================================================
       # Método: crear_tubo_perchero

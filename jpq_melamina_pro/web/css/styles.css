@@ -1223,13 +1223,20 @@ optgroup {
   max-width: 440px;
   flex-shrink: 0;
   height: 100%;
-  overflow-y: auto;
+  max-height: 100%;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
   padding: 14px 16px;
   background-color: var(--bg-surface);
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   gap: 12px;
+  box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: #94A3B8 var(--bg-hover);
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 
 .panel-right-viewport {
@@ -2346,6 +2353,1001 @@ body.theme-taller .btn-group-segmented .btn:hover {
   background: var(--bg-hover);
 }
 
+/* ==============================================================================
+   SISTEMA DE SECCIONES COLAPSABLES (ACCORDION PROFESIONAL)
+   Patrón <details>/<summary> con animación y diseño PrimeNG.
+   ============================================================================== */
 
+/* Contenedor colapsable principal (Inmune a compresión o superposición) */
+.panel-section {
+  flex-shrink: 0 !important;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.panel-section:hover {
+  border-color: rgba(37, 99, 235, 0.25);
+}
+
+.panel-section[open] {
+  box-shadow: var(--shadow-md);
+}
+
+/* Cabecera del accordion (summary) con fondo gris oscuro */
+.panel-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  background: #334155; /* Gris un poco oscuro profesional (Slate 700) */
+  color: #F8FAFC;
+  border-top-left-radius: calc(var(--radius-md) - 1px);
+  border-top-right-radius: calc(var(--radius-md) - 1px);
+  transition: background 0.15s ease, border-color 0.15s ease;
+  gap: 8px;
+}
+
+.panel-section:not([open]) .panel-section-header {
+  border-bottom-left-radius: calc(var(--radius-md) - 1px);
+  border-bottom-right-radius: calc(var(--radius-md) - 1px);
+}
+
+.panel-section[open] > .panel-section-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+}
+
+.panel-section-header::-webkit-details-marker {
+  display: none;
+}
+
+.panel-section-header::marker {
+  display: none;
+  content: "";
+}
+
+.panel-section-header:hover {
+  background: #3D4D65;
+}
+
+/* Adaptación a tema oscuro */
+body.theme-oscuro .panel-section-header {
+  background: #192231;
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+body.theme-oscuro .panel-section-header:hover {
+  background: #232F42;
+}
+
+/* Adaptación a tema taller madera */
+body.theme-taller .panel-section-header {
+  background: #332B27; /* Gris oscuro cálido maderero */
+  border-bottom-color: rgba(0, 0, 0, 0.3);
+}
+
+body.theme-taller .panel-section-header:hover {
+  background: #3F3530;
+}
+
+/* Botones y badges en cabecera gris oscuro */
+.panel-section-header .btn-outline {
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #F8FAFC;
+}
+
+.panel-section-header .btn-outline:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: #FFFFFF;
+  color: #FFFFFF;
+}
+
+.panel-section-header .badge-normal {
+  background: rgba(255, 255, 255, 0.15);
+  color: #F8FAFC;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+/* Indicador de paso numérico */
+.step-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 800;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.3);
+}
+
+body.theme-taller .step-indicator {
+  background: var(--primary);
+  box-shadow: 0 1px 3px rgba(217, 119, 6, 0.3);
+}
+
+/* Título y subtítulo del section header */
+.section-title-group {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.section-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #F8FAFC;
+  line-height: 1.25;
+  white-space: normal;
+  word-break: normal;
+  overflow: visible;
+}
+
+.section-subtitle {
+  font-size: 10px;
+  color: #94A3B8;
+  line-height: 1.3;
+  margin-top: 1px;
+}
+
+body.theme-taller .section-subtitle {
+  color: #A8A29E;
+}
+
+/* Flecha de expand/collapse */
+.section-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  font-size: 11px;
+  color: #CBD5E1;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+.panel-section[open] > .panel-section-header .section-chevron {
+  transform: rotate(90deg);
+}
+
+/* Contenido colapsable */
+.panel-section-body {
+  padding: 10px 14px 14px 14px;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-card);
+  box-sizing: border-box;
+}
+
+/* Barra de metadatos / badges junto al header */
+.section-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* ==============================================================================
+   BARRAS DE ACCIONES AGRUPADAS (TOOLBAR STRIPS)
+   ============================================================================== */
+
+/* Toolbar horizontal compacta para acciones relacionadas */
+.action-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 0;
+  flex-wrap: wrap;
+}
+
+.action-toolbar-end {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+/* Toolbar con fondo y borde (destacada) */
+.action-toolbar-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--bg-hover);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  flex-wrap: wrap;
+}
+
+/* ==============================================================================
+   SEPARADORES Y DIVISORES DE SECCIÓN
+   ============================================================================== */
+
+/* Divisor con título inline */
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 8px 0;
+}
+
+.section-divider::before,
+.section-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border-color);
+}
+
+.section-divider-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+/* Divisor simple */
+.divider-line {
+  height: 1px;
+  background: var(--border-color);
+  margin: 10px 0;
+  border: none;
+}
+
+.divider-dashed {
+  height: 0;
+  border: none;
+  border-top: 1px dashed var(--border-color);
+  margin: 8px 0;
+}
+
+/* ==============================================================================
+   PANELES DE INFORMACIÓN COLOREADOS
+   ============================================================================== */
+
+/* Barra informativa con icono lateral */
+.info-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 10.5px;
+  line-height: 1.4;
+}
+
+.info-bar-primary {
+  background: rgba(37, 99, 235, 0.08);
+  border-left: 3px solid var(--primary);
+  color: var(--primary);
+}
+
+body.theme-taller .info-bar-primary {
+  background: rgba(217, 119, 6, 0.08);
+  border-left-color: var(--primary);
+  color: var(--primary);
+}
+
+.info-bar-accent {
+  background: rgba(14, 165, 233, 0.08);
+  border-left: 3px solid var(--accent);
+  color: var(--accent);
+}
+
+.info-bar-success {
+  background: rgba(16, 185, 129, 0.06);
+  border-left: 3px solid #10B981;
+  color: #059669;
+}
+
+/* ==============================================================================
+   PANELES DE COLOR / MATERIAL (Exterior, Interior, MDF)
+   ============================================================================== */
+
+.color-panel {
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  margin-top: 6px;
+}
+
+.color-panel-exterior {
+  background: rgba(59, 130, 246, 0.03);
+}
+
+body.theme-taller .color-panel-exterior {
+  background: rgba(217, 119, 6, 0.04);
+}
+
+.color-panel-interior {
+  background: rgba(16, 185, 129, 0.03);
+}
+
+.color-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.color-panel-title {
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.color-panel-title-ext {
+  color: var(--primary);
+}
+
+.color-panel-title-int {
+  color: #059669;
+}
+
+.color-panel-actions {
+  display: flex;
+  gap: 4px;
+}
+
+/* Preview de material / swatch horizontal */
+.material-preview-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 5px;
+  padding: 4px 8px;
+  background: var(--bg-hover);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  font-size: 10px;
+}
+
+.material-preview-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.material-swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  flex-shrink: 0;
+}
+
+/* ==============================================================================
+   FICHA RESUMEN DE PLANTILLA SELECCIONADA
+   ============================================================================== */
+
+.preset-summary-card {
+  padding: 7px 10px;
+  background: var(--bg-hover);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  font-size: 10.5px;
+  line-height: 1.35;
+  margin-top: 6px;
+}
+
+.preset-summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.preset-summary-name {
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.preset-summary-badges {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.preset-summary-detail {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+/* ==============================================================================
+   CONTROL DE APLICACIÓN PRESET (Auto-armar + Aplicar)
+   ============================================================================== */
+
+.preset-apply-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.preset-apply-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 0;
+}
+
+/* ==============================================================================
+   SELECTOR DE ESQUEMA DE COLOR (Segmented Control Unicolor/Bicolor)
+   ============================================================================== */
+
+.esquema-color-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: var(--bg-hover);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  margin-top: 8px;
+  margin-bottom: 6px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.esquema-color-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.esquema-color-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+/* ==============================================================================
+   MDF COLOR SELECTOR INLINE
+   ============================================================================== */
+
+.mdf-color-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: var(--bg-hover);
+  margin-top: 6px;
+}
+
+.mdf-color-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mdf-color-swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  flex-shrink: 0;
+}
+
+.mdf-color-label {
+  font-size: 10px;
+  font-weight: 700;
+  margin-bottom: 0;
+  color: var(--text-primary);
+}
+
+/* ==============================================================================
+   SUBMÓDULOS STACK BOX (Subdivisión y apilado)
+   ============================================================================== */
+
+.submodulos-stack-box {
+  background: var(--bg-hover);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border-color);
+  margin-bottom: 10px;
+}
+
+.stack-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.stack-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stack-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* ==============================================================================
+   ZÓCALO INFO BAR (Base zócalo en módulo)
+   ============================================================================== */
+
+.zocalo-info-bar {
+  background: var(--bg-hover);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  margin-top: 8px;
+  border-left: 3px solid var(--primary);
+}
+
+body.theme-taller .zocalo-info-bar {
+  border-left-color: var(--primary);
+}
+
+.zocalo-info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.zocalo-info-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.zocalo-info-text {
+  font-size: 10px;
+  color: var(--text-muted);
+  display: block;
+  margin-top: 2px;
+}
+
+/* ==============================================================================
+   ACCESO RÁPIDO A MÓDULOS (Grid de chips)
+   ============================================================================== */
+
+.modulos-acceso-wrapper {
+  margin-top: 10px;
+  padding: 8px 10px;
+  background: var(--bg-hover);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+}
+
+.modulos-acceso-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.modulos-acceso-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.modulos-acceso-list {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* ==============================================================================
+   BOTÓN VOLVER A DISEÑO GENERAL
+   ============================================================================== */
+
+.btn-back-diseno {
+  margin-bottom: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* ==============================================================================
+   BADGE WARNING MEJORADO
+   ============================================================================== */
+
+.badge-warning {
+  background: #FEF3C7;
+  color: #92400E;
+}
+
+body.theme-oscuro .badge-warning {
+  background: rgba(245, 158, 11, 0.2);
+  color: #FBBF24;
+}
+
+body.theme-taller .badge-warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: #F59E0B;
+}
+
+/* ==============================================================================
+   BADGE SECONDARY
+   ============================================================================== */
+
+.badge-secondary {
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+/* ==============================================================================
+   SCROLL PERSONALIZADO PARA EL PANEL IZQUIERDO
+   ============================================================================== */
+
+.panel-left-config::-webkit-scrollbar {
+  width: 5px;
+}
+
+.panel-left-config::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.panel-left-config::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 10px;
+}
+
+.panel-left-config::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* ==============================================================================
+   RESPONSIVE: PANEL IZQUIERDO EN PANTALLAS PEQUEÑAS
+   ============================================================================== */
+
+@media (max-width: 900px) and (min-width: 651px) {
+  .panel-left-config {
+    width: 320px;
+    min-width: 300px;
+    max-width: 340px;
+  }
+}
+
+@media (max-width: 650px) {
+  .split-workspace {
+    flex-direction: column;
+  }
+
+  .panel-left-config {
+    width: 100%;
+    min-width: unset;
+    max-width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .panel-right-viewport {
+    min-width: unset;
+  }
+}
+
+@media (max-width: 600px) {
+  .panel-section-header {
+    padding: 8px 10px;
+  }
+
+  .panel-section-body {
+    padding: 0 10px 10px 10px;
+  }
+
+  .step-indicator {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    font-size: 10px;
+  }
+
+  .section-title {
+    font-size: 11.5px;
+  }
+
+  .esquema-color-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* ==============================================================================
+   FICHA DE RESUMEN Y PREVIEW DE MELAMINA EN PANEL LATERAL
+   ============================================================================== */
+
+.material-card-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 8px;
+  margin-bottom: 6px;
+  gap: 8px;
+}
+
+.material-card-preview:hover {
+  border-color: var(--primary);
+  background: rgba(37, 99, 235, 0.04);
+}
+
+body.theme-oscuro .material-card-preview:hover {
+  background: rgba(37, 99, 235, 0.1);
+}
+
+body.theme-taller .material-card-preview:hover {
+  background: rgba(217, 119, 6, 0.1);
+}
+
+.material-card-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.material-swatch-display {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: var(--radius-sm);
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  background: #F5F6F8;
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+}
+
+.material-card-data {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.material-card-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.material-brand-tag {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.material-card-name {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.material-card-detail {
+  font-size: 9.5px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+.btn-cambiar-textura {
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-weight: 600;
+  padding: 4px 8px;
+  font-size: 10px;
+}
+
+/* Fila de resumen de Fondo MDF 3mm */
+.mdf-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+  transition: all 0.15s ease;
+}
+
+.mdf-summary-row:hover {
+  border-color: var(--primary);
+}
+
+/* ==============================================================================
+   TABLA DE DESPIECE INTERACTIVA Y CONTROLES MILIMÉTRICOS DE TAPACANTOS
+   ============================================================================== */
+.despiece-interactive-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+}
+
+.despiece-interactive-table th {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  font-weight: 700;
+  padding: 8px 6px;
+  border-bottom: 2px solid var(--border-color);
+  font-size: 11px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.despiece-interactive-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+  font-size: 11px;
+}
+
+.despiece-interactive-table tr:hover td {
+  background: var(--bg-hover);
+}
+
+/* Grupo selector de tapacantos L1 / L2 / A1 / A2 */
+.canto-picker-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-surface);
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+}
+
+.canto-cell-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.canto-select-mini {
+  appearance: none;
+  -webkit-appearance: none;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 4px;
+  height: 22px;
+  border-radius: 3px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s ease;
+}
+
+.canto-select-mini:focus,
+.canto-select-mini:hover {
+  border-color: var(--primary);
+  outline: none;
+}
+
+/* Colores de cantos según espesor */
+.canto-select-mini[data-canto="0.0"],
+.canto-select-mini.canto-cero {
+  color: var(--text-muted);
+  background: transparent;
+  opacity: 0.75;
+}
+
+.canto-select-mini[data-canto="0.5"],
+.canto-select-mini.canto-delgado {
+  color: #0284C7;
+  border-color: rgba(2, 132, 199, 0.4);
+  background: rgba(2, 132, 199, 0.08);
+}
+
+.canto-select-mini[data-canto="1.0"],
+.canto-select-mini.canto-medio {
+  color: #8B5CF6;
+  border-color: rgba(139, 92, 246, 0.4);
+  background: rgba(139, 92, 246, 0.08);
+}
+
+.canto-select-mini[data-canto="2.0"],
+.canto-select-mini.canto-grueso {
+  color: #EA580C;
+  border-color: rgba(234, 88, 12, 0.4);
+  background: rgba(234, 88, 12, 0.1);
+}
+
+/* Celda destacada de Medida Neta */
+.medida-neta-cell {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 700;
+  font-size: 11.5px;
+  color: var(--primary);
+  white-space: nowrap;
+  letter-spacing: -0.2px;
+  transition: all 0.3s ease;
+}
+
+.medida-neta-pulse {
+  animation: pulseMedidaNeta 0.5s ease-out;
+}
+
+@keyframes pulseMedidaNeta {
+  0% { transform: scale(1.08); color: #10B981; }
+  100% { transform: scale(1); color: var(--primary); }
+}
+
+/* Botón rápido para quitar cantos o resetear */
+.btn-canto-action {
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 2px 4px;
+  border-radius: 3px;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1;
+  transition: all 0.15s ease;
+}
+
+.btn-canto-action:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-color);
+  color: #EF4444;
+}
 
 

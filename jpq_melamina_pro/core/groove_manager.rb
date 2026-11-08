@@ -61,14 +61,31 @@ module JPQMelaminaPro
           ancho_int_num = dict_mod['ancho_mm'].to_f - (2 * t_val)
           alto_int_num  = dict_mod['alto_mm'].to_f - (2 * t_val)
 
-          if tipo == 'ranura'
-            # FÓRMULA ESTÁNDAR: Ancho Interno + (2 * Profundidad Ranura) - 2mm de holgura
-            fondo_ancho_num = ancho_int_num + (2 * prof_ranura.to_mm) - 2.0
-            fondo_alto_num  = alto_int_num + (2 * prof_ranura.to_mm) - 2.0
+          # Espesores de tapacanto de las piezas que alojan la ranura:
+          #   - Laterales: canto_A2 = 0.45mm (cara trasera, delgado)
+          #   - Piso/Techo: canto_A2 = 0.0mm (la cara trasera no lleva tapacanto)
+          # El descuento por tapacanto delgado en cada lateral es 0.45mm.
+          # La holgura térmica total del fondo es 1mm por lado (2mm total).
+          tc_lat_trasero = 0.45  # tapacanto delgado en cara posterior de cada lateral
+          holgura_mm     = 1.0   # holgura térmica por cada lado (dentro de la ranura)
 
-            pos_x = t - prof_ranura + 1.mm
-            pos_y = prof_mod - dist_ranura - t_fondo
-            pos_z = t - prof_ranura + 1.mm
+          if tipo == 'ranura'
+            # FÓRMULA CORRECTA:
+            # El fondo debe entrar en la ranura que está a prof_ranura del borde del lateral.
+            # Tolerancia térmica de 2mm (1mm por lado) según reglas_del_proyecto.md Section 2.3:
+            # Ancho Fondo MDF = Ancho Interior Vano + (2 * Profundidad Ranura) - 2 mm
+            # Alto Fondo MDF  = Alto Interior Vano  + (2 * Profundidad Ranura) - 2 mm
+            prof_ran_mm   = prof_ranura.to_mm
+            eff_dist_ranura = (dist_ranura.to_mm >= 18.0) ? dist_ranura : 18.0.mm
+            fondo_ancho_num = ancho_int_num + (2.0 * prof_ran_mm) - (2.0 * holgura_mm)
+            fondo_alto_num  = alto_int_num  + (2.0 * prof_ran_mm) - (2.0 * holgura_mm)
+
+            # La posición X e Z del fondo entra prof_ranura - holgura dentro del canal
+            pos_x = t - prof_ranura + holgura_mm.mm
+            pos_z = t - prof_ranura + holgura_mm.mm
+
+            # Posición Y: el fondo se ubica a eff_dist_ranura + t_fondo del borde posterior
+            pos_y = prof_mod - eff_dist_ranura - t_fondo
 
             crear_fondo_panel(
               modulo, "Fondo MDF #{t_fondo_num.to_i}mm (Con Ranura)",
@@ -81,22 +98,31 @@ module JPQMelaminaPro
                 'espesor_mm' => t_fondo_num, 'largo_neto_mm' => fondo_alto_num,
                 'ancho_neto_mm' => fondo_ancho_num, 'cantidad' => 1,
                 'veta' => 'libre', 'canto_L1' => 0.0, 'canto_L2' => 0.0, 'canto_A1' => 0.0, 'canto_A2' => 0.0,
-                'ranura' => "R (Ranura 4x#{prof_ranura.to_mm.to_i}mm a 18mm)"
+                'ranura' => "R (Ranura 4x#{prof_ranura.to_mm.to_i}mm a #{eff_dist_ranura.to_mm.to_i}mm)"
               }
             )
 
-            # 2. INYECTAR AMARRES ESTRUCTURALES TRASEROS (Melamina 18mm x 100mm alto)
-            # Situados detrás del MDF (entre pos_y + t_fondo y prof_mod)
-            y_amarre = prof_mod - dist_ranura
-            alto_liston_num = 100.0
+            # 2. INYECTAR AMARRES ESTRUCTURALES TRASEROS (Melamina 18mm x 80mm alto)
+            # Se ubican DETRÁS del fondo MDF, ocupando el espacio desde pos_y + t_fondo hasta la pared posterior prof_mod
+            y_amarre = prof_mod - eff_dist_ranura
+            alto_liston_num = 80.0
             alto_liston = alto_liston_num.mm
+            esp_amarre = eff_dist_ranura
+
+            # El ancho del amarre es el ancho interior NETO (sin invadir las ranuras de los laterales).
+            # Los amarres van entre los laterales: desde t hasta ancho_total - t (ancho_int_num).
+            ancho_amarre_num = ancho_int_num
+            ancho_amarre     = ancho_amarre_num.mm
 
             posiciones_z = []
             if cant_amarres == 1
-              posiciones_z << (alto_mod - t - alto_liston) # Solo superior
+              # Solo un amarre: se coloca en la zona superior (debajo del techo)
+              posiciones_z << (alto_mod - t - alto_liston)
             elsif cant_amarres >= 2
-              posiciones_z << (t) # Inferior (sobre el piso)
-              posiciones_z << (alto_mod - t - alto_liston) # Superior
+              # Amarre inferior: sobre el piso (en la ranura del piso)
+              posiciones_z << t
+              # Amarre superior: debajo del techo (en la ranura del techo)
+              posiciones_z << (alto_mod - t - alto_liston)
 
               if cant_amarres > 2
                 amarres_intermedios = cant_amarres - 2
@@ -108,16 +134,20 @@ module JPQMelaminaPro
               end
             end
 
+            # El espesor del amarre en Y no puede superar el espacio disponible entre el fondo y la pared
+            esp_amarre_disponible = prof_mod - y_amarre
+            esp_amarre = [t, esp_amarre_disponible].min
+
             posiciones_z.each_with_index do |z_am, idx|
               CabinetBuilder.crear_panel(
                 modulo, "Amarre Trasero #{idx + 1}",
                 t, y_amarre, z_am,
-                ancho_int_num.mm, t, alto_liston,
+                ancho_amarre, esp_amarre, alto_liston,
                 {
                   'modulo_id' => modulo_id, 'pieza_id' => "#{modulo_id}-AMARRE-TRAS-#{idx + 1}",
                   'pieza_nombre' => "Amarre Trasero #{idx + 1}", 'material' => material,
-                  'largo_bruto_mm' => ancho_int_num, 'ancho_bruto_mm' => alto_liston_num,
-                  'espesor_mm' => t_val, 'largo_neto_mm' => ancho_int_num - 1.0,
+                  'largo_bruto_mm' => ancho_amarre_num, 'ancho_bruto_mm' => alto_liston_num,
+                  'espesor_mm' => t_val, 'largo_neto_mm' => ancho_amarre_num - 1.0,
                   'ancho_neto_mm' => alto_liston_num - 1.0, 'cantidad' => 1,
                   'veta' => 'longitudinal',
                   'canto_L1' => 0.5, 'canto_L2' => 0.0, 'canto_A1' => 0.0, 'canto_A2' => 0.0,
