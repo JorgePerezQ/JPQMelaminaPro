@@ -644,8 +644,14 @@ module JPQMelaminaPro
             }]
           end
 
-          # Grupo contenedor principal en SketchUp
-          grupo_composicion = model.active_entities.add_group
+          # Grupo contenedor principal en SketchUp (soporta edición paramétrica in-place)
+          es_edicion = params['target_group'] && params['target_group'].valid?
+          if es_edicion
+            grupo_composicion = params['target_group']
+            grupo_composicion.entities.clear!
+          else
+            grupo_composicion = model.active_entities.add_group
+          end
           grupo_composicion.name = "Mueble Modular #{ancho_total_num.to_i}x#{alto_total_num.to_i}x#{prof_total_num.to_i}mm (#{modulos_data.length} Módulos)"
 
           dict_comp = grupo_composicion.attribute_dictionary('DespieceMelaModulo', true)
@@ -2191,7 +2197,7 @@ module JPQMelaminaPro
           end
           otros_elementos.reject! { |e| e.bounds.empty? }
 
-          unless otros_elementos.empty?
+          unless otros_elementos.empty? || es_edicion
             max_x = otros_elementos.map { |e| e.bounds.max.x }.max
             if max_x && max_x.to_f.finite?
               separacion = 300.mm

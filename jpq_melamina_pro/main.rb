@@ -21,6 +21,7 @@ require_relative 'core/spatial_matrix_builder'
 require_relative 'core/kinematics_engine'
 require_relative 'core/electrical_engine'
 require_relative 'core/parametric_modifier'
+require_relative 'core/realtime_module_editor_tool'
 require_relative 'core/interior_divider'
 require_relative 'core/drawer_builder'
 require_relative 'core/groove_manager'
@@ -145,10 +146,12 @@ module JPQMelaminaPro
       cmd_base.large_icon = File.join(icons_dir, 'mod_base_24.png')
       toolbar.add_item(cmd_base)
 
-      # 2. Modificar Módulo Seleccionado
-      cmd_edit = UI::Command.new('Editar Módulo') { abrir_estudio_espacial }
-      cmd_edit.tooltip = 'Editar Módulo Paramétrico en Tiempo Real'
-      cmd_edit.status_bar_text = 'Ajusta cotas milimétricas del mueble seleccionado'
+      # 2. Modificar Módulo Seleccionado en Tiempo Real (Arrastrar con el ratón)
+      cmd_edit = UI::Command.new('Editar en Tiempo Real') do
+        Sketchup.active_model.select_tool(JPQMelaminaPro::RealtimeModuleEditorTool.new)
+      end
+      cmd_edit.tooltip = 'Editar Módulo en Tiempo Real (Arrastra con el ratón para modificar ancho y alto)'
+      cmd_edit.status_bar_text = 'Haz clic en un módulo y arrastra (Arriba/Abajo: Altura | Izquierda/Derecha: Ancho sin superar el mueble)'
       cmd_edit.small_icon = File.join(icons_dir, 'mod_edit_16.png')
       cmd_edit.large_icon = File.join(icons_dir, 'mod_edit_24.png')
       toolbar.add_item(cmd_edit)
@@ -243,6 +246,9 @@ module JPQMelaminaPro
       end
       menu.add_item('Herramienta Ocultar / Ver Piezas (Clic para Ocultar / Mostrar)') do
         Sketchup.active_model.select_tool(JPQMelaminaPro::OcultarVisualizarPiezaTool.new)
+      end
+      menu.add_item('Herramienta Editar en Tiempo Real (Arrastrar Ancho / Alto)') do
+        Sketchup.active_model.select_tool(JPQMelaminaPro::RealtimeModuleEditorTool.new)
       end
       menu.add_item('Alternar Cotas Técnicas 3D') do
         capa = Sketchup.active_model.layers['JPQ_Cotas_Tecnicas']
