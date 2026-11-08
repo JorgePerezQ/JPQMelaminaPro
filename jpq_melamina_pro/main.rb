@@ -181,6 +181,16 @@ module JPQMelaminaPro
       cmd_sim_tool.large_icon = File.join(icons_dir, 'puertas_24.png')
       toolbar.add_item(cmd_sim_tool)
 
+      # 4c. Selector de Modo Ocultar / Visualizar Piezas por Clic
+      cmd_ocultar_tool = UI::Command.new('Ocultar/Ver Piezas') do
+        Sketchup.active_model.select_tool(JPQMelaminaPro::OcultarVisualizarPiezaTool.new)
+      end
+      cmd_ocultar_tool.tooltip = 'Modo Ocultar/Visualizar: Clic sobre cualquier pieza para ocultarla o volver a mostrarla'
+      cmd_ocultar_tool.status_bar_text = 'Oculta piezas para ver el interior del mueble; al salir todas volverán a mostrarse'
+      cmd_ocultar_tool.small_icon = File.join(icons_dir, 'mod_edit_16.png')
+      cmd_ocultar_tool.large_icon = File.join(icons_dir, 'mod_edit_24.png')
+      toolbar.add_item(cmd_ocultar_tool)
+
       toolbar.add_separator
 
       # 5. Catálogo de Melaminas, RH y Tapacantos
@@ -230,6 +240,9 @@ module JPQMelaminaPro
       end
       menu.add_item('Herramienta Modo Simulación (Clic para Abrir / Cerrar)') do
         Sketchup.active_model.select_tool(JPQMelaminaPro::SimulacionInteractivaTool.new)
+      end
+      menu.add_item('Herramienta Ocultar / Ver Piezas (Clic para Ocultar / Mostrar)') do
+        Sketchup.active_model.select_tool(JPQMelaminaPro::OcultarVisualizarPiezaTool.new)
       end
       menu.add_item('Alternar Cotas Técnicas 3D') do
         capa = Sketchup.active_model.layers['JPQ_Cotas_Tecnicas']

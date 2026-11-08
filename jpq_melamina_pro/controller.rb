@@ -167,6 +167,17 @@ module JPQMelaminaPro
           Sketchup.active_model.select_tool(JPQMelaminaPro::SimulacionInteractivaTool.new)
         end
 
+        dialog.add_action_callback('activarHerramientaOcultarPiezas') do |_ctx, accion|
+          if accion == 'activar'
+            Sketchup.active_model.select_tool(JPQMelaminaPro::OcultarVisualizarPiezaTool.new)
+          else
+            tool_name = Sketchup.active_model.tools.active_tool_name.to_s
+            if tool_name.include?('OcultarVisualizar')
+              Sketchup.active_model.select_tool(nil)
+            end
+          end
+        end
+
         # --- HUB 4: MATERIALES, MELAMINA RH Y TAPACANTOS ---
         dialog.add_action_callback('obtenerCatalogoMateriales') do |_ctx, _params|
           catalogo = MaterialManager.obtener_catalogo

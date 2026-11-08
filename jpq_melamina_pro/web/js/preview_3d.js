@@ -47,6 +47,11 @@ const Preview3D = (function() {
   let carasRenderizadas = [];   // Caras proyectadas en pantalla para hit-testing de clics
   let onElementoSimuladoCallback = null;
 
+  // Modo Ocultar / Visualizar Pieza interactiva por clic (mostrar perímetro con líneas punteadas)
+  let modoOcultarPiezas = false;
+  const piezasOcultas = new Set(); // Conjunto de idPieza ocultas
+  let onPiezaVisibilidadCallback = null;
+
   // Callback cuando se hace clic sobre un módulo en el lienzo
   let onModuleSelectCallback = null;
 
@@ -397,14 +402,22 @@ const Preview3D = (function() {
       return;
     }
 
-    if (modoSimulacion && canvas) {
+    if ((modoSimulacion || modoOcultarPiezas) && canvas) {
       const rect = canvas.getBoundingClientRect();
       const mx = e.clientX - rect.left;
       const my = e.clientY - rect.top;
-      const sobreMovil = carasRenderizadas.slice().reverse().some(c => {
-        return c.esMovil && c.puntos && puntoEnPoligono2D(mx, my, c.puntos);
-      });
-      canvas.style.cursor = sobreMovil ? 'pointer' : 'default';
+
+      if (modoOcultarPiezas) {
+        const sobrePieza = carasRenderizadas.slice().reverse().some(c => {
+          return c.idPieza && c.puntos && puntoEnPoligono2D(mx, my, c.puntos);
+        });
+        canvas.style.cursor = sobrePieza ? 'pointer' : 'default';
+      } else if (modoSimulacion) {
+        const sobreMovil = carasRenderizadas.slice().reverse().some(c => {
+          return c.esMovil && c.puntos && puntoEnPoligono2D(mx, my, c.puntos);
+        });
+        canvas.style.cursor = sobreMovil ? 'pointer' : 'default';
+      }
     }
   }
 
@@ -414,7 +427,7 @@ const Preview3D = (function() {
   function onMouseUp() {
     camera.isDragging = false;
     if (canvas) {
-      canvas.style.cursor = modoSimulacion ? 'default' : 'grab';
+      canvas.style.cursor = (modoSimulacion || modoOcultarPiezas) ? 'default' : 'grab';
     }
   }
 
@@ -514,6 +527,44 @@ const Preview3D = (function() {
   function toggleModoSimulacion() {
     setModoSimulacion(!modoSimulacion);
     return modoSimulacion;
+  }
+
+  /**
+   * Activa o desactiva el modo interactivo para ocultar/visualizar piezas por clic.
+   * Si se desactiva, todas las piezas que se encuentren ocultas se restauran inmediatamente.
+   * @param {boolean} activo
+   */
+  function setModoOcultarPiezas(activo) {
+    modoOcultarPiezas = !!activo;
+    if (!modoOcultarPiezas) {
+      piezasOcultas.clear();
+    }
+    if (canvas) {
+      canvas.style.cursor = (modoOcultarPiezas || modoSimulacion) ? 'default' : 'grab';
+    }
+    render();
+  }
+
+  function getModoOcultarPiezas() {
+    return modoOcultarPiezas;
+  }
+
+  function toggleModoOcultarPiezas() {
+    setModoOcultarPiezas(!modoOcultarPiezas);
+    return modoOcultarPiezas;
+  }
+
+  function setOnPiezaVisibilidadCallback(cb) {
+    onPiezaVisibilidadCallback = cb;
+  }
+
+  function getPiezasOcultas() {
+    return Array.from(piezasOcultas);
+  }
+
+  function mostrarTodasLasPiezas() {
+    piezasOcultas.clear();
+    render();
   }
 
   /**
@@ -2139,6 +2190,20 @@ const Preview3D = (function() {
     const prismas = generarPrismasModulos();
     const caras = [];
 
+    // Asignar ID único y nombre descriptivo a cada prisma para el selector de ocultar/visualizar
+    const contadoresTipoPrisma = {};
+    prismas.forEach((prisma, idxP) => {
+      if (!prisma.idPieza) {
+        const tipoP = prisma.tipoPieza || (prisma.esZocaloFrontal ? 'zocalo_frontal' : (prisma.esZocaloBase ? 'zocalo' : (prisma.name ? prisma.name.replace(/\s+/g, '_').toLowerCase() : 'pieza')));
+        const modTag = (prisma.moduloIndex !== undefined && prisma.moduloIndex >= 0) ? `m${prisma.moduloIndex + 1}` : 'base';
+        contadoresTipoPrisma[tipoP] = (contadoresTipoPrisma[tipoP] || 0) + 1;
+        prisma.idPieza = prisma.idMovil || `${modTag}_${tipoP}_${contadoresTipoPrisma[tipoP]}`;
+      }
+      if (!prisma.nombrePieza) {
+        prisma.nombrePieza = prisma.name || prisma.idPieza;
+      }
+    });
+
     const lightDir = { x: 0.5, y: -0.7, z: 0.8 };
     const lLen = Math.sqrt(lightDir.x * lightDir.x + lightDir.y * lightDir.y + lightDir.z * lightDir.z);
     lightDir.x /= lLen; lightDir.y /= lLen; lightDir.z /= lLen;
@@ -2193,7 +2258,9 @@ const Preview3D = (function() {
             esMovil: !!prisma.esMovil,
             idMovil: prisma.idMovil,
             tipoMovil: prisma.tipoMovil,
-            nombrePieza: prisma.nombrePieza
+            nombrePieza: prisma.nombrePieza,
+            idPieza: prisma.idPieza,
+            estaOculta: piezasOcultas.has(prisma.idPieza)
           });
         }
       });
@@ -2207,6 +2274,28 @@ const Preview3D = (function() {
     const modoAlambre = renderOptions.modoRender === 'alambre';
 
     caras.forEach(cara => {
+      const estaOculta = piezasOcultas.has(cara.idPieza);
+
+      ctx.beginPath();
+      ctx.moveTo(cara.puntos[0].px, cara.puntos[0].py);
+      for (let i = 1; i < cara.puntos.length; i++) {
+        ctx.lineTo(cara.puntos[i].px, cara.puntos[i].py);
+      }
+      ctx.closePath();
+
+      // Si la pieza está marcada como oculta:
+      // NO rellenamos con melamina opaca para que el usuario pueda ver el interior a través de ella.
+      // En su lugar, dibujamos líneas punteadas sobre todo el perímetro de la pieza.
+      if (estaOculta) {
+        ctx.save();
+        ctx.setLineDash([5, 4]); // Líneas punteadas nítidas
+        ctx.strokeStyle = isDark ? '#38BDF8' : '#0284C7';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.restore();
+        return;
+      }
+
       const paleta = obtenerPaleta(cara.mat);
       const [r, g, b] = paleta.base;
       const f = cara.factorLuz;
@@ -2230,13 +2319,6 @@ const Preview3D = (function() {
       const esActivo = (d.modo_seleccion === 'diseno' || d.modulo_activo === -1 || cara.esZocaloBase || sinModulos)
         ? true
         : (cara.moduloIndex === d.modulo_activo);
-
-      ctx.beginPath();
-      ctx.moveTo(cara.puntos[0].px, cara.puntos[0].py);
-      for (let i = 1; i < cara.puntos.length; i++) {
-        ctx.lineTo(cara.puntos[i].px, cara.puntos[i].py);
-      }
-      ctx.closePath();
 
       if (!modoAlambre) {
         const patron = (cara.esCazoleta || (cara.esListonSoporteZocalo && cara.esNoPermitido)) ? null : obtenerTexturaPatron(cara.mat);
@@ -3008,6 +3090,36 @@ const Preview3D = (function() {
       }
     }
 
+    // 1b. MODO OCULTAR / VISUALIZAR PIEZA INTERACTIVA:
+    // Al estar activo este selector las piezas sobre las que se hace clic se ocultan
+    // mostrándose en su lugar líneas punteadas sobre todo el perímetro.
+    // Si se hace clic sobre la pieza oculta, se vuelve a mostrar.
+    if (modoOcultarPiezas) {
+      const caraClickeada = carasRenderizadas.slice().reverse().find(c => {
+        return c.idPieza && c.puntos && puntoEnPoligono2D(clickX, clickY, c.puntos);
+      });
+
+      if (caraClickeada && caraClickeada.idPieza) {
+        const id = caraClickeada.idPieza;
+        const yaOculta = piezasOcultas.has(id);
+        if (yaOculta) {
+          piezasOcultas.delete(id);
+        } else {
+          piezasOcultas.add(id);
+        }
+        render();
+
+        if (typeof onPiezaVisibilidadCallback === 'function') {
+          onPiezaVisibilidadCallback({
+            idPieza: id,
+            nombrePieza: caraClickeada.nombrePieza || id,
+            oculta: !yaOculta
+          });
+        }
+        return;
+      }
+    }
+
     // 2. MODO NORMAL: Detección de clics para selección de módulos
     if (!onModuleSelectCallback || !currentData.modulos || currentData.modulos.length === 0) return;
 
@@ -3056,6 +3168,12 @@ const Preview3D = (function() {
     setModoSimulacion,
     getModoSimulacion,
     toggleModoSimulacion,
+    setModoOcultarPiezas,
+    getModoOcultarPiezas,
+    toggleModoOcultarPiezas,
+    setOnPiezaVisibilidadCallback,
+    getPiezasOcultas,
+    mostrarTodasLasPiezas,
     animarAperturaPieza,
     setOnElementoSimuladoCallback,
     resize: ajustarTamano,

@@ -79,6 +79,16 @@
         <path d="m2 17 10 5 10-5"/>
         <path d="m2 12 10 5 10-5"/>
       </symbol>
+      <symbol id="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+        <circle cx="12" cy="12" r="3"/>
+      </symbol>
+      <symbol id="icon-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+        <line x1="2" x2="22" y1="2" y2="22"/>
+      </symbol>
     </defs>
   </svg>
 
@@ -1250,6 +1260,12 @@
             <svg class="svg-icon" style="width: 12px; height: 12px;"><use href="#icon-refresh"></use></svg>
             <span>Modo Simulación</span>
           </button>
+
+          <!-- Selector Modo Ocultar/Visualizar Pieza por Clic -->
+          <button type="button" id="btnToggleOcultarPiezaToolbar" class="btn btn-xs btn-outline" onclick="toggleModoOcultarPiezas()" title="Modo Ocultar/Visualizar: Haz clic sobre cualquier pieza para ocultarla (líneas punteadas) o volver a mostrarla" style="display: inline-flex; align-items: center; gap: 4px; font-weight: 600; margin-left: 6px;">
+            <svg class="svg-icon" style="width: 12px; height: 12px;"><use href="#icon-eye"></use></svg>
+            <span>Ocultar/Ver Piezas</span>
+          </button>
         </div>
 
         <!-- Botón Principal Destacado: Construir en SketchUp 3D -->
@@ -1271,6 +1287,10 @@
           <button type="button" id="btnModoSimulacion" class="canvas-selector-btn" onclick="toggleModoSimulacion()" title="Modo Simulación: Haz clic en cualquier puerta o cajón para abrirlo o cerrarlo en 3D" style="margin-left: 2px;">
             <svg class="svg-icon"><use href="#icon-refresh"></use></svg>
             <span>Simulación</span>
+          </button>
+          <button type="button" id="btnModoOcultarPiezas" class="canvas-selector-btn" onclick="toggleModoOcultarPiezas()" title="Modo Ocultar/Visualizar: Haz clic en cualquier pieza para ocultarla (líneas punteadas) o volver a mostrarla" style="margin-left: 2px;">
+            <svg class="svg-icon"><use href="#icon-eye"></use></svg>
+            <span>Ocultar/Ver</span>
           </button>
           <button type="button" id="btnScrollCanvasModsLeft" class="canvas-scroll-arrow-btn" onclick="scrollCanvasModulos(-120)" title="Ver módulos anteriores" style="display: none;">‹</button>
           <div id="canvasModuleButtonsContainer" class="canvas-module-buttons-group">

@@ -49,6 +49,7 @@ const AppState = {
   modoSeleccion: 'diseno', // 'diseno' (todo el mueble) | 'modulo' (módulo específico)
   moduloActivoIndex: 0,
   modoSimulacion: false,   // true = Modo interactivo de apertura de puertas y cajones por clic
+  modoOcultarPiezas: false,// true = Modo interactivo de ocultar/visualizar piezas con líneas punteadas
   modulos: [],
 
   // 4. Parámetros de Visualización Técnica
@@ -93,6 +94,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const accion = (info.estado === 'abierto') ? 'Abierto' : 'Cerrado';
         const desc = info.nombrePieza || (info.tipoMovil === 'cajon' ? 'Cajón' : 'Puerta');
         mostrarNotificacion(`🎮 ${desc}: ${accion}`, "info");
+      });
+    }
+
+    if (typeof Preview3D.setOnPiezaVisibilidadCallback === 'function') {
+      Preview3D.setOnPiezaVisibilidadCallback((info) => {
+        if (info.oculta) {
+          mostrarNotificacion(`👁️ Pieza oculta (perímetro punteado): ${info.nombrePieza}`, "info");
+        } else {
+          mostrarNotificacion(`✓ Pieza visible restablecida: ${info.nombrePieza}`, "success");
+        }
       });
     }
   }
@@ -1792,7 +1803,29 @@ function reiniciarAEstadoVacio(notificar = true) {
   AppState.modulos = [];
   AppState.moduloActivoIndex = -1;
   AppState.modoSeleccion = 'diseno';
+  AppState.modoSimulacion = false;
+  AppState.modoOcultarPiezas = false;
   AppState.estadoVisualizador = 'vacio';
+
+  if (window.Preview3D && typeof window.Preview3D.setModoOcultarPiezas === 'function') {
+    window.Preview3D.setModoOcultarPiezas(false);
+  }
+
+  const btnModoOcultar = document.getElementById('btnModoOcultarPiezas');
+  const btnToolbarOcultar = document.getElementById('btnToggleOcultarPiezaToolbar');
+  if (btnModoOcultar) {
+    btnModoOcultar.classList.remove('active');
+    btnModoOcultar.style.background = '';
+    btnModoOcultar.style.borderColor = '';
+    btnModoOcultar.style.color = '';
+  }
+  if (btnToolbarOcultar) {
+    btnToolbarOcultar.classList.remove('active');
+    btnToolbarOcultar.style.background = '';
+    btnToolbarOcultar.style.borderColor = '';
+    btnToolbarOcultar.style.color = '';
+    btnToolbarOcultar.innerHTML = `<svg class="svg-icon" style="width: 12px; height: 12px;"><use href="#icon-eye"></use></svg> <span>Ocultar/Ver Piezas</span>`;
+  }
 
   actualizarUIZocaloGeneral();
   actualizarVisibilidadPaneles();
@@ -6320,6 +6353,89 @@ function toggleModoSimulacion(forzar) {
 }
 window.toggleModoSimulacion = toggleModoSimulacion;
 
+/**
+ * Conmuta el Selector del Modo Ocultar / Visualizar Pieza.
+ * Al estar activo, las piezas sobre las que se hace clic se ocultan (mostrándose en vez de la pieza
+ * líneas punteadas sobre todo el perímetro). Si se hace clic sobre la pieza oculta se vuelve a mostrar.
+ * Si se desactiva el selector, todas las piezas que se encuentren ocultas se restablecerán inmediatamente.
+ * @param {boolean} [forzar] - Estado forzado opcional.
+ */
+function toggleModoOcultarPiezas(forzar) {
+  AppState.modoOcultarPiezas = (forzar !== undefined) ? !!forzar : !AppState.modoOcultarPiezas;
+
+  // Si se activa modo ocultar, desactivamos modo simulación para no interferir en los clics
+  if (AppState.modoOcultarPiezas && AppState.modoSimulacion) {
+    toggleModoSimulacion(false);
+  }
+
+  if (window.Preview3D && typeof window.Preview3D.setModoOcultarPiezas === 'function') {
+    window.Preview3D.setModoOcultarPiezas(AppState.modoOcultarPiezas);
+  }
+
+  // Actualizar estado visual de los botones del selector
+  const btnCanvas = document.getElementById('btnModoOcultarPiezas');
+  const btnToolbar = document.getElementById('btnToggleOcultarPiezaToolbar');
+
+  const activo = AppState.modoOcultarPiezas;
+
+  if (btnCanvas) {
+    if (activo) {
+      btnCanvas.classList.add('active');
+      btnCanvas.style.background = '#0284c7';
+      btnCanvas.style.borderColor = '#0284c7';
+      btnCanvas.style.color = '#ffffff';
+    } else {
+      btnCanvas.classList.remove('active');
+      btnCanvas.style.background = '';
+      btnCanvas.style.borderColor = '';
+      btnCanvas.style.color = '';
+    }
+  }
+
+  if (btnToolbar) {
+    if (activo) {
+      btnToolbar.classList.add('active');
+      btnToolbar.style.background = '#0284c7';
+      btnToolbar.style.borderColor = '#0284c7';
+      btnToolbar.style.color = '#ffffff';
+      btnToolbar.innerHTML = `<svg class="svg-icon" style="width: 12px; height: 12px;"><use href="#icon-eye-off"></use></svg> <span>Ocultar Piezas Activo (Clic para ocultar/ver)</span>`;
+    } else {
+      btnToolbar.classList.remove('active');
+      btnToolbar.style.background = '';
+      btnToolbar.style.borderColor = '';
+      btnToolbar.style.color = '';
+      btnToolbar.innerHTML = `<svg class="svg-icon" style="width: 12px; height: 12px;"><use href="#icon-eye"></use></svg> <span>Ocultar/Ver Piezas</span>`;
+    }
+  }
+
+  actualizarBadgeEstado();
+
+  if (activo) {
+    mostrarNotificacion("👁️ Modo Ocultar Piezas ACTIVO: Haz clic en cualquier pieza para ocultarla (líneas punteadas) o volver a mostrarla.", "info");
+
+    const suBridge = (typeof window !== 'undefined' && window.sketchup)
+      ? window.sketchup
+      : (typeof sketchup !== 'undefined' ? sketchup : null);
+    if (suBridge && typeof suBridge.activarHerramientaOcultarPiezas === 'function') {
+      suBridge.activarHerramientaOcultarPiezas('activar');
+    } else if (typeof window.callSketchup === 'function') {
+      window.callSketchup('activarHerramientaOcultarPiezas', 'activar');
+    }
+  } else {
+    mostrarNotificacion("✓ Modo Ocultar Piezas DESACTIVADO: Todas las piezas ocultas se muestran nuevamente.", "success");
+
+    const suBridge = (typeof window !== 'undefined' && window.sketchup)
+      ? window.sketchup
+      : (typeof sketchup !== 'undefined' ? sketchup : null);
+    if (suBridge && typeof suBridge.activarHerramientaOcultarPiezas === 'function') {
+      suBridge.activarHerramientaOcultarPiezas('desactivar');
+    } else if (typeof window.callSketchup === 'function') {
+      window.callSketchup('activarHerramientaOcultarPiezas', 'desactivar');
+    }
+  }
+}
+window.toggleModoOcultarPiezas = toggleModoOcultarPiezas;
+
 // ==============================================================================
 // 7. MOTOR DE VALIDACIONES TÉCNICAS & REGLAS DE PANDEO INDUSTRIALES
 // ==============================================================================
@@ -7436,6 +7552,7 @@ if (typeof window !== 'undefined') {
   window.cargarDatosEdicion = cargarDisenoDesdeSketchup;
   window.vaciarDiseno = vaciarDiseno;
   window.reiniciarAEstadoVacio = reiniciarAEstadoVacio;
+  window.toggleModoOcultarPiezas = toggleModoOcultarPiezas;
   window.leerDisenoDesdeSketchupClick = leerDisenoDesdeSketchupClick;
   window.onModuloSeleccionado = onModuloSeleccionado;
   window.onNotificacion = onNotificacion;

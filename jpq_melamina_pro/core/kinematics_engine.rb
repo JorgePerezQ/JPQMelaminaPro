@@ -360,4 +360,87 @@ module JPQMelaminaPro
       UI.set_cursor(632) rescue nil # 632 = Cursor interactivo de mano
     end
   end
+
+  # ============================================================================
+  # Herramienta Interactiva de SketchUp: OcultarVisualizarPiezaTool
+  # Permite hacer clic directamente en el modelo 3D de SketchUp para ocultar
+  # cualquier pieza (lateral, repisa, puerta, zócalo, cajón).
+  # Si la pieza está oculta, al hacer clic se vuelve a mostrar.
+  # Al desactivar la herramienta, todas las piezas que estaban ocultas se muestran.
+  # ============================================================================
+  class OcultarVisualizarPiezaTool
+    def initialize
+      @piezas_ocultas = []
+    end
+
+    def activate
+      @piezas_ocultas ||= []
+      Sketchup.status_text = 'JPQMelaminaPro [Modo Ocultar/Ver Piezas]: Haz clic sobre cualquier pieza para ocultarla o mostrarla. Al salir, todas volverán a mostrarse.'
+    end
+
+    def deactivate(view)
+      restablecer_piezas_ocultas
+      view.invalidate if view
+    end
+
+    def onLButtonDown(flags, x, y, view)
+      ph = view.pick_helper
+      ph.do_pick(x, y)
+      ent = ph.best_picked
+
+      target = resolver_pieza_objetivo(ent, ph)
+
+      if target
+        model = Sketchup.active_model
+        model.start_operation('Ocultar/Ver Pieza', true)
+        if target.hidden?
+          target.hidden = false
+          @piezas_ocultas.delete(target)
+          Sketchup.status_text = "👁️ Pieza visible: #{target.name}"
+        else
+          target.hidden = true
+          @piezas_ocultas << target unless @piezas_ocultas.include?(target)
+          Sketchup.status_text = "🔒 Pieza oculta: #{target.name}. Haz clic nuevamente para mostrarla."
+        end
+        model.commit_operation
+        view.invalidate
+      else
+        Sketchup.status_text = 'Haz clic sobre una pieza del mueble para ocultarla o visualizarla.'
+      end
+    end
+
+    def restablecer_piezas_ocultas
+      return if @piezas_ocultas.nil? || @piezas_ocultas.empty?
+      model = Sketchup.active_model
+      return unless model
+      model.start_operation('Restablecer Piezas Ocultas', true)
+      @piezas_ocultas.each do |e|
+        e.hidden = false if e && e.valid?
+      end
+      @piezas_ocultas.clear
+      model.commit_operation
+      Sketchup.status_text = '✓ Todas las piezas han sido restablecidas a visibles.'
+    end
+
+    def resolver_pieza_objetivo(ent, ph)
+      return nil unless ent
+      if ent.is_a?(Sketchup::Group) || ent.is_a?(Sketchup::ComponentInstance)
+        return ent
+      end
+      path = ph.path_at(0)
+      if path && !path.empty?
+        sub = path.reverse.find do |e|
+          (e.is_a?(Sketchup::Group) || e.is_a?(Sketchup::ComponentInstance)) &&
+            (e.attribute_dictionary('DespieceMela') || e.attribute_dictionary('DespieceMelaPieza') || e.name.to_s.length > 0)
+        end
+        return sub if sub
+        return path.reverse.find { |e| e.is_a?(Sketchup::Group) || e.is_a?(Sketchup::ComponentInstance) }
+      end
+      nil
+    end
+
+    def onSetCursor
+      UI.set_cursor(632) rescue nil
+    end
+  end
 end
