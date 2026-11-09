@@ -668,143 +668,6 @@ module JPQMelaminaPro
 
           CabinetBuilder.ultimo_modulo_activo = grupo_composicion if defined?(CabinetBuilder)
 
-          # 1. ZÓCALO INFERIOR CONTINUO GENERAL (Ocupa todo el perímetro inferior del mueble)
-          tiene_zocalo_global = (params['tiene_zocalo'] == true || params['tiene_zocalo'] == 'true')
-          zocalo_global_h_num = tiene_zocalo_global ? ((params['alto_zocalo'] || params['altura_zocalo'] || 100.0).to_f) : 0.0
-          zocalo_global_h = zocalo_global_h_num.mm
-          cant_listones_global = (params['cant_listones'] || params['cant_listones_internos'] || 2).to_i
-          retrans_zocalo_global_num = (params['retrans_zocalo'] != nil && params['retrans_zocalo'] != '') ? params['retrans_zocalo'].to_f : 35.0
-          retrans_zocalo_global = retrans_zocalo_global_num.mm
-
-          if tiene_zocalo_global && zocalo_global_h_num > 0
-            grupo_zocalo = grupo_composicion.entities.add_group
-            grupo_zocalo.name = "Zócalo Inferior Perimétrico Continuo [#{ancho_total_num.to_i}x#{prof_total_num.to_i}x#{zocalo_global_h_num.to_i}mm]"
-
-            prof_trans_num = [prof_total_num - retrans_zocalo_global_num - (2 * t_num), 10.0].max
-            prof_trans = prof_trans_num.mm
-
-            # 1. Zócalo Frontal Continuo (ABARCA TODO EL ANCHO DEL MUEBLE: X = 0 a X = AnchoTotal)
-            CabinetBuilder.crear_panel(
-              grupo_zocalo, 'Zócalo Frontal Continuo',
-              0.mm, retrans_zocalo_global, 0.mm,
-              ancho_total, t, zocalo_global_h,
-              {
-                'modulo_id' => composicion_id, 'pieza_id' => "#{composicion_id}-ZOC-FRONT",
-                'pieza_nombre' => 'Zócalo Frontal Continuo', 'material' => mat_estructura,
-                'resistencia' => resistencia,
-                'largo_bruto_mm' => ancho_total_num, 'ancho_bruto_mm' => zocalo_global_h_num, 'espesor_mm' => t_num,
-                'largo_neto_mm' => ancho_total_num - 1.0, 'ancho_neto_mm' => zocalo_global_h_num - 1.0,
-                'cantidad' => 1, 'veta' => 'longitudinal',
-                'canto_L1' => 0.5, 'canto_L2' => 0.0, 'canto_A1' => 0.5, 'canto_A2' => 0.5,
-                'ranura' => 'Ninguna'
-              }
-            )
-
-            # 2. Zócalo Posterior Continuo (ABARCA TODO EL ANCHO DEL MUEBLE: X = 0 a X = AnchoTotal)
-            CabinetBuilder.crear_panel(
-              grupo_zocalo, 'Zócalo Posterior Continuo',
-              0.mm, prof_total - t, 0.mm,
-              ancho_total, t, zocalo_global_h,
-              {
-                'modulo_id' => composicion_id, 'pieza_id' => "#{composicion_id}-ZOC-POST",
-                'pieza_nombre' => 'Zócalo Posterior Continuo', 'material' => mat_estructura,
-                'resistencia' => resistencia,
-                'largo_bruto_mm' => ancho_total_num, 'ancho_bruto_mm' => zocalo_global_h_num, 'espesor_mm' => t_num,
-                'largo_neto_mm' => ancho_total_num, 'ancho_neto_mm' => zocalo_global_h_num,
-                'cantidad' => 1, 'veta' => 'longitudinal',
-                'canto_L1' => 0.0, 'canto_L2' => 0.0, 'canto_A1' => 0.0, 'canto_A2' => 0.0,
-                'ranura' => 'Ninguna'
-              }
-            )
-
-            # 3. Lateral Izquierdo de Zócalo (ENTRE frontal y posterior: Y = retrans + t, profundidad = prof_trans)
-            CabinetBuilder.crear_panel(
-              grupo_zocalo, 'Zócalo Lateral Izquierdo',
-              0.mm, retrans_zocalo_global + t, 0.mm,
-              t, prof_trans, zocalo_global_h,
-              {
-                'modulo_id' => composicion_id, 'pieza_id' => "#{composicion_id}-ZOC-LAT-IZQ",
-                'pieza_nombre' => 'Zócalo Lateral Izquierdo', 'material' => mat_estructura,
-                'resistencia' => resistencia,
-                'largo_bruto_mm' => prof_trans_num, 'ancho_bruto_mm' => zocalo_global_h_num, 'espesor_mm' => t_num,
-                'largo_neto_mm' => prof_trans_num - 1.0, 'ancho_neto_mm' => zocalo_global_h_num,
-                'cantidad' => 1, 'veta' => 'longitudinal',
-                'canto_L1' => 0.5, 'canto_L2' => 0.0, 'canto_A1' => 0.5, 'canto_A2' => 0.0,
-                'ranura' => 'Ninguna'
-              }
-            )
-
-            # 4. Lateral Derecho de Zócalo (ENTRE frontal y posterior: Y = retrans + t, profundidad = prof_trans)
-            CabinetBuilder.crear_panel(
-              grupo_zocalo, 'Zócalo Lateral Derecho',
-              ancho_total - t, retrans_zocalo_global + t, 0.mm,
-              t, prof_trans, zocalo_global_h,
-              {
-                'modulo_id' => composicion_id, 'pieza_id' => "#{composicion_id}-ZOC-LAT-DER",
-                'pieza_nombre' => 'Zócalo Lateral Derecho', 'material' => mat_estructura,
-                'resistencia' => resistencia,
-                'largo_bruto_mm' => prof_trans_num, 'ancho_bruto_mm' => zocalo_global_h_num, 'espesor_mm' => t_num,
-                'largo_neto_mm' => prof_trans_num - 1.0, 'ancho_neto_mm' => zocalo_global_h_num,
-                'cantidad' => 1, 'veta' => 'longitudinal',
-                'canto_L1' => 0.5, 'canto_L2' => 0.0, 'canto_A1' => 0.5, 'canto_A2' => 0.0,
-                'ranura' => 'Ninguna'
-              }
-            )
-
-            # 5. Listones Transversales Interiores de Soporte según Estándares Técnicos
-            listones_payload = params['listones_zocalo']
-            if prof_trans_num > 0
-              if listones_payload.is_a?(Array) && !listones_payload.empty?
-                listones_payload.each_with_index do |l_item, k|
-                  x_trans_num = (l_item['x'] || 0).to_f
-                  desc_nom = l_item['nombre'] || "Listón Soporte Zócalo #{k + 1}"
-
-                  CabinetBuilder.crear_panel(
-                    grupo_zocalo, desc_nom,
-                    x_trans_num.mm, retrans_zocalo_global + t, 0.mm,
-                    t, prof_trans, zocalo_global_h,
-                    {
-                      'modulo_id' => composicion_id, 'pieza_id' => "#{composicion_id}-ZOC-LISTON-#{k + 1}",
-                      'pieza_nombre' => desc_nom, 'material' => mat_estructura,
-                      'resistencia' => resistencia,
-                      'largo_bruto_mm' => prof_trans_num, 'ancho_bruto_mm' => zocalo_global_h_num, 'espesor_mm' => t_num,
-                      'largo_neto_mm' => prof_trans_num, 'ancho_neto_mm' => zocalo_global_h_num,
-                      'cantidad' => 1, 'veta' => 'longitudinal',
-                      'canto_L1' => 0.0, 'canto_L2' => 0.0, 'canto_A1' => 0.0, 'canto_A2' => 0.0,
-                      'ranura' => 'Ninguna'
-                    }
-                  )
-                end
-              elsif cant_listones_global > 0
-                ancho_interior = [ancho_total_num - (2 * t_num), 0.0].max
-                partes_iguales = cant_listones_global + 1
-                paso_proporcional = ancho_interior / partes_iguales.to_f
-
-                (1..cant_listones_global).each do |k|
-                  x_centro = t_num + (k * paso_proporcional)
-                  x_trans_num = (x_centro - (t_num / 2.0)).round
-                  desc_nom = (cant_listones_global == 1) ? 'Listón Soporte Zócalo Central' : "Listón Soporte Zócalo #{k}/#{cant_listones_global} (1/#{partes_iguales} interior)"
-
-                  CabinetBuilder.crear_panel(
-                    grupo_zocalo, desc_nom,
-                    x_trans_num.mm, retrans_zocalo_global + t, 0.mm,
-                    t, prof_trans, zocalo_global_h,
-                    {
-                      'modulo_id' => composicion_id, 'pieza_id' => "#{composicion_id}-ZOC-LISTON-#{k}",
-                      'pieza_nombre' => desc_nom, 'material' => mat_estructura,
-                      'resistencia' => resistencia,
-                      'largo_bruto_mm' => prof_trans_num, 'ancho_bruto_mm' => zocalo_global_h_num, 'espesor_mm' => t_num,
-                      'largo_neto_mm' => prof_trans_num, 'ancho_neto_mm' => zocalo_global_h_num,
-                      'cantidad' => 1, 'veta' => 'longitudinal',
-                      'canto_L1' => 0.0, 'canto_L2' => 0.0, 'canto_A1' => 0.0, 'canto_A2' => 0.0,
-                      'ranura' => 'Ninguna'
-                    }
-                  )
-                end
-              end
-            end
-          end
-
           # Agrupación espacial por columnas y niveles apilados verticalmente
           columnas_map = {}
           modulos_data.each_with_index do |m_data, idx|
@@ -817,9 +680,19 @@ module JPQMelaminaPro
 
           cols_ordenadas = columnas_map.keys.sort.map { |c_k| [c_k, columnas_map[c_k]] }
 
+          tiene_zocalo_global = (params['tiene_zocalo'] == true || params['tiene_zocalo'] == 'true')
+          zocalo_global_h_num = tiene_zocalo_global ? ((params['alto_zocalo'] || params['altura_zocalo'] || 100.0).to_f) : 0.0
+          zocalo_global_h = zocalo_global_h_num.mm
+          cant_listones_global = (params['cant_listones'] || params['cant_listones_internos'] || 2).to_i
+          retrans_zocalo_global_num = (params['retrans_zocalo'] != nil && params['retrans_zocalo'] != '') ? params['retrans_zocalo'].to_f : 35.0
+          retrans_zocalo_global = retrans_zocalo_global_num.mm
+
           mapeo_espacial = {}
+          columnas_con_piso = []
+          columnas_sin_piso = []
           x_acum = 0.0
-          cols_ordenadas.each do |_c_idx, items|
+
+          cols_ordenadas.each do |c_idx, items|
             # Agrupar items de la columna por nivel_apilado
             niveles_map = {}
             items.each do |it|
@@ -838,7 +711,18 @@ module JPQMelaminaPro
             end
             w_col_max = 600.0 if w_col_max <= 0.0
 
-            z_acum = tiene_zocalo_global ? zocalo_global_h_num : 0.0
+            # REGLA ERGONÓMICA: Si la columna a nivel de piso (n=0) tiene_piso == false (vano libre piernas/silla o lavadora),
+            # los laterales descansan directamente en el suelo (Z = 0) y NO se elevan sobre el zócalo.
+            items_nivel_cero = niveles_map[0] || []
+            col_sin_piso = items_nivel_cero.any? { |it| it['data']['tiene_piso'] == false || it['data']['tiene_piso'] == 'false' }
+
+            if col_sin_piso
+              columnas_sin_piso << { 'col_idx' => c_idx, 'x' => x_acum, 'w' => w_col_max }
+            else
+              columnas_con_piso << { 'col_idx' => c_idx, 'x' => x_acum, 'w' => w_col_max }
+            end
+
+            z_acum = (tiene_zocalo_global && !col_sin_piso) ? zocalo_global_h_num : 0.0
             niveles_ordenados.each do |_nk, sub_items|
               sub_items.sort_by! { |it| it['sub_col'] }
               h_nivel = (sub_items.first['data']['alto'] && sub_items.first['data']['alto'].to_f > 0) ? sub_items.first['data']['alto'].to_f : alto_total_num
@@ -859,6 +743,207 @@ module JPQMelaminaPro
               z_acum += h_nivel
             end
             x_acum += w_col_max
+          end
+
+          # 1. ZÓCALO INFERIOR GLOBAL (Segmentado por columnas para respetar vanos libres/piernas de escritorios)
+          if tiene_zocalo_global && zocalo_global_h_num > 0 && !columnas_con_piso.empty?
+            grupo_zocalo = grupo_composicion.entities.add_group
+            grupo_zocalo.name = "Zócalo Inferior [#{ancho_total_num.to_i}x#{prof_total_num.to_i}x#{zocalo_global_h_num.to_i}mm]"
+
+            prof_trans_num = [prof_total_num - retrans_zocalo_global_num - (2 * t_num), 10.0].max
+            prof_trans = prof_trans_num.mm
+
+            if columnas_sin_piso.empty?
+              # Mueble 100% cerrado (sin vanos libres de piernas): Zócalo frontal y posterior continuo
+              CabinetBuilder.crear_panel(
+                grupo_zocalo, 'Zócalo Frontal Continuo',
+                0.mm, retrans_zocalo_global, 0.mm,
+                ancho_total, t, zocalo_global_h,
+                {
+                  'modulo_id' => composicion_id, 'pieza_id' => "#{composicion_id}-ZOC-FRONT",
+                  'pieza_nombre' => 'Zócalo Frontal Continuo', 'material' => mat_estructura,
+                  'resistencia' => resistencia,
+                  'largo_bruto_mm' => ancho_total_num, 'ancho_bruto_mm' => zocalo_global_h_num, 'espesor_mm' => t_num,
+                  'largo_neto_mm' => ancho_total_num - 1.0, 'ancho_neto_mm' => zocalo_global_h_num - 1.0,
+                  'cantidad' => 1, 'veta' => 'longitudinal',
+                  'canto_L1' => 0.5, 'canto_L2' => 0.0, 'canto_A1' => 0.5, 'canto_A2' => 0.5,
+                  'ranura' => 'Ninguna'
+                }
+              )
+
+              CabinetBuilder.crear_panel(
+                grupo_zocalo, 'Zócalo Posterior Continuo',
+                0.mm, prof_total - t, 0.mm,
+                ancho_total, t, zocalo_global_h,
+                {
+                  'modulo_id' => composicion_id, 'pieza_id' => "#{composicion_id}-ZOC-POST",
+                  'pieza_nombre' => 'Zócalo Posterior Continuo', 'material' => mat_estructura,
+                  'resistencia' => resistencia,
+                  'largo_bruto_mm' => ancho_total_num, 'ancho_bruto_mm' => zocalo_global_h_num, 'espesor_mm' => t_num,
+                  'largo_neto_mm' => ancho_total_num, 'ancho_neto_mm' => zocalo_global_h_num,
+                  'cantidad' => 1, 'veta' => 'longitudinal',
+                  'canto_L1' => 0.0, 'canto_L2' => 0.0, 'canto_A1' => 0.0, 'canto_A2' => 0.0,
+                  'ranura' => 'Ninguna'
+                }
+              )
+
+              CabinetBuilder.crear_panel(
+                grupo_zocalo, 'Zócalo Lateral Izquierdo',
+                0.mm, retrans_zocalo_global + t, 0.mm,
+                t, prof_trans, zocalo_global_h,
+                {
+                  'modulo_id' => composicion_id, 'pieza_id' => "#{composicion_id}-ZOC-LAT-IZQ",
+                  'pieza_nombre' => 'Zócalo Lateral Izquierdo', 'material' => mat_estructura,
+                  'resistencia' => resistencia,
+                  'largo_bruto_mm' => prof_trans_num, 'ancho_bruto_mm' => zocalo_global_h_num, 'espesor_mm' => t_num,
+                  'largo_neto_mm' => prof_trans_num - 1.0, 'ancho_neto_mm' => zocalo_global_h_num,
+                  'cantidad' => 1, 'veta' => 'longitudinal',
+                  'canto_L1' => 0.5, 'canto_L2' => 0.0, 'canto_A1' => 0.5, 'canto_A2' => 0.0,
+                  'ranura' => 'Ninguna'
+                }
+              )
+
+              CabinetBuilder.crear_panel(
+                grupo_zocalo, 'Zócalo Lateral Derecho',
+                ancho_total - t, retrans_zocalo_global + t, 0.mm,
+                t, prof_trans, zocalo_global_h,
+                {
+                  'modulo_id' => composicion_id, 'pieza_id' => "#{composicion_id}-ZOC-LAT-DER",
+                  'pieza_nombre' => 'Zócalo Lateral Derecho', 'material' => mat_estructura,
+                  'resistencia' => resistencia,
+                  'largo_bruto_mm' => prof_trans_num, 'ancho_bruto_mm' => zocalo_global_h_num, 'espesor_mm' => t_num,
+                  'largo_neto_mm' => prof_trans_num - 1.0, 'ancho_neto_mm' => zocalo_global_h_num,
+                  'cantidad' => 1, 'veta' => 'longitudinal',
+                  'canto_L1' => 0.5, 'canto_L2' => 0.0, 'canto_A1' => 0.5, 'canto_A2' => 0.0,
+                  'ranura' => 'Ninguna'
+                }
+              )
+
+              # Listones transversales interiores
+              listones_payload = params['listones_zocalo']
+              if prof_trans_num > 0
+                if listones_payload.is_a?(Array) && !listones_payload.empty?
+                  listones_payload.each_with_index do |l_item, k|
+                    x_trans_num = (l_item['x'] || 0).to_f
+                    desc_nom = l_item['nombre'] || "Listón Soporte Zócalo #{k + 1}"
+
+                    CabinetBuilder.crear_panel(
+                      grupo_zocalo, desc_nom,
+                      x_trans_num.mm, retrans_zocalo_global + t, 0.mm,
+                      t, prof_trans, zocalo_global_h,
+                      {
+                        'modulo_id' => composicion_id, 'pieza_id' => "#{composicion_id}-ZOC-LISTON-#{k + 1}",
+                        'pieza_nombre' => desc_nom, 'material' => mat_estructura,
+                        'resistencia' => resistencia,
+                        'largo_bruto_mm' => prof_trans_num, 'ancho_bruto_mm' => zocalo_global_h_num, 'espesor_mm' => t_num,
+                        'largo_neto_mm' => prof_trans_num, 'ancho_neto_mm' => zocalo_global_h_num,
+                        'cantidad' => 1, 'veta' => 'longitudinal',
+                        'canto_L1' => 0.0, 'canto_L2' => 0.0, 'canto_A1' => 0.0, 'canto_A2' => 0.0,
+                        'ranura' => 'Ninguna'
+                      }
+                    )
+                  end
+                elsif cant_listones_global > 0
+                  ancho_interior = [ancho_total_num - (2 * t_num), 0.0].max
+                  partes_iguales = cant_listones_global + 1
+                  paso_proporcional = ancho_interior / partes_iguales.to_f
+
+                  (1..cant_listones_global).each do |k|
+                    x_centro = t_num + (k * paso_proporcional)
+                    x_trans_num = (x_centro - (t_num / 2.0)).round
+                    desc_nom = (cant_listones_global == 1) ? 'Listón Soporte Zócalo Central' : "Listón Soporte Zócalo #{k}/#{cant_listones_global} (1/#{partes_iguales} interior)"
+
+                    CabinetBuilder.crear_panel(
+                      grupo_zocalo, desc_nom,
+                      x_trans_num.mm, retrans_zocalo_global + t, 0.mm,
+                      t, prof_trans, zocalo_global_h,
+                      {
+                        'modulo_id' => composicion_id, 'pieza_id' => "#{composicion_id}-ZOC-LISTON-#{k}",
+                        'pieza_nombre' => desc_nom, 'material' => mat_estructura,
+                        'resistencia' => resistencia,
+                        'largo_bruto_mm' => prof_trans_num, 'ancho_bruto_mm' => zocalo_global_h_num, 'espesor_mm' => t_num,
+                        'largo_neto_mm' => prof_trans_num, 'ancho_neto_mm' => zocalo_global_h_num,
+                        'cantidad' => 1, 'veta' => 'longitudinal',
+                        'canto_L1' => 0.0, 'canto_L2' => 0.0, 'canto_A1' => 0.0, 'canto_A2' => 0.0,
+                        'ranura' => 'Ninguna'
+                      }
+                    )
+                  end
+                end
+              end
+            else
+              # Mueble HÍBRIDO (ej. escritorio con pedestal o cajonera):
+              # Solo se genera zócalo bajo las columnas cerradas con piso. El vano libre queda 100% despejado hasta el suelo.
+              columnas_con_piso.each do |col_item|
+                x_c_num = col_item['x']
+                w_c_num = col_item['w']
+                c_id = col_item['col_idx'].to_i + 1
+
+                CabinetBuilder.crear_panel(
+                  grupo_zocalo, "Zócalo Frontal Pedestal (Col #{c_id})",
+                  x_c_num.mm, retrans_zocalo_global, 0.mm,
+                  w_c_num.mm, t, zocalo_global_h,
+                  {
+                    'modulo_id' => composicion_id, 'pieza_id' => "#{composicion_id}-ZOC-FRONT-C#{c_id}",
+                    'pieza_nombre' => "Zócalo Frontal Pedestal (Col #{c_id})", 'material' => mat_estructura,
+                    'resistencia' => resistencia,
+                    'largo_bruto_mm' => w_c_num, 'ancho_bruto_mm' => zocalo_global_h_num, 'espesor_mm' => t_num,
+                    'largo_neto_mm' => w_c_num - 1.0, 'ancho_neto_mm' => zocalo_global_h_num - 1.0,
+                    'cantidad' => 1, 'veta' => 'longitudinal',
+                    'canto_L1' => 0.5, 'canto_L2' => 0.0, 'canto_A1' => 0.5, 'canto_A2' => 0.5,
+                    'ranura' => 'Ninguna'
+                  }
+                )
+
+                CabinetBuilder.crear_panel(
+                  grupo_zocalo, "Zócalo Posterior Pedestal (Col #{c_id})",
+                  x_c_num.mm, prof_total - t, 0.mm,
+                  w_c_num.mm, t, zocalo_global_h,
+                  {
+                    'modulo_id' => composicion_id, 'pieza_id' => "#{composicion_id}-ZOC-POST-C#{c_id}",
+                    'pieza_nombre' => "Zócalo Posterior Pedestal (Col #{c_id})", 'material' => mat_estructura,
+                    'resistencia' => resistencia,
+                    'largo_bruto_mm' => w_c_num, 'ancho_bruto_mm' => zocalo_global_h_num, 'espesor_mm' => t_num,
+                    'largo_neto_mm' => w_c_num, 'ancho_neto_mm' => zocalo_global_h_num,
+                    'cantidad' => 1, 'veta' => 'longitudinal',
+                    'canto_L1' => 0.0, 'canto_L2' => 0.0, 'canto_A1' => 0.0, 'canto_A2' => 0.0,
+                    'ranura' => 'Ninguna'
+                  }
+                )
+
+                CabinetBuilder.crear_panel(
+                  grupo_zocalo, "Zócalo Lateral Izq (Col #{c_id})",
+                  x_c_num.mm, retrans_zocalo_global + t, 0.mm,
+                  t, prof_trans, zocalo_global_h,
+                  {
+                    'modulo_id' => composicion_id, 'pieza_id' => "#{composicion_id}-ZOC-LAT-IZQ-C#{c_id}",
+                    'pieza_nombre' => "Zócalo Lateral Izq (Col #{c_id})", 'material' => mat_estructura,
+                    'resistencia' => resistencia,
+                    'largo_bruto_mm' => prof_trans_num, 'ancho_bruto_mm' => zocalo_global_h_num, 'espesor_mm' => t_num,
+                    'largo_neto_mm' => prof_trans_num - 1.0, 'ancho_neto_mm' => zocalo_global_h_num,
+                    'cantidad' => 1, 'veta' => 'longitudinal',
+                    'canto_L1' => 0.5, 'canto_L2' => 0.0, 'canto_A1' => 0.5, 'canto_A2' => 0.0,
+                    'ranura' => 'Ninguna'
+                  }
+                )
+
+                CabinetBuilder.crear_panel(
+                  grupo_zocalo, "Zócalo Lateral Der (Col #{c_id})",
+                  (x_c_num + w_c_num - t_num).mm, retrans_zocalo_global + t, 0.mm,
+                  t, prof_trans, zocalo_global_h,
+                  {
+                    'modulo_id' => composicion_id, 'pieza_id' => "#{composicion_id}-ZOC-LAT-DER-C#{c_id}",
+                    'pieza_nombre' => "Zócalo Lateral Der (Col #{c_id})", 'material' => mat_estructura,
+                    'resistencia' => resistencia,
+                    'largo_bruto_mm' => prof_trans_num, 'ancho_bruto_mm' => zocalo_global_h_num, 'espesor_mm' => t_num,
+                    'largo_neto_mm' => prof_trans_num - 1.0, 'ancho_neto_mm' => zocalo_global_h_num,
+                    'cantidad' => 1, 'veta' => 'longitudinal',
+                    'canto_L1' => 0.5, 'canto_L2' => 0.0, 'canto_A1' => 0.5, 'canto_A2' => 0.0,
+                    'ranura' => 'Ninguna'
+                  }
+                )
+              end
+            end
           end
 
           modulos_data.each_with_index do |m_data, idx|
@@ -1449,6 +1534,12 @@ module JPQMelaminaPro
                   paso_gap_post = (cant_post > 1) ? (espacio_gaps_post / (cant_post - 1.0)) : 0.0
 
                   cant_post.times do |k|
+                    # REGLA ERGONÓMICA: Si el módulo NO tiene piso (vano libre piernas / silla / escritorio),
+                    # NUNCA se coloca un listón inferior en el suelo (z=0) ya que estorba las piernas del usuario.
+                    if k == 0 && (m_data['tiene_piso'] == false || m_data['tiene_piso'] == 'false')
+                      next
+                    end
+
                     z_pos_num = (k * (w_liston_post_num + paso_gap_post)).round
                     nom_sub = if k == 0
                                 'Inferior'

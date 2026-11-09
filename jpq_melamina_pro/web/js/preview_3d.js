@@ -673,7 +673,12 @@ const Preview3D = (function() {
       });
       if (wColMax <= 0) wColMax = 600;
 
-      let zAcumulado = tieneZocaloGlobal ? zocaloGlobalH : 0;
+      // REGLA ERGONÓMICA: Si la columna a nivel de piso (n=0) tiene_piso === false (ej. vano libre para piernas/silla o lavadora),
+      // los laterales descansan directamente en el suelo (Z = 0) y NO se elevan sobre el zócalo.
+      const itemsNivelCero = nivelesMap.get(0) || [];
+      const colSinPisoEnSuelo = itemsNivelCero.some(it => it.m.tiene_piso === false || it.m.tiene_piso === 'false');
+
+      let zAcumulado = (tieneZocaloGlobal && !colSinPisoEnSuelo) ? zocaloGlobalH : 0;
       nivelesOrdenados.forEach(([n, subItems]) => {
         // Ordenar submódulos del mismo nivel por su sub_col_idx o índice de creación
         subItems.sort((a, b) => a.subCol - b.subCol);
@@ -923,7 +928,7 @@ const Preview3D = (function() {
 
     const geomMapeo = calcularGeometriaColumnasYApilado(modulos, d);
 
-    // ZÓCALO INFERIOR GLOBAL CONTINUO (ocupa todo el perímetro inferior del mueble)
+    // ZÓCALO INFERIOR GLOBAL (Segmentado inteligentemente por columnas para respetar vanos libres/piernas de escritorios)
     const tieneZocaloGlobal = (d.tiene_zocalo === true || d.tiene_zocalo === 'true');
     const zocaloGlobalH = tieneZocaloGlobal ? (parseFloat(d.alto_zocalo) || 100) : 0;
 
@@ -936,60 +941,123 @@ const Preview3D = (function() {
       const cantConfig = d.cant_listones;
       const profTrans = Math.max(10, profTotal - retransZocalo - (2 * t));
 
-      // 1. Zócalo Frontal Continuo (ABARCA TODO EL ANCHO DEL MUEBLE: X = 0 a X = AnchoTotal)
-      prismas.push({
-        x: 0, y: retransZocalo, z: 0,
-        dx: anchoTotal, dy: t, dz: zocaloGlobalH,
-        mat, name: 'Zócalo Frontal Continuo',
-        moduloIndex: -1,
-        esZocaloFrontal: true,
-        esZocaloBase: true
+      // Mapear columnas a nivel de piso (nivel 0) para detectar cuáles tienen piso y cuáles son vanos libres
+      const modulosPisoCero = modulos.map((m, idx) => ({ m, geom: geomMapeo[idx] }))
+        .filter(it => it.geom && it.geom.nivel === 0);
+
+      const columnasConPiso = [];
+      const columnasSinPiso = [];
+      const colsVistas = new Set();
+
+      modulosPisoCero.forEach(it => {
+        const cIdx = it.geom.colIdx;
+        if (!colsVistas.has(cIdx)) {
+          colsVistas.add(cIdx);
+          const tienePisoCol = (it.m.tiene_piso !== false && it.m.tiene_piso !== 'false');
+          const colInfo = { colIdx: cIdx, x: it.geom.xPos, w: it.geom.wCol || it.geom.wMod };
+          if (tienePisoCol) {
+            columnasConPiso.push(colInfo);
+          } else {
+            columnasSinPiso.push(colInfo);
+          }
+        }
       });
 
-      // 2. Zócalo Posterior Continuo (ABARCA TODO EL ANCHO DEL MUEBLE: X = 0 a X = AnchoTotal)
-      prismas.push({
-        x: 0, y: profTotal - t, z: 0,
-        dx: anchoTotal, dy: t, dz: zocaloGlobalH,
-        mat, name: 'Zócalo Posterior Continuo',
-        moduloIndex: -1,
-        esZocaloBase: true
-      });
+      if (columnasConPiso.length > 0) {
+        if (columnasSinPiso.length === 0) {
+          // Mueble 100% cerrado (sin vanos libres de piernas): Zócalo perimétrico continuo estándar
+          prismas.push({
+            x: 0, y: retransZocalo, z: 0,
+            dx: anchoTotal, dy: t, dz: zocaloGlobalH,
+            mat, name: 'Zócalo Frontal Continuo',
+            moduloIndex: -1,
+            esZocaloFrontal: true,
+            esZocaloBase: true
+          });
 
-      // 3. Lateral Izquierdo de Zócalo (ENTRE frontal y posterior: Y = retransZocalo + t hasta profTotal - t)
-      prismas.push({
-        x: 0, y: retransZocalo + t, z: 0,
-        dx: t, dy: profTrans, dz: zocaloGlobalH,
-        mat, name: 'Zócalo Lateral Izquierdo',
-        moduloIndex: -1,
-        esZocaloBase: true
-      });
+          prismas.push({
+            x: 0, y: profTotal - t, z: 0,
+            dx: anchoTotal, dy: t, dz: zocaloGlobalH,
+            mat, name: 'Zócalo Posterior Continuo',
+            moduloIndex: -1,
+            esZocaloBase: true
+          });
 
-      // 4. Lateral Derecho de Zócalo (ENTRE frontal y posterior: Y = retransZocalo + t hasta profTotal - t)
-      prismas.push({
-        x: anchoTotal - t, y: retransZocalo + t, z: 0,
-        dx: t, dy: profTrans, dz: zocaloGlobalH,
-        mat, name: 'Zócalo Lateral Derecho',
-        moduloIndex: -1,
-        esZocaloBase: true
-      });
+          prismas.push({
+            x: 0, y: retransZocalo + t, z: 0,
+            dx: t, dy: profTrans, dz: zocaloGlobalH,
+            mat, name: 'Zócalo Lateral Izquierdo',
+            moduloIndex: -1,
+            esZocaloBase: true
+          });
 
-      // 5. Listones transversales interiores de soporte (ENTRE frontal y posterior)
-      const calculoListones = calcularListonesZocaloEstandar(
-        anchoTotal, profTotal, modulos, t, zocaloGlobalH, retransZocalo, cantConfig
-      );
+          prismas.push({
+            x: anchoTotal - t, y: retransZocalo + t, z: 0,
+            dx: t, dy: profTrans, dz: zocaloGlobalH,
+            mat, name: 'Zócalo Lateral Derecho',
+            moduloIndex: -1,
+            esZocaloBase: true
+          });
 
-      calculoListones.listones.forEach(l => {
-        prismas.push({
-          x: l.x, y: l.y, z: l.z,
-          dx: l.dx, dy: l.dy, dz: l.dz,
-          mat, name: l.nombre,
-          moduloIndex: -1,
-          tipo: l.tipo,
-          esListonSoporteZocalo: true,
-          esNoPermitido: !calculoListones.cumpleNorma,
-          esZocaloBase: true
-        });
-      });
+          const calculoListones = calcularListonesZocaloEstandar(
+            anchoTotal, profTotal, modulos, t, zocaloGlobalH, retransZocalo, cantConfig
+          );
+
+          calculoListones.listones.forEach(l => {
+            prismas.push({
+              x: l.x, y: l.y, z: l.z,
+              dx: l.dx, dy: l.dy, dz: l.dz,
+              mat, name: l.nombre,
+              moduloIndex: -1,
+              tipo: l.tipo,
+              esListonSoporteZocalo: true,
+              esNoPermitido: !calculoListones.cumpleNorma,
+              esZocaloBase: true
+            });
+          });
+        } else {
+          // Mueble HÍBRIDO (ej. escritorio con pedestal cajonero o mostrador con vano de piernas):
+          // Solo se genera zócalo bajo las columnas cerradas con piso.
+          // El vano libre para las piernas queda 100% despejado hasta el suelo sin ningún obstáculo.
+          columnasConPiso.forEach(col => {
+            const xC = col.x;
+            const wC = col.w;
+
+            prismas.push({
+              x: xC, y: retransZocalo, z: 0,
+              dx: wC, dy: t, dz: zocaloGlobalH,
+              mat, name: `Zócalo Frontal Pedestal (Columna ${col.colIdx + 1})`,
+              moduloIndex: -1,
+              esZocaloFrontal: true,
+              esZocaloBase: true
+            });
+
+            prismas.push({
+              x: xC, y: profTotal - t, z: 0,
+              dx: wC, dy: t, dz: zocaloGlobalH,
+              mat, name: `Zócalo Posterior Pedestal (Columna ${col.colIdx + 1})`,
+              moduloIndex: -1,
+              esZocaloBase: true
+            });
+
+            prismas.push({
+              x: xC, y: retransZocalo + t, z: 0,
+              dx: t, dy: profTrans, dz: zocaloGlobalH,
+              mat, name: `Zócalo Lateral Izq (Columna ${col.colIdx + 1})`,
+              moduloIndex: -1,
+              esZocaloBase: true
+            });
+
+            prismas.push({
+              x: xC + wC - t, y: retransZocalo + t, z: 0,
+              dx: t, dy: profTrans, dz: zocaloGlobalH,
+              mat, name: `Zócalo Lateral Der (Columna ${col.colIdx + 1})`,
+              moduloIndex: -1,
+              esZocaloBase: true
+            });
+          });
+        }
+      }
     }
 
     modulos.forEach((m, idx) => {
@@ -1333,7 +1401,7 @@ const Preview3D = (function() {
               moduloIndex: idx
             });
           } else if (cantPost === 2) {
-            // 1 Superior y 1 Inferior
+            // 1 Superior y 1 Inferior (o Faldón Superior si es módulo sin piso como escritorio)
             const zSup = zBase + hCarcasa - (tieneTecho ? t : 0) - wListonPost;
             prismas.push({
               x: xMod + xOffsetInt, y: yListonAmarre, z: zSup,
@@ -1341,18 +1409,37 @@ const Preview3D = (function() {
               mat, name: `M${idx + 1} Listón Posterior Superior (${anchoInt}x${wListonPost}mm)`,
               moduloIndex: idx
             });
-            prismas.push({
-              x: xMod + xOffsetInt, y: yListonAmarre, z: zStartPost,
-              dx: anchoInt, dy: espListon, dz: wListonPost,
-              mat, name: `M${idx + 1} Listón Posterior Inferior (${anchoInt}x${wListonPost}mm)`,
-              moduloIndex: idx
-            });
+
+            // REGLA ERGONÓMICA: Si el módulo NO tiene piso (vano libre piernas / silla de escritorio),
+            // NUNCA se coloca un listón inferior en el suelo (z=0) ya que estorba las piernas.
+            if (tienePiso) {
+              prismas.push({
+                x: xMod + xOffsetInt, y: yListonAmarre, z: zStartPost,
+                dx: anchoInt, dy: espListon, dz: wListonPost,
+                mat, name: `M${idx + 1} Listón Posterior Inferior (${anchoInt}x${wListonPost}mm)`,
+                moduloIndex: idx
+              });
+            } else {
+              // En vano libre sin piso para escritorio, el segundo listón actúa como faldón superior de rigidez
+              const zFaldon = zSup - wListonPost - 10;
+              if (zFaldon > zBase + 200) {
+                prismas.push({
+                  x: xMod + xOffsetInt, y: yListonAmarre, z: zFaldon,
+                  dx: anchoInt, dy: espListon, dz: wListonPost,
+                  mat, name: `M${idx + 1} Listón Faldón Posterior (${anchoInt}x${wListonPost}mm)`,
+                  moduloIndex: idx
+                });
+              }
+            }
           } else {
             // 3 o más listones distribuidos proporcionalmente a lo alto
             const espacioGaps = Math.max(0, hVanoUtilPost - (cantPost * wListonPost));
             const pasoGap = (cantPost > 1) ? (espacioGaps / (cantPost - 1)) : 0;
 
             for (let k = 0; k < cantPost; k++) {
+              // Si no tiene piso y es el listón más bajo (k=0), no colocarlo a nivel de suelo
+              if (k === 0 && !tienePiso) continue;
+
               const zPos = zStartPost + Math.round(k * (wListonPost + pasoGap));
               let nom = `M${idx + 1} Listón Posterior `;
               if (k === 0) nom += 'Inferior';

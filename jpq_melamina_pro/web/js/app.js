@@ -1525,7 +1525,7 @@ function armarEstructuraModularDesdePerfil(perfil) {
       alto_zocalo_sup: 70,
       tiene_liston_post: true,
       orientacion_liston_post: 'horizontal',
-      cant_listones_post: (perfil && perfil.cant_amarres) ? perfil.cant_amarres : stdInicial.cant,
+      cant_listones_post: tienePiso ? ((perfil && perfil.cant_amarres) ? perfil.cant_amarres : stdInicial.cant) : 1,
       ancho_liston_post: stdInicial.medida,
       medida_liston_post: stdInicial.medida,
       tiene_techo: tieneTecho,
@@ -1709,7 +1709,7 @@ function armarEstructuraModularDesdePerfil(perfil) {
           });
 
           mod.tiene_liston_post = true;
-          mod.cant_listones_post = (ms.cant_listones_post !== undefined) ? parseInt(ms.cant_listones_post) : stdListones.cant;
+          mod.cant_listones_post = (ms.cant_listones_post !== undefined) ? parseInt(ms.cant_listones_post) : (mod.tiene_piso ? stdListones.cant : 1);
           mod.orientacion_liston_post = ms.orientacion_liston_post || stdListones.orientacion;
           mod.medida_liston_post = (ms.medida_liston_post !== undefined) ? parseFloat(ms.medida_liston_post) : stdListones.medida;
           mod.ancho_liston_post = mod.medida_liston_post;

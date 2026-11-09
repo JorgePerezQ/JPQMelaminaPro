@@ -3030,7 +3030,10 @@ window.JPQ_PERFILES_CONFIG = {
           "tiene_fondo": false,
           "columna_idx": 0,
           "nivel_apilado": 0,
-          "alto": 750
+          "alto": 750,
+          "tiene_piso": true,
+          "tiene_zocalo": false,
+          "alto_zocalo": 0
         },
         {
           "nombre": "Vano Battlestation Ultrawide",
@@ -3041,10 +3044,15 @@ window.JPQ_PERFILES_CONFIG = {
           "tiene_fondo": false,
           "columna_idx": 1,
           "nivel_apilado": 0,
-          "alto": 750
+          "alto": 750,
+          "tiene_zocalo": false,
+          "alto_zocalo": 0,
+          "cant_listones_post": 1,
+          "tipo_fondo": "ninguno"
         }
       ],
-      "espesor_melamina": 18
+      "espesor_melamina": 18,
+      "tiene_zocalo": false
     },
     "repisero_gamer_coleccionables": {
       "id": "repisero_gamer_coleccionables",
@@ -3100,16 +3108,16 @@ window.JPQ_PERFILES_CONFIG = {
       "ancho_sugerido": 2400,
       "alto_sugerido": 2000,
       "prof_baja": 650,
-      "altura_zocalo": 80,
-      "retrans_zocalo": 35,
-      "cant_listones_zocalo": 3,
+      "altura_zocalo": 0,
+      "retrans_zocalo": 0,
+      "cant_listones_zocalo": 0,
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
         {
           "nombre": "Vitrina Coleccionables RGB",
           "columna_idx": 0,
           "nivel_apilado": 0,
-          "alto": 1920,
+          "alto": 2000,
           "ancho_fijo": 500,
           "tipo_interior": "repisas",
           "cant_repisas": 4,
@@ -3120,25 +3128,30 @@ window.JPQ_PERFILES_CONFIG = {
           "ancho_ranura_mdf": 4,
           "prof_ranura_mdf": 8,
           "dist_ranura_mdf": 18,
-          "tiene_liston_post": true
+          "tiene_liston_post": true,
+          "tiene_piso": true,
+          "tiene_zocalo": false
         },
         {
           "nombre": "Mesa Escritorio Gamer Ergonómico",
           "columna_idx": 1,
           "nivel_apilado": 0,
-          "alto": 670,
+          "alto": 750,
           "ancho_proporcional": 1.0,
           "tipo_interior": "carcasa",
           "tiene_piso": false,
           "tiene_techo": true,
-          "tiene_fondo": true,
-          "tipo_fondo": "mdf",
+          "tiene_fondo": false,
+          "tipo_fondo": "ninguno",
           "posicion_fondo_mdf": "delante_liston",
           "grosor_mdf": 3,
           "ancho_ranura_mdf": 4,
           "prof_ranura_mdf": 8,
           "dist_ranura_mdf": 18,
-          "tiene_liston_post": true
+          "tiene_liston_post": true,
+          "tiene_zocalo": false,
+          "alto_zocalo": 0,
+          "cant_listones_post": 1
         },
         {
           "nombre": "Puente Superior 2 Pantallas & Repisa RGB",
@@ -3163,7 +3176,7 @@ window.JPQ_PERFILES_CONFIG = {
           "nombre": "Nicho Torre CPU Gamer con Ventilación",
           "columna_idx": 2,
           "nivel_apilado": 0,
-          "alto": 670,
+          "alto": 750,
           "ancho_fijo": 500,
           "tipo_interior": "carcasa",
           "tiene_piso": true,
@@ -3188,7 +3201,8 @@ window.JPQ_PERFILES_CONFIG = {
           "ancho_ranura_mdf": 4,
           "prof_ranura_mdf": 8,
           "dist_ranura_mdf": 18,
-          "tiene_liston_post": true
+          "tiene_liston_post": true,
+          "tiene_piso": true
         },
         {
           "nombre": "Vitrina Aérea Accesorios / Juegos",
@@ -3209,7 +3223,8 @@ window.JPQ_PERFILES_CONFIG = {
           "ancho_ranura_mdf": 4,
           "prof_ranura_mdf": 8,
           "dist_ranura_mdf": 18,
-          "tiene_liston_post": true
+          "tiene_liston_post": true,
+          "tiene_piso": true
         }
       ],
       "mdf_metodo": "ranura",
@@ -3217,7 +3232,8 @@ window.JPQ_PERFILES_CONFIG = {
       "cant_amarres": 2,
       "espesor_melamina": 18,
       "tapacanto_frentes": "Grueso_2mm",
-      "tapacanto_interior": "Delgado_0.5mm"
+      "tapacanto_interior": "Delgado_0.5mm",
+      "tiene_zocalo": false
     },
     "cama_juvenil_cajones": {
       "id": "cama_juvenil_cajones",
@@ -3436,16 +3452,16 @@ window.JPQ_PERFILES_CONFIG = {
       "ancho_sugerido": 1200,
       "alto_sugerido": 800,
       "prof_baja": 480,
-      "altura_zocalo": 80,
-      "retrans_zocalo": 35,
-      "cant_listones_zocalo": 2,
+      "altura_zocalo": 0,
+      "retrans_zocalo": 0,
+      "cant_listones_zocalo": 0,
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
         {
           "nombre": "Torre Cosméticos 5C",
           "columna_idx": 0,
           "nivel_apilado": 0,
-          "alto": 720,
+          "alto": 800,
           "ancho_fijo": 380,
           "tipo_interior": "cajonera",
           "cant_cajones": 5,
@@ -3459,25 +3475,31 @@ window.JPQ_PERFILES_CONFIG = {
           "ancho_ranura_mdf": 4,
           "prof_ranura_mdf": 8,
           "dist_ranura_mdf": 18,
-          "tiene_liston_post": true
+          "tiene_liston_post": true,
+          "tiene_piso": true,
+          "tiene_zocalo": false,
+          "alto_zocalo": 0
         },
         {
           "nombre": "Mesa Maquillaje y Vano Banqueta",
           "columna_idx": 1,
           "nivel_apilado": 0,
-          "alto": 720,
+          "alto": 800,
           "ancho_proporcional": 1.0,
           "tipo_interior": "carcasa",
           "tiene_piso": false,
           "tiene_techo": true,
-          "tiene_fondo": true,
-          "tipo_fondo": "mdf",
+          "tiene_fondo": false,
+          "tipo_fondo": "ninguno",
           "posicion_fondo_mdf": "delante_liston",
           "grosor_mdf": 3,
           "ancho_ranura_mdf": 4,
           "prof_ranura_mdf": 8,
           "dist_ranura_mdf": 18,
-          "tiene_liston_post": true
+          "tiene_liston_post": true,
+          "tiene_zocalo": false,
+          "alto_zocalo": 0,
+          "cant_listones_post": 1
         }
       ],
       "mdf_metodo": "ranura",
@@ -3485,7 +3507,8 @@ window.JPQ_PERFILES_CONFIG = {
       "cant_amarres": 2,
       "espesor_melamina": 18,
       "tapacanto_frentes": "Grueso_2mm",
-      "tapacanto_interior": "Delgado_0.5mm"
+      "tapacanto_interior": "Delgado_0.5mm",
+      "tiene_zocalo": false
     },
     "tocador_juvenil": {
       "id": "tocador_juvenil",
@@ -3499,9 +3522,9 @@ window.JPQ_PERFILES_CONFIG = {
       "ancho_sugerido": 1100,
       "alto_sugerido": 780,
       "prof_baja": 450,
-      "altura_zocalo": 80,
-      "retrans_zocalo": 35,
-      "cant_listones_zocalo": 2,
+      "altura_zocalo": 0,
+      "retrans_zocalo": 0,
+      "cant_listones_zocalo": 0,
       "material_resistencia": "Normal",
       "tapacanto_frentes": "Grueso_2mm",
       "tapacanto_interior": "Delgado_0.5mm",
@@ -3512,7 +3535,7 @@ window.JPQ_PERFILES_CONFIG = {
           "nombre": "Cajonera Skincare (4 Cajones)",
           "columna_idx": 0,
           "nivel_apilado": 0,
-          "alto": 700,
+          "alto": 780,
           "ancho_fijo": 400,
           "tipo_interior": "cajonera",
           "cant_cajones": 4,
@@ -3526,31 +3549,38 @@ window.JPQ_PERFILES_CONFIG = {
           "ancho_ranura_mdf": 4,
           "prof_ranura_mdf": 8,
           "dist_ranura_mdf": 18,
-          "tiene_liston_post": true
+          "tiene_liston_post": true,
+          "tiene_piso": true,
+          "tiene_zocalo": false,
+          "alto_zocalo": 0
         },
         {
           "nombre": "Mesa Tocador con Vano Piernas",
           "columna_idx": 1,
           "nivel_apilado": 0,
-          "alto": 700,
+          "alto": 780,
           "ancho_proporcional": 1.0,
           "tipo_interior": "carcasa",
           "tiene_piso": false,
           "tiene_techo": true,
-          "tiene_fondo": true,
-          "tipo_fondo": "mdf",
+          "tiene_fondo": false,
+          "tipo_fondo": "ninguno",
           "posicion_fondo_mdf": "delante_liston",
           "grosor_mdf": 3,
           "ancho_ranura_mdf": 4,
           "prof_ranura_mdf": 8,
           "dist_ranura_mdf": 18,
-          "tiene_liston_post": true
+          "tiene_liston_post": true,
+          "tiene_zocalo": false,
+          "alto_zocalo": 0,
+          "cant_listones_post": 1
         }
       ],
       "mdf_metodo": "ranura",
       "distancia_ranura": 18,
       "cant_amarres": 2,
-      "espesor_melamina": 18
+      "espesor_melamina": 18,
+      "tiene_zocalo": false
     },
     "infantil_estudio_creativo": {
       "id": "infantil_estudio_creativo",
@@ -3566,9 +3596,9 @@ window.JPQ_PERFILES_CONFIG = {
       "prof_baja": 500,
       "prof_media": 250,
       "prof_alta": 300,
-      "altura_zocalo": 60,
-      "retrans_zocalo": 30,
-      "cant_listones_zocalo": 1,
+      "altura_zocalo": 0,
+      "retrans_zocalo": 0,
+      "cant_listones_zocalo": 0,
       "tipo_montaje": "exterior",
       "luz_frentes": 2,
       "tipo_corredera": "telescopica",
@@ -3596,7 +3626,10 @@ window.JPQ_PERFILES_CONFIG = {
           "tiene_liston_post": true,
           "columna_idx": 0,
           "nivel_apilado": 0,
-          "alto": 620
+          "alto": 680,
+          "tiene_piso": true,
+          "tiene_zocalo": false,
+          "alto_zocalo": 0
         },
         {
           "nombre": "Vano Mesa Dibujo y Repisas",
@@ -3604,8 +3637,8 @@ window.JPQ_PERFILES_CONFIG = {
           "tipo_interior": "carcasa",
           "cant_repisas": 1,
           "tiene_piso": false,
-          "tiene_fondo": true,
-          "tipo_fondo": "mdf",
+          "tiene_fondo": false,
+          "tipo_fondo": "ninguno",
           "posicion_fondo_mdf": "delante_liston",
           "grosor_mdf": 3,
           "ancho_ranura_mdf": 4,
@@ -3614,10 +3647,14 @@ window.JPQ_PERFILES_CONFIG = {
           "tiene_liston_post": true,
           "columna_idx": 1,
           "nivel_apilado": 0,
-          "alto": 620
+          "alto": 680,
+          "tiene_zocalo": false,
+          "alto_zocalo": 0,
+          "cant_listones_post": 1
         }
       ],
-      "espesor_melamina": 18
+      "espesor_melamina": 18,
+      "tiene_zocalo": false
     },
     "infantil_montessori": {
       "id": "infantil_montessori",
@@ -4311,7 +4348,10 @@ window.JPQ_PERFILES_CONFIG = {
           "ancho_ranura_mdf": 4,
           "prof_ranura_mdf": 8,
           "dist_ranura_mdf": 18,
-          "tiene_liston_post": true
+          "tiene_liston_post": true,
+          "tiene_piso": true,
+          "tiene_zocalo": false,
+          "alto_zocalo": 0
         },
         {
           "nombre": "Vano Libre Piernas ISO",
@@ -4323,14 +4363,17 @@ window.JPQ_PERFILES_CONFIG = {
           "cant_repisas": 0,
           "tiene_piso": false,
           "tiene_techo": true,
-          "tiene_fondo": true,
-          "tipo_fondo": "mdf",
+          "tiene_fondo": false,
+          "tipo_fondo": "ninguno",
           "posicion_fondo_mdf": "delante_liston",
           "grosor_mdf": 3,
           "ancho_ranura_mdf": 4,
           "prof_ranura_mdf": 8,
           "dist_ranura_mdf": 18,
-          "tiene_liston_post": true
+          "tiene_liston_post": true,
+          "tiene_zocalo": false,
+          "alto_zocalo": 0,
+          "cant_listones_post": 1
         }
       ],
       "espesor_melamina": 18,
@@ -4338,7 +4381,8 @@ window.JPQ_PERFILES_CONFIG = {
       "tapacanto_interior": "Delgado_0.5mm",
       "distancia_ranura": 18,
       "mdf_metodo": "ranura",
-      "cant_amarres": 2
+      "cant_amarres": 2,
+      "tiene_zocalo": false
     },
     "home_office_ejecutivo": {
       "id": "home_office_ejecutivo",
@@ -4354,9 +4398,9 @@ window.JPQ_PERFILES_CONFIG = {
       "prof_baja": 650,
       "prof_media": 320,
       "prof_alta": 400,
-      "altura_zocalo": 100,
-      "retrans_zocalo": 35,
-      "cant_listones_zocalo": 3,
+      "altura_zocalo": 0,
+      "retrans_zocalo": 0,
+      "cant_listones_zocalo": 0,
       "tipo_montaje": "exterior",
       "luz_frentes": 2,
       "tipo_corredera": "telescopica",
@@ -4373,7 +4417,7 @@ window.JPQ_PERFILES_CONFIG = {
           "nombre": "Pedestal Cajonero Archivo (3C)",
           "columna_idx": 0,
           "nivel_apilado": 0,
-          "alto": 650,
+          "alto": 750,
           "ancho_fijo": 480,
           "profundidad": 650,
           "tipo_interior": "cajonera",
@@ -4390,7 +4434,9 @@ window.JPQ_PERFILES_CONFIG = {
           "ancho_ranura_mdf": 4,
           "prof_ranura_mdf": 8,
           "dist_ranura_mdf": 18,
-          "tiene_liston_post": true
+          "tiene_liston_post": true,
+          "tiene_zocalo": false,
+          "alto_zocalo": 0
         },
         {
           "nombre": "Librero / Archivador Aéreo",
@@ -4416,20 +4462,23 @@ window.JPQ_PERFILES_CONFIG = {
           "nombre": "Mesa Escritorio Ejecutivo Ergonómico",
           "columna_idx": 1,
           "nivel_apilado": 0,
-          "alto": 650,
+          "alto": 750,
           "ancho_proporcional": 1.0,
           "profundidad": 650,
           "tipo_interior": "carcasa",
           "tiene_piso": false,
           "tiene_techo": true,
-          "tiene_fondo": true,
-          "tipo_fondo": "mdf",
+          "tiene_fondo": false,
+          "tipo_fondo": "ninguno",
           "posicion_fondo_mdf": "delante_liston",
           "grosor_mdf": 3,
           "ancho_ranura_mdf": 4,
           "prof_ranura_mdf": 8,
           "dist_ranura_mdf": 18,
-          "tiene_liston_post": true
+          "tiene_liston_post": true,
+          "tiene_zocalo": false,
+          "alto_zocalo": 0,
+          "cant_listones_post": 1
         },
         {
           "nombre": "Módulo Aéreo Librero Central",
@@ -4455,7 +4504,7 @@ window.JPQ_PERFILES_CONFIG = {
           "nombre": "Torre Archivador con Puertas",
           "columna_idx": 2,
           "nivel_apilado": 0,
-          "alto": 2000,
+          "alto": 2100,
           "ancho_fijo": 480,
           "profundidad": 650,
           "tipo_interior": "puertas",
@@ -4473,10 +4522,13 @@ window.JPQ_PERFILES_CONFIG = {
           "ancho_ranura_mdf": 4,
           "prof_ranura_mdf": 8,
           "dist_ranura_mdf": 18,
-          "tiene_liston_post": true
+          "tiene_liston_post": true,
+          "tiene_zocalo": false,
+          "alto_zocalo": 0
         }
       ],
-      "espesor_melamina": 18
+      "espesor_melamina": 18,
+      "tiene_zocalo": false
     },
     "aparador": {
       "id": "aparador",
@@ -4729,9 +4781,9 @@ window.JPQ_PERFILES_CONFIG = {
       "prof_baja": 650,
       "prof_media": 0,
       "prof_alta": 350,
-      "altura_zocalo": 100,
-      "retrans_zocalo": 50,
-      "cant_listones_zocalo": 2,
+      "altura_zocalo": 0,
+      "retrans_zocalo": 0,
+      "cant_listones_zocalo": 0,
       "tipo_montaje": "exterior",
       "luz_frentes": 2,
       "tipo_corredera": "telescopica",
@@ -4753,7 +4805,12 @@ window.JPQ_PERFILES_CONFIG = {
           "tiene_techo": true,
           "columna_idx": 0,
           "nivel_apilado": 0,
-          "alto": 2100
+          "alto": 2200,
+          "tiene_zocalo": false,
+          "alto_zocalo": 0,
+          "cant_listones_post": 1,
+          "tiene_fondo": false,
+          "tipo_fondo": "ninguno"
         },
         {
           "nombre": "Armario Escobero / Jabones",
@@ -4772,10 +4829,13 @@ window.JPQ_PERFILES_CONFIG = {
           "tiene_liston_post": true,
           "columna_idx": 1,
           "nivel_apilado": 0,
-          "alto": 2100
+          "alto": 2200,
+          "tiene_zocalo": false,
+          "alto_zocalo": 0
         }
       ],
-      "espesor_melamina": 18
+      "espesor_melamina": 18,
+      "tiene_zocalo": false
     },
     "gondola_exhibidora": {
       "id": "gondola_exhibidora",
