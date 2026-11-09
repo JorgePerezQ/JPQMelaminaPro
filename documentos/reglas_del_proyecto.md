@@ -432,14 +432,14 @@ Cada perfil en el archivo JSON puede definir su matriz modular interna sin recur
   5. Se provee un botón **🔄 Recargar JSON** en la interfaz para refrescar el catálogo en caliente sin reiniciar la ventana.
 
 #### D. Familias Estandarizadas de Roperos, Cocinas, Centros TV y Tocadores (Cero Duplicados)
-1. **Roperos Modulares con Maleteros Superiores Independientes (Norma Anti-Pandeo de Puertas)**:
-   - *Norma de Taller*: Una puerta batiente no debe superar los 1600-1800 mm de altura para evitar alabeo, exceso de peso y sobrecarga de bisagras. Los muebles altos de dormitorio integran obligatoriamente maletero superior independiente (`nivel_apilado: 1`).
-   - `ropero_1_cuerpo` (600 × 2100 × 580 mm): 1 columna. Cuerpo principal inferior de 1600 mm (colgado y 2 cajones) + Maletero superior de 420 mm con puerta batiente.
-   - `ropero_2_cuerpos` (1200 × 2100 × 580 mm): 2 columnas de 600 mm. Cuerpos inferiores de 1600 mm (colgado y cajonera 3C) + Batería de 2 maleteros superiores independientes de 420 mm.
-   - `ropero_3_cuerpos` (1800 × 2100 × 580 mm): 3 columnas de 600 mm. Cuerpos inferiores de 1600 mm (repisas dobladas, colgado central vestidos y cajonera camisas) + 3 maleteros superiores independientes de 420 mm.
-   - `ropero_4_cuerpos` (2400 × 2200 × 600 mm): 4 columnas de 600 mm. Cuerpos inferiores de 1650 mm (colgado dama, cajoneras dobles y trajes varón) + 4 maleteros superiores independientes de 470 mm.
-   - `closet_vestidor` (2700 × 2400 × 600 mm): Vestidor walk-in master con 3 cuerpos inferiores de 1800 mm y 3 maleteros superiores de 500 mm.
-   - `ropero_puertas_corredizas` (1800 × 2200 × 620 mm): Ropero corredizo con cuerpos inferiores de 1650 mm y maleteros superiores de 470 mm.
+1. **Roperos Modulares con Maleteros Superiores Independientes y Cajoneras Subdivididas**:
+   - *Norma de Taller*: Una puerta batiente no debe superar los 1600-1800 mm de altura para evitar alabeo, exceso de peso y sobrecarga de bisagras. Los muebles altos de dormitorio integran obligatoriamente maletero superior independiente (`nivel_apilado: 1` o `2`). Las cajoneras interiores o frontales se configuran con alturas proporcionales (450 a 800 mm) para mantener tapas de 170 a 240 mm, dejando el espacio superior para colgado o repisas sin crear frentes monstruosos.
+   - `ropero_1_cuerpo` (600 × 2100 × 580 mm): 1 columna. Cajonera inferior de 2 cajones (460 mm) + Colgado de camisas/ropa (1140 mm) + Maletero superior independiente (420 mm).
+   - `ropero_2_cuerpos` (1200 × 2100 × 580 mm): 2 columnas de 600 mm. Columna 1: colgado largo y calzado (1600 mm) + maletero (420 mm). Columna 2: cajonera inferior de 3 cajones (660 mm) + colgado de camisas (940 mm) + maletero independiente (420 mm).
+   - `ropero_3_cuerpos` (1800 × 2100 × 580 mm): 3 columnas de 600 mm. Columna 1: repisas ropa doblada (1600 mm) + maletero. Columna 2: colgado central de trajes y vestidos (1600 mm) + maletero. Columna 3: cajonera inferior 3C (660 mm) + colgado camisas (940 mm) + maletero (420 mm).
+   - `ropero_4_cuerpos` (2400 × 2200 × 600 mm): 4 columnas de 600 mm. Columna 1: colgado largo dama (1650 mm). Columna 2: cajonera dama 4C (800 mm) + repisas organizadoras (850 mm). Columna 3: cajonera varón 4C (800 mm) + colgado corto camisas (850 mm). Columna 4: colgado trajes y pantalonero (1650 mm). Batería superior continua de 4 maleteros de 470 mm.
+   - `closet_vestidor` (2700 × 2400 × 600 mm): Vestidor walk-in master con 3 columnas de 900 mm. Columna 1: ropa larga y calzado (1800 mm). Columna 2: cajonera doble de 4 gavetas (800 mm) + colgado camisas/sacos (1000 mm). Columna 3: ropa corta y pantalonero (1800 mm). 3 maleteros superiores independientes de 500 mm.
+   - `ropero_puertas_corredizas` (1800 × 2200 × 620 mm): Ropero corredizo de 2 columnas de 900 mm. Columna 1: colgado y calzado (1650 mm) + maletero corredizo (470 mm). Columna 2: cajonera interior 3C (650 mm) + repisas organizadoras (1000 mm) + maletero corredizo (470 mm).
 2. **Bajos de Cocina Modulares por Cantidad de Módulos (Módulos de 600 mm en Melamina RH)**:
    - `cocina_1_modulo` (600 × 850 × 580 mm): Módulo fregadero individual o torre horno.
    - `cocina_2_modulos` (1200 × 850 × 580 mm): Cajonera ollera 3C + Módulo fregadero lavaplatos.

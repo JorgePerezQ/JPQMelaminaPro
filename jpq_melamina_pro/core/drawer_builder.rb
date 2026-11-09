@@ -88,7 +88,10 @@ module JPQMelaminaPro
             y_frente = 0.mm
           end
 
-          alto_caja_num = [alto_frente_num - 40.0, 70.0].max
+          if alto_frente_num > 320.0
+            puts "[JPQMelaminaPro] AVISO TÉCNICO: Frente de cajón de #{alto_frente_num.round}mm (>320mm). Se limita la caja interna a 240mm por normativa técnica."
+          end
+          alto_caja_num = [[alto_frente_num - 40.0, 70.0].max, 240.0].min
           alto_caja     = alto_caja_num.mm
           largo_slide   = largo_slide_mm.mm
           t_caja        = t_caja_mm.mm

@@ -7063,6 +7063,21 @@ function validarLimitesTecnicosModulo(m, idx) {
 
   // 3. CAJONERAS Y GAVETAS
   if (m.tipo_interior === 'cajonera') {
+    const cantCaj = Math.max(1, parseInt(m.cant_cajones) || 3);
+    const altoPorCajon = h / cantCaj;
+
+    if (altoPorCajon > 320) {
+      alertas.push({
+        tipo: 'danger',
+        msg: `⚠️ Altura de cajón desproporcionada (${Math.round(altoPorCajon)} mm por cajón): Cada tapa mide más de 320 mm. En armarios y clósets, subdivida el vano vertical en una cajonera baja (~600-750 mm) y colgado/repisas superior para evitar tapas gigantes e imposibles de utilizar.`
+      });
+    } else if (altoPorCajon < 90) {
+      alertas.push({
+        tipo: 'danger',
+        msg: `Cajones excesivamente bajos (${Math.round(altoPorCajon)} mm): No queda altura útil para la gaveta tras descontar luces perimetrales y holguras.`
+      });
+    }
+
     if (w < 300) {
       alertas.push({ tipo: 'danger', msg: `Cajón muy estrecho (${w} mm): Deja un espacio interior minúsculo tras descontar los laterales y 26 mm de las correderas telescópicas.` });
     } else if (w > 700) {
