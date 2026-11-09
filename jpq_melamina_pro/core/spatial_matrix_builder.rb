@@ -2403,6 +2403,54 @@ module JPQMelaminaPro
                 )
               end
             end
+
+            # =================================================================
+            # E. Listones de Tope Interior (Batientes para Puertas Embutidas)
+            # =================================================================
+            liston_tope = m_data['puertas_liston_tope'] || 'ninguno'
+            if !es_corrediza && liston_tope && liston_tope != 'ninguno'
+              w_liston_tope_num = 40.0 # mm de profundidad del listón batiente
+              y_liston_tope = (montaje_p == 'interior') ? (y_carcasa_start + luz_p + t) : (y_carcasa_start + t)
+              x_liston_tope = x_pos + x_offset_int
+
+              if liston_tope == 'superior' || liston_tope == 'ambos'
+                z_tope_sup = z_int_base + (h_vano_util_num - t_num).mm
+                CabinetBuilder.crear_panel(
+                  grupo_mod, "M#{idx + 1} Listón Tope Superior Puerta",
+                  x_liston_tope, y_liston_tope, z_tope_sup,
+                  ancho_int_num.mm, w_liston_tope_num.mm, t,
+                  {
+                    'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-TOPE-SUP",
+                    'pieza_nombre' => "M#{idx + 1} Listón de Tope Superior Puerta (Batiente)",
+                    'material' => mat_interior, 'resistencia' => resistencia,
+                    'largo_bruto_mm' => ancho_int_num, 'ancho_bruto_mm' => w_liston_tope_num, 'espesor_mm' => t_num,
+                    'largo_neto_mm' => ancho_int_num, 'ancho_neto_mm' => w_liston_tope_num,
+                    'cantidad' => 1, 'veta' => 'longitudinal',
+                    'canto_L1' => 0.5, 'canto_L2' => 0.0, 'canto_A1' => 0.5, 'canto_A2' => 0.5,
+                    'Tipo_Pieza' => 'liston_tope_puerta'
+                  }
+                )
+              end
+
+              if liston_tope == 'inferior' || liston_tope == 'ambos'
+                z_tope_inf = z_int_base
+                CabinetBuilder.crear_panel(
+                  grupo_mod, "M#{idx + 1} Listón Tope Inferior Puerta",
+                  x_liston_tope, y_liston_tope, z_tope_inf,
+                  ancho_int_num.mm, w_liston_tope_num.mm, t,
+                  {
+                    'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-TOPE-INF",
+                    'pieza_nombre' => "M#{idx + 1} Listón de Tope Inferior Puerta (Batiente)",
+                    'material' => mat_interior, 'resistencia' => resistencia,
+                    'largo_bruto_mm' => ancho_int_num, 'ancho_bruto_mm' => w_liston_tope_num, 'espesor_mm' => t_num,
+                    'largo_neto_mm' => ancho_int_num, 'ancho_neto_mm' => w_liston_tope_num,
+                    'cantidad' => 1, 'veta' => 'longitudinal',
+                    'canto_L1' => 0.5, 'canto_L2' => 0.0, 'canto_A1' => 0.5, 'canto_A2' => 0.5,
+                    'Tipo_Pieza' => 'liston_tope_puerta'
+                  }
+                )
+              end
+            end
           end
         end
 

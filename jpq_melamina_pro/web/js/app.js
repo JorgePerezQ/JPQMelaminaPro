@@ -1000,7 +1000,7 @@ function inicializarSelectorPlantillas() {
  */
 function recargarCatalogoPerfiles() {
   // 1. Respaldo local inmediato en memoria (100% garantizado y síncrono al cargar la app)
-  const respaldoLocal = window.JPQ_PERFILES_CONFIG || window.PERFILES_CONFIG_FALLBACK;
+  const respaldoLocal = window.JPQ_PERFILES_DATA || window.JPQ_PERFILES_CONFIG || window.PERFILES_CONFIG_FALLBACK;
   if (respaldoLocal) {
     procesarDatosPerfiles(respaldoLocal);
   }
@@ -1012,14 +1012,15 @@ function recargarCatalogoPerfiles() {
 
   // 3. Intentar fetch si estamos en un servidor web local (http o https)
   if (typeof fetch === 'function' && location.protocol && location.protocol.startsWith('http')) {
-    fetch('perfiles_config.json')
+    const cacheBuster = `?v=${Date.now()}`;
+    fetch(`perfiles_config.json${cacheBuster}`)
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
       .then(datos => procesarDatosPerfiles(datos))
       .catch(() => {
-        fetch('../perfiles_config.json')
+        fetch(`../perfiles_config.json${cacheBuster}`)
           .then(res => res.json())
           .then(datos => procesarDatosPerfiles(datos))
           .catch(() => {});
@@ -1719,6 +1720,18 @@ function armarEstructuraModularDesdePerfil(perfil) {
         }
       }
 
+      // Listones posteriores de amarre a pared para módulos sin fondo (nicho lavadora, escritorio)
+      if (ms.tiene_liston_post !== undefined) {
+        mod.tiene_liston_post = !!ms.tiene_liston_post;
+      }
+      if (ms.cant_listones_post !== undefined) {
+        mod.cant_listones_post = parseInt(ms.cant_listones_post) || 1;
+      }
+      if (ms.ancho_liston_post !== undefined) {
+        mod.ancho_liston_post = parseFloat(ms.ancho_liston_post) || 80;
+        mod.medida_liston_post = mod.ancho_liston_post;
+      }
+
       // Heredar configuración de puertas del módulo prediseñado
       if (ms.tiene_puertas !== undefined) {
         mod.tiene_puertas = !!ms.tiene_puertas;
@@ -1728,6 +1741,7 @@ function armarEstructuraModularDesdePerfil(perfil) {
       if (ms.puertas_montaje) mod.puertas_montaje = ms.puertas_montaje;
       if (ms.puertas_posicion_bisagra) mod.puertas_posicion_bisagra = ms.puertas_posicion_bisagra;
       if (ms.puertas_cant_bisagras) mod.puertas_cant_bisagras = ms.puertas_cant_bisagras;
+      if (ms.puertas_liston_tope) mod.puertas_liston_tope = ms.puertas_liston_tope;
       mod.puertas_luz = (AppState.luzFrentes !== undefined) ? AppState.luzFrentes : (ms.puertas_luz || 3.0);
 
       // Heredar configuración de cajoneras del módulo prediseñado
@@ -2896,6 +2910,26 @@ function actualizarFormularioModuloActivo() {
         ${bisInfo.esPistonGas ? '<br><span style="color: var(--primary); font-weight: 600;">★ Incluye brazos neumáticos de pistón a gas.</span>' : ''}
       `;
     }
+  }
+
+  const badgeListon = document.getElementById('badgeInfoListonTope');
+  const lblListon = document.getElementById('lblInfoListonTopeDetalle');
+  if (badgeListon && tienePuertas) {
+    const montP = m.puertas_montaje || 'exterior';
+    const listonTope = m.puertas_liston_tope || 'ninguno';
+    if (montP === 'interior' || listonTope !== 'ninguno') {
+      badgeListon.style.display = 'block';
+      let txtTope = "Indispensable en puertas interiores (embutidas / codo 18): frena las hojas al cerrar para que queden al ras del módulo y no se hundan hacia el interior.";
+      if (listonTope === 'superior') txtTope += " <strong>Listón superior de 40mm activo bajo el techo.</strong>";
+      else if (listonTope === 'inferior') txtTope += " <strong>Listón inferior de 40mm activo sobre el piso.</strong>";
+      else if (listonTope === 'ambos') txtTope += " <strong>Listones superior e inferior de 40mm activos (Doble batiente).</strong>";
+      else txtTope += " <span style='color: var(--warning);'>Selecciona 'Superior', 'Inferior' o 'Ambos' para agregar el listón de freno.</span>";
+      if (lblListon) lblListon.innerHTML = txtTope;
+    } else {
+      badgeListon.style.display = 'none';
+    }
+  } else if (badgeListon) {
+    badgeListon.style.display = 'none';
   }
 
   // Renderizar controles avanzados de parantes y repisas por espacio
@@ -6366,6 +6400,15 @@ function onCambiarListonTopePuertas(tope) {
   m.puertas_liston_tope = tope;
   actualizarCanvas();
   validarLimitesTecnicosModulo(m, idx);
+  sincronizarFormularioModulo();
+
+  const descTope = {
+    'ninguno': 'Sin listón de tope (cierre por retén magnético o borde de repisa)',
+    'superior': 'Listón superior de 40mm instalado bajo techo (frena la puerta al ras)',
+    'inferior': 'Listón inferior de 40mm instalado sobre piso (frena la puerta al ras)',
+    'ambos': 'Listones superior e inferior instalados (Doble batiente anti-hundimiento)'
+  }[tope] || tope;
+  mostrarNotificacion(`🚪 Listón de Tope: ${descTope}. Usa el control de Apertura para apreciarlo en 3D.`, 'info');
 }
 window.onCambiarListonTopePuertas = onCambiarListonTopePuertas;
 
@@ -7188,8 +7231,9 @@ function validarLimitesTecnicosModulo(m, idx) {
     }
   }
 
-  // 4. PUERTAS BATIENTES
-  if (m.tipo_interior === 'puertas') {
+  // 4. PUERTAS BATIENTES E INDEPENDIENTES
+  const tienePuertasVal = (m.tipo_interior === 'puertas' || m.tiene_puertas);
+  if (tienePuertasVal) {
     if (w > 600) {
       alertas.push({ tipo: 'info', msg: `Módulo ancho (${w} mm): Se divide automáticamente en 2 puertas batientes para evitar palanca excesiva en bisagras de cazoleta de 35 mm.` });
     } else if (w < 250) {
@@ -7198,6 +7242,22 @@ function validarLimitesTecnicosModulo(m, idx) {
 
     if (h > 2100) {
       alertas.push({ tipo: 'warning', msg: `Puerta alta (${h} mm): Supera 2100 mm. Requiere de 4 a 5 bisagras distribuidas para evitar alabeo o arqueo del tablero.` });
+    }
+
+    const montP = m.puertas_montaje || 'exterior';
+    const listonTope = m.puertas_liston_tope || 'ninguno';
+    if (montP === 'interior') {
+      if (listonTope === 'ninguno') {
+        alertas.push({
+          tipo: 'info',
+          msg: `💡 Puerta Interior (Embutida / Codo 18): En carpintería se recomienda activar 'Listón de Tope Interior' ('Superior', 'Inferior' o 'Ambos') para frenar las hojas al ras de la carcasa y evitar que se hundan hacia adentro.`
+        });
+      } else {
+        alertas.push({
+          tipo: 'success',
+          msg: `✓ Puerta Interior con Listón de Tope (${listonTope}): Batiente de melamina 40mm activo para retención y enrasado perfecto de las hojas.`
+        });
+      }
     }
   }
 

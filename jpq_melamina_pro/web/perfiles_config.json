@@ -4845,8 +4845,9 @@
           "tipo_fondo": "ninguno",
           "tiene_zocalo": false,
           "alto_zocalo": 0,
-          "cant_listones_post": 1,
-          "tiene_liston_post": true
+          "cant_listones_post": 2,
+          "tiene_liston_post": true,
+          "ancho_liston_post": 100
         },
         {
           "nombre": "Mueble Aéreo Detergentes & Ropa Limpia",
@@ -4870,7 +4871,9 @@
           "ancho_ranura_mdf": 4,
           "prof_ranura_mdf": 8,
           "dist_ranura_mdf": 18,
-          "tiene_liston_post": true
+          "tiene_liston_post": true,
+          "cant_listones_post": 2,
+          "ancho_liston_post": 80
         },
         {
           "nombre": "Armario Escobero y Jabonero RH",
@@ -4897,7 +4900,8 @@
           "tiene_liston_post": true,
           "tiene_zocalo": true,
           "alto_zocalo": 80,
-          "retrans_zocalo": 35
+          "retrans_zocalo": 35,
+          "puertas_liston_tope": "ambos"
         }
       ],
       "espesor_melamina": 18,

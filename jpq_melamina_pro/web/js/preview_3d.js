@@ -2292,6 +2292,51 @@ const Preview3D = (function() {
           }
         }
       }
+
+      // =====================================================================
+      // LISTÓN DE TOPE INTERIOR (BATIENTE ANTI-HUNDIMIENTO PARA PUERTAS EMBUTIDAS)
+      // =====================================================================
+      const listonTope = m.puertas_liston_tope || 'ninguno';
+      if (!esCorrediza && listonTope && listonTope !== 'ninguno') {
+        const wListonTope = 40; // mm de ancho estándar en melamina
+        const espListonTope = t; // 18mm espesor
+        const anchoListonTope = anchoInt;
+        const xListonTope = xMod + xOffsetInt;
+        // Para puertas embutidas (interior), el listón se monta detrás de la puerta (y = yCarcasaStart + luz + t)
+        const yListonTope = (montajeP === 'interior') ? (yCarcasaStart + luz + t) : (yCarcasaStart + t);
+
+        if (listonTope === 'superior' || listonTope === 'ambos') {
+          const zTopeSup = zIntBase + hVanoUtil - espListonTope;
+          prismas.push({
+            x: xListonTope,
+            y: yListonTope,
+            z: zTopeSup,
+            dx: anchoListonTope,
+            dy: wListonTope,
+            dz: espListonTope,
+            mat: m.material_interior || d.material || matInterior,
+            name: `M${idx + 1} Listón de Tope Superior Puerta (Batiente 40mm)`,
+            moduloIndex: idx,
+            esListonTope: true
+          });
+        }
+
+        if (listonTope === 'inferior' || listonTope === 'ambos') {
+          const zTopeInf = zIntBase;
+          prismas.push({
+            x: xListonTope,
+            y: yListonTope,
+            z: zTopeInf,
+            dx: anchoListonTope,
+            dy: wListonTope,
+            dz: espListonTope,
+            mat: m.material_interior || d.material || matInterior,
+            name: `M${idx + 1} Listón de Tope Inferior Puerta (Batiente 40mm)`,
+            moduloIndex: idx,
+            esListonTope: true
+          });
+        }
+      }
       }
     });
 
