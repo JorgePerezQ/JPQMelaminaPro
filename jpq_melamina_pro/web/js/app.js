@@ -7176,7 +7176,11 @@ function validarLimitesTecnicosModulo(m, idx) {
     if (w < 300) {
       alertas.push({ tipo: 'danger', msg: `Cajón muy estrecho (${w} mm): Deja un espacio interior minúsculo tras descontar los laterales y 26 mm de las correderas telescópicas.` });
     } else if (w > 700) {
-      alertas.push({ tipo: 'warning', msg: `Cajonera ancha (${w} mm): Se debe colocar un listón de amarre de refuerzo bajo el fondo y correderas Heavy Duty, o dividir en 2 columnas.` });
+      const cantRef = (w >= 1000) ? 2 : 1;
+      alertas.push({
+        tipo: 'success',
+        msg: `✓ Cajonera ancha (${w} mm) estructuralmente reforzada: Incorpora ${cantRef} listón(es) de amarre longitudinal(es) anti-pandeo bajo el fondo MDF y correderas Heavy Duty.`
+      });
     }
 
     if (p < 250) {

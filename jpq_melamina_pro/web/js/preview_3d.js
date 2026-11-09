@@ -96,8 +96,10 @@ const Preview3D = (function() {
     'Herraje Metal Satinado': { base: [148, 163, 184], border: '#475569', edge: '#64748B' },
     'Cazoleta Perforacion': { base: [30, 41, 59], border: '#0F172A', edge: '#1E293B' },
     'Melamina Roble Natural 18mm': { base: [214, 166, 117], border: '#8C5B32', edge: '#B87A40' },
-    'Melamina Nogal Terracota 18mm': { base: [110, 70, 49], border: '#422414', edge: '#663B23' },
-    'Melamina Gris Antracita 18mm': { base: [56, 62, 68], border: '#1E293B', edge: '#334155' }
+    'Melamina Gris Antracita 18mm': { base: [56, 62, 68], border: '#1E293B', edge: '#334155' },
+    'Colchón Acolchado': { base: [241, 245, 249], border: '#94A3B8', edge: '#E2E8F0' },
+    'Pantalla Monitor Gamer': { base: [15, 23, 42], border: '#0284C7', edge: '#38BDF8' },
+    'Herraje Negro Mate': { base: [30, 41, 59], border: '#0F172A', edge: '#334155' }
   };
 
   // Mapeo exhaustivo a archivos reales de texturas PNG en la carpeta textures/
@@ -1861,6 +1863,29 @@ const Preview3D = (function() {
             moduloIndex: idx
           });
 
+          // Listón(es) de amarre / refuerzo estructural bajo el fondo de la gaveta (Norma anti-pandeo para cajones anchos)
+          // Si el ancho exterior de la caja supera 600 mm (cajonera >= 700 mm), se colocan listones
+          // de melamina longitudinales bajo el MDF para evitar arqueo, pandeo o que se desfonde con peso.
+          const cantRefuerzosFondo = (wExtBox >= 900) ? 2 : (wExtBox >= 600 ? 1 : 0);
+          if (cantRefuerzosFondo > 0) {
+            const wRef = 70; // listón de amarre de 70 mm
+            for (let r = 1; r <= cantRefuerzosFondo; r++) {
+              const fracR = r / (cantRefuerzosFondo + 1);
+              const xRef = xBox + (wExtBox * fracR) - (wRef / 2);
+              prismas.push({
+                x: xRef,
+                y: yBox + tCaja,
+                z: zBox,
+                dx: wRef,
+                dy: Math.max(10, largoSlide - (2 * tCaja)),
+                dz: 12,
+                mat: 'Melamina Blanca 15mm',
+                name: `M${idx + 1} Listón Refuerzo Anti-Pandeo Fondo Gaveta ${c + 1} (${r}/${cantRefuerzosFondo})`,
+                moduloIndex: idx
+              });
+            }
+          }
+
           // 4. Correderas metálicas en los laterales del mueble según posición seleccionada
           const zSlide = (posCorr === 'central')
             ? (zBox + (altoBox / 2) - 12)
@@ -2269,6 +2294,82 @@ const Preview3D = (function() {
       }
       }
     });
+
+    // =========================================================================
+    // VISUALIZACIÓN ERGONÓMICA DE MOBILIARIO REALISTA EN 3D
+    // =========================================================================
+
+    // 1. Tipología Cama con Cajonera: Somier con Colchón 1.5 Plazas
+    const esMuebleCama = (d.nombre && d.nombre.toLowerCase().includes('cama')) || (d.id && d.id.includes('cama'));
+    if (esMuebleCama && !prismas.some(p => p.esColchon)) {
+      const zCamaBase = 400; // Altura estándar de la tarima somier
+      const wCama = Math.max(800, (d.ancho_total || 2000) - 40);
+      const dCama = Math.max(600, (d.prof_total || 1050) - 50);
+      prismas.push({
+        x: 20,
+        y: 20,
+        z: zCamaBase,
+        dx: wCama,
+        dy: dCama,
+        dz: 200,
+        mat: 'Colchón Acolchado',
+        name: 'Colchón 1.5 Plazas Ergonómico Acolchado (1960x1000x200mm)',
+        moduloIndex: -1,
+        esColchon: true
+      });
+    }
+
+    // 2. Tipología Setup Gamer: Dual Monitors 27" en el Nicho de Pantallas
+    const esSetupGamer = (d.nombre && (d.nombre.toLowerCase().includes('gamer') || d.nombre.toLowerCase().includes('streaming'))) || (d.id && d.id.includes('gamer'));
+    if (esSetupGamer && !prismas.some(p => p.esMonitorGamer)) {
+      const idxNicho = modulos.findIndex(m => m.nombre && (m.nombre.toLowerCase().includes('pantalla') || m.nombre.toLowerCase().includes('monitor')));
+      if (idxNicho >= 0 && geomMapeo[idxNicho]) {
+        const gm = geomMapeo[idxNicho];
+        const zEscritorio = gm.zBaseStack;
+        const wNicho = gm.wMod || 1400;
+        const wMon = Math.min(600, Math.max(380, (wNicho - 80) / 2));
+        const hMon = 340;
+        const yMon = Math.max(100, (d.prof_total || 650) - 220);
+
+        // Monitor Gamer 1 (Izquierdo)
+        const xMon1 = gm.xPos + (wNicho / 2) - wMon - 15;
+        prismas.push({
+          x: xMon1, y: yMon, z: zEscritorio + 60,
+          dx: wMon, dy: 22, dz: hMon,
+          mat: 'Pantalla Monitor Gamer',
+          name: 'Pantalla Monitor Gamer 1 (27" IPS Bezel-less)',
+          moduloIndex: idxNicho,
+          esMonitorGamer: true
+        });
+        prismas.push({
+          x: xMon1 + (wMon / 2) - 90, y: yMon + 5, z: zEscritorio,
+          dx: 180, dy: 140, dz: 60,
+          mat: 'Herraje Negro Mate',
+          name: 'Soporte Peana Monitor 1',
+          moduloIndex: idxNicho,
+          esMonitorGamer: true
+        });
+
+        // Monitor Gamer 2 (Derecho)
+        const xMon2 = gm.xPos + (wNicho / 2) + 15;
+        prismas.push({
+          x: xMon2, y: yMon, z: zEscritorio + 60,
+          dx: wMon, dy: 22, dz: hMon,
+          mat: 'Pantalla Monitor Gamer',
+          name: 'Pantalla Monitor Gamer 2 (27" IPS Bezel-less)',
+          moduloIndex: idxNicho,
+          esMonitorGamer: true
+        });
+        prismas.push({
+          x: xMon2 + (wMon / 2) - 90, y: yMon + 5, z: zEscritorio,
+          dx: 180, dy: 140, dz: 60,
+          mat: 'Herraje Negro Mate',
+          name: 'Soporte Peana Monitor 2',
+          moduloIndex: idxNicho,
+          esMonitorGamer: true
+        });
+      }
+    }
 
     return prismas;
   }

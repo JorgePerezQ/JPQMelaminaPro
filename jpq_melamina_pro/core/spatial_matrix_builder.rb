@@ -2211,6 +2211,27 @@ module JPQMelaminaPro
                   (w_ext_box_num - 8.0).mm, (largo_slide_num - 8.0).mm, 3.0.mm,
                   { 'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-CAJ-#{c_idx + 1}-FND", 'pieza_nombre' => "M#{idx + 1} Fondo MDF Gaveta #{c_idx + 1}", 'material' => 'MDF Fondo Blanco 3mm', 'espesor_mm' => 3.0, 'largo_bruto_mm' => largo_slide_num - 8.0, 'ancho_bruto_mm' => w_ext_box_num - 8.0, 'cantidad' => 1 }
                 )
+
+                # Listón(es) de amarre / refuerzo estructural bajo el fondo de la gaveta (Norma anti-pandeo en cajones anchos)
+                # Si el ancho de la gaveta supera 600 mm (cajonera >= 700 mm), se colocan listones de melamina
+                # longitudinales bajo el MDF para evitar deflexión, arqueo o desfonde bajo el peso de ropa u objetos.
+                cant_ref_fondo = (w_ext_box_num >= 900.0) ? 2 : ((w_ext_box_num >= 600.0) ? 1 : 0)
+                if cant_ref_fondo > 0
+                  w_ref_num = 70.0
+                  w_ref = w_ref_num.mm
+                  largo_ref_num = [largo_slide_num - (2 * t_caja_num), 50.0].max
+                  1.upto(cant_ref_fondo) do |r_idx|
+                    frac_r = r_idx.to_f / (cant_ref_fondo + 1).to_f
+                    x_ref = x_box + (w_ext_box * frac_r) - (w_ref / 2.0)
+                    nom_ref = (cant_ref_fondo == 1) ? "M#{idx + 1} Refuerzo Fondo Gaveta #{c_idx + 1}" : "M#{idx + 1} Refuerzo #{r_idx}/#{cant_ref_fondo} Fondo Gaveta #{c_idx + 1}"
+                    CabinetBuilder.crear_panel(
+                      grupo_mod, nom_ref,
+                      x_ref, y_box + t_caja, z_box,
+                      w_ref, largo_ref_num.mm, 15.0.mm,
+                      { 'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-CAJ-#{c_idx + 1}-REF-#{r_idx}", 'pieza_nombre' => nom_ref, 'material' => 'Melamina Blanca 15mm', 'espesor_mm' => 15.0, 'largo_bruto_mm' => largo_ref_num, 'ancho_bruto_mm' => w_ref_num, 'cantidad' => 1 }
+                    )
+                  end
+                end
               end
             end
 
