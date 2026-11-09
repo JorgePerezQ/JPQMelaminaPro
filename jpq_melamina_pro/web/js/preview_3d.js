@@ -1642,9 +1642,13 @@ const Preview3D = (function() {
         const luz = (m.cajones_luz !== undefined) ? parseFloat(m.cajones_luz) : (d && d.luz_frentes !== undefined ? parseFloat(d.luz_frentes) : 3.0);
         const tCaja = 15.0; // melamina 15mm para caja de gaveta
 
+        const tienePuertasMod = (m.tiene_puertas === true || m.tiene_puertas === 'true' || m.tipo_interior === 'puertas');
+        const posPMod = m.puertas_posicion_bisagra || m.puertas_apertura || 'derecha';
+        const esCorredizaMod = tienePuertasMod && (posPMod === 'corrediza');
+
         const descSlide = (tipoCorr === 'oculta') ? 21.0 : (tipoCorr === 'metalica' ? 37.5 : 26.0);
         const wExtBox = Math.max(60, anchoInt - descSlide);
-        const maxSlide = profCarcasa - 30;
+        const maxSlide = esCorredizaMod ? (profCarcasa - 80 - 30) : (profCarcasa - 30);
         let largoSlide = 450;
         const stdSlides = [250, 300, 350, 400, 450, 500, 550, 600];
         if (m.cajones_largo_corredera && m.cajones_largo_corredera !== 'auto') {
@@ -1658,7 +1662,14 @@ const Preview3D = (function() {
 
         // Medidas milimétricas de frentes respetando luz estándar perimétrica y entre cajones
         let altoFr = 0, anchoFr = 0, xFr = 0, yFrBase = 0, zFrBase = 0;
-        if (montajeCaj === 'exterior') {
+        if (esCorredizaMod) {
+          // Cajones interiores embutidos detrás de puertas corredizas (-80mm de espacio frontal)
+          altoFr = (hVanoUtil - ((cantCaj + 1) * luz)) / cantCaj;
+          anchoFr = anchoInt - (2 * luz);
+          xFr = xMod + xOffsetInt + luz;
+          yFrBase = yCarcasaStart + 80;
+          zFrBase = zIntBase + luz;
+        } else if (montajeCaj === 'exterior') {
           altoFr = (hCarcasa - ((cantCaj + 1) * luz)) / cantCaj;
           anchoFr = tieneLaterales ? (wMod - (2 * luz)) : (anchoInt - (2 * luz));
           xFr = tieneLaterales ? (xMod + luz) : (xMod + xOffsetInt + luz);
@@ -1796,8 +1807,88 @@ const Preview3D = (function() {
       if (tienePuertas) {
         const montajeP = m.puertas_montaje || 'exterior';
         const posicionP = m.puertas_posicion_bisagra || m.puertas_apertura || ((wMod > 600) ? 'doble' : 'derecha');
-        const luz = (m.puertas_luz !== undefined) ? parseFloat(m.puertas_luz) : (d && d.luz_frentes !== undefined ? parseFloat(d.luz_frentes) : 3.0);
-        const cantP = (posicionP === 'doble') ? 2 : 1;
+        const esCorrediza = (posicionP === 'corrediza');
+
+        if (esCorrediza) {
+          // ===================================================================
+          // SISTEMA DE PUERTAS CORREDIZAS DE 2 VÍAS (ALUMINIO DUCASSE / PLACARD)
+          // Riel superior e inferior en profundidad frontal (0-72mm) con rodamientos
+          // ===================================================================
+          const wVano = tieneLaterales ? Math.max(100, wMod - (2 * t)) : wMod;
+          const xVanoStart = tieneLaterales ? (xMod + t) : xMod;
+          const hVanoCorrediza = hVanoUtil;
+          const traslape = 30.0; // mm de traslape central estándar entre hojas
+          const anchoHojaP = Math.round((wVano + traslape) / 2);
+          const altoHojaP = Math.max(100, hVanoCorrediza - 16);
+          const zHojaP = zIntBase + 8;
+          const distSlide = Math.max(50, anchoHojaP - 60);
+
+          // Riel Superior de Doble Canal (Anodizado Satinado en profundidad frontal 0-72mm)
+          prismas.push({
+            x: xVanoStart,
+            y: yCarcasaStart + 4,
+            z: zIntBase + hVanoCorrediza - 40,
+            dx: wVano, dy: 72, dz: 40,
+            mat: 'Herraje Metal Satinado',
+            name: `M${idx + 1} Riel Superior Doble Canal Corredizo (Aluminio)`,
+            moduloIndex: idx
+          });
+
+          // Riel Inferior de Doble Guía (Anodizado Satinado en profundidad frontal 0-72mm)
+          prismas.push({
+            x: xVanoStart,
+            y: yCarcasaStart + 4,
+            z: zIntBase,
+            dx: wVano, dy: 72, dz: 10,
+            mat: 'Herraje Metal Satinado',
+            name: `M${idx + 1} Riel Inferior Doble Guía Corredizo (Aluminio)`,
+            moduloIndex: idx
+          });
+
+          // 2 Hojas Corredizas Traslapadas
+          for (let p = 0; p < 2; p++) {
+            const idPuerta = `m${idx}_puerta_${p}`;
+            const aperturaPuerta = (aperturasPiezas[idPuerta] !== undefined)
+              ? aperturasPiezas[idPuerta]
+              : (renderOptions.aperturaAnim || 0);
+
+            // Hoja 0: Interior (canal posterior), corre hacia la derecha (+X)
+            // Hoja 1: Exterior (canal frontal), corre hacia la izquierda (-X)
+            const xInitial = (p === 0) ? xVanoStart : (xVanoStart + wVano - anchoHojaP);
+            const deltaX = (p === 0) ? (aperturaPuerta * distSlide) : (-aperturaPuerta * distSlide);
+            const currentX = xInitial + deltaX;
+            const yHoja = (p === 0) ? (yCarcasaStart + 12) : (yCarcasaStart + 12 + t + 8);
+
+            // Tablero de melamina de la hoja corrediza
+            prismas.push({
+              x: currentX, y: yHoja, z: zHojaP,
+              dx: anchoHojaP, dy: t, dz: altoHojaP,
+              mat: m.material_frentes || d.material_frentes || matFrentes,
+              name: `M${idx + 1} Puerta Corrediza Hoja ${p + 1} (${p === 0 ? 'Interior' : 'Exterior'})`,
+              moduloIndex: idx,
+              esMovil: true,
+              tipoMovil: 'puerta',
+              idMovil: idPuerta,
+              nombrePieza: `Puerta Corrediza ${p + 1} (Módulo ${idx + 1})`
+            });
+
+            // Perfil tirador vertical de aluminio anodizado en el canto exterior
+            const xTirador = (p === 0) ? (currentX + 2) : (currentX + anchoHojaP - 16);
+            prismas.push({
+              x: xTirador, y: yHoja - 3, z: zHojaP,
+              dx: 14, dy: t + 6, dz: altoHojaP,
+              mat: 'Herraje Metal Satinado',
+              name: `M${idx + 1} Perfil Tirador Corredizo Hoja ${p + 1}`,
+              moduloIndex: idx,
+              esMovil: true,
+              tipoMovil: 'puerta',
+              idMovil: idPuerta,
+              nombrePieza: `Puerta Corrediza ${p + 1} (Módulo ${idx + 1})`
+            });
+          }
+        } else {
+          const luz = (m.puertas_luz !== undefined) ? parseFloat(m.puertas_luz) : (d && d.luz_frentes !== undefined ? parseFloat(d.luz_frentes) : 3.0);
+          const cantP = (posicionP === 'doble') ? 2 : 1;
 
         let altoP = 0, anchoP = 0, yP = 0, zP = 0;
         if (montajeP === 'exterior') {
@@ -2088,6 +2179,7 @@ const Preview3D = (function() {
             });
           }
         }
+      }
       }
     });
 

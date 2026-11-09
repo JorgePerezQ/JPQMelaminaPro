@@ -1865,7 +1865,11 @@ window.JPQ_PERFILES_CONFIG = {
           "ancho_ranura_mdf": 4,
           "prof_ranura_mdf": 8,
           "dist_ranura_mdf": 18,
-          "tiene_liston_post": true
+          "tiene_liston_post": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "corrediza",
+          "descuento_frontal": 80
         },
         {
           "nombre": "Maletero Superior Corredizo Izq",
@@ -1882,7 +1886,11 @@ window.JPQ_PERFILES_CONFIG = {
           "ancho_ranura_mdf": 4,
           "prof_ranura_mdf": 8,
           "dist_ranura_mdf": 18,
-          "tiene_liston_post": true
+          "tiene_liston_post": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "corrediza",
+          "descuento_frontal": 80
         },
         {
           "nombre": "Cuerpo Der Cajonera 3C",
@@ -1902,7 +1910,8 @@ window.JPQ_PERFILES_CONFIG = {
           "ancho_ranura_mdf": 4,
           "prof_ranura_mdf": 8,
           "dist_ranura_mdf": 18,
-          "tiene_liston_post": true
+          "tiene_liston_post": true,
+          "descuento_frontal": 80
         },
         {
           "nombre": "Cuerpo Der Repisas Organizadoras",
@@ -1919,7 +1928,11 @@ window.JPQ_PERFILES_CONFIG = {
           "ancho_ranura_mdf": 4,
           "prof_ranura_mdf": 8,
           "dist_ranura_mdf": 18,
-          "tiene_liston_post": true
+          "tiene_liston_post": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "corrediza",
+          "descuento_frontal": 80
         },
         {
           "nombre": "Maletero Superior Corredizo Der",
@@ -1936,7 +1949,11 @@ window.JPQ_PERFILES_CONFIG = {
           "ancho_ranura_mdf": 4,
           "prof_ranura_mdf": 8,
           "dist_ranura_mdf": 18,
-          "tiene_liston_post": true
+          "tiene_liston_post": true,
+          "tiene_puertas": true,
+          "puertas_montaje": "exterior",
+          "puertas_posicion_bisagra": "corrediza",
+          "descuento_frontal": 80
         }
       ],
       "espesor_melamina": 18

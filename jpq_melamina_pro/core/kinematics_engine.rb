@@ -223,7 +223,8 @@ module JPQMelaminaPro
 
         when 'puerta_corrediza'
           ancho_p = (dict['ancho_bruto_mm'] || 500.0).to_f.mm
-          dist_x = -(ancho_p - 80.mm)
+          lado = dict['Lado_Bisagra'] || 'izquierdo'
+          dist_x = (lado == 'izquierdo') ? (ancho_p - 60.mm) : -(ancho_p - 60.mm)
           trans_mov = Geom::Transformation.translation(Geom::Vector3d.new(dist_x, 0, 0))
           ent.transform!(trans_mov)
         end

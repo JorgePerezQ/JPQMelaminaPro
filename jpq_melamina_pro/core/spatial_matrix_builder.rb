@@ -1715,7 +1715,12 @@ module JPQMelaminaPro
               espacios_cfg = m_data['espacios_repisas'] || []
 
               # Cálculo exacto de descuento de profundidad para parantes y repisas:
-              descuento_frontal_num = (m_data['descuento_frontal'] || m_data['retrans_repisas'] || 20.0).to_f
+              tiene_puertas_mod_local = (m_data['tiene_puertas'] == true || m_data['tiene_puertas'] == 'true' || tipo_interior == 'puertas')
+              pos_p_local = m_data['puertas_posicion_bisagra'] || 'derecha'
+              es_corrediza_local = tiene_puertas_mod_local && (pos_p_local == 'corrediza')
+
+              descuento_frontal_num = (m_data['descuento_frontal'] || m_data['retrans_repisas'] || (es_corrediza_local ? 80.0 : 20.0)).to_f
+              descuento_frontal_num = [80.0, descuento_frontal_num].max if es_corrediza_local
               descuento_post_num = 0.0
 
               if tipo_fondo == 'mdf'
@@ -2003,7 +2008,11 @@ module JPQMelaminaPro
               desc_corr = desc_corr_num.mm
               w_ext_box_num = [ancho_int_num - desc_corr_num, 60.0].max
               w_ext_box = w_ext_box_num.mm
-              max_slide_num = [prof_carcasa_num - 30.0, 250.0].max
+              tiene_puertas_mod_local = (m_data['tiene_puertas'] == true || m_data['tiene_puertas'] == 'true' || tipo_interior == 'puertas')
+              pos_p_local = m_data['puertas_posicion_bisagra'] || 'derecha'
+              es_corrediza_local = tiene_puertas_mod_local && (pos_p_local == 'corrediza')
+
+              max_slide_num = es_corrediza_local ? [prof_carcasa_num - 80.0 - 30.0, 250.0].max : [prof_carcasa_num - 30.0, 250.0].max
               largo_slide_num = if m_data['cajones_largo_corredera'] && m_data['cajones_largo_corredera'].to_s != 'auto' && m_data['cajones_largo_corredera'].to_f > 0
                                   [max_slide_num, m_data['cajones_largo_corredera'].to_f].min
                                 else
@@ -2015,23 +2024,35 @@ module JPQMelaminaPro
                                 end
               largo_slide = largo_slide_num.mm
 
-              alto_fr_num = if montaje_caj == 'exterior'
+              alto_fr_num = if es_corrediza_local
+                              (h_vano_util_num - ((cant_caj + 1) * luz_caj_num)) / cant_caj.to_f
+                            elsif montaje_caj == 'exterior'
                               (h_carcasa_num - ((cant_caj + 1) * luz_caj_num)) / cant_caj.to_f
                             else
                               (h_vano_util_num - ((cant_caj + 1) * luz_caj_num)) / cant_caj.to_f
                             end
-              ancho_fr_num = if montaje_caj == 'exterior'
+              ancho_fr_num = if es_corrediza_local
+                               ancho_int_num - (2 * luz_caj_num)
+                             elsif montaje_caj == 'exterior'
                                tiene_laterales ? (w_mod_num - (2 * luz_caj_num)) : (ancho_int_num - (2 * luz_caj_num))
                              else
                                ancho_int_num - (2 * luz_caj_num)
                              end
-              x_fr = if montaje_caj == 'exterior'
+              x_fr = if es_corrediza_local
+                       x_pos + x_offset_int + luz_caj
+                     elsif montaje_caj == 'exterior'
                        tiene_laterales ? (x_pos + luz_caj) : (x_pos + x_offset_int + luz_caj)
                      else
                        x_pos + x_offset_int + luz_caj
                      end
-              y_fr_base = (montaje_caj == 'exterior') ? (y_carcasa_start - t) : (y_carcasa_start + luz_caj)
-              z_fr_base = (montaje_caj == 'exterior') ? (z_base + luz_caj) : (z_int_base + luz_caj)
+              y_fr_base = if es_corrediza_local
+                            y_carcasa_start + 80.0.mm
+                          elsif montaje_caj == 'exterior'
+                            y_carcasa_start - t
+                          else
+                            y_carcasa_start + luz_caj
+                          end
+              z_fr_base = (montaje_caj == 'exterior' && !es_corrediza_local) ? (z_base + luz_caj) : (z_int_base + luz_caj)
               if alto_fr_num > 320.0
                 puts "[JPQMelaminaPro] AVISO TÉCNICO: Módulo #{idx + 1} tiene frentes de cajón de #{alto_fr_num.round}mm (>320mm). Se limita la caja interna a 240mm por normativa de peso y correderas."
               end
@@ -2107,9 +2128,92 @@ module JPQMelaminaPro
             if tiene_puertas_mod
               montaje_p = m_data['puertas_montaje'] || 'exterior'
               posicion_p = m_data['puertas_posicion_bisagra'] || ((w_mod_num > 600.0) ? 'doble' : 'derecha')
-              luz_p_num = (m_data['puertas_luz'] || params['luz_frentes'] || 3.0).to_f
-              luz_p = luz_p_num.mm
-              cant_p = (posicion_p == 'doble') ? 2 : 1
+              es_corrediza = (posicion_p == 'corrediza')
+
+              if es_corrediza
+                # =============================================================
+                # SISTEMA DE PUERTAS CORREDIZAS DE 2 VÍAS (ALUMINIO DUCASSE/PLACARD)
+                # =============================================================
+                w_vano_num = tiene_laterales ? [w_mod_num - (2 * t_num), 100.0].max : w_mod_num
+                x_vano_start = tiene_laterales ? (x_pos + t) : x_pos
+                traslape_num = 30.0 # mm traslape estándar entre hojas
+                ancho_hoja_num = ((w_vano_num + traslape_num) / 2.0).round
+                alto_hoja_num = [h_vano_util_num - 16.0, 100.0].max
+                z_hoja = z_int_base + 8.0.mm
+
+                # 1. Riel Superior Doble Canal (Aluminio Anodizado)
+                CabinetBuilder.crear_panel(
+                  grupo_mod, "M#{idx + 1} Riel Superior Doble Canal Corredizo",
+                  x_vano_start, y_carcasa_start + 4.0.mm, z_int_base + (h_vano_util_num - 40.0).mm,
+                  w_vano_num.mm, 72.0.mm, 40.0.mm,
+                  {
+                    'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-RIEL-SUP",
+                    'pieza_nombre' => "M#{idx + 1} Riel Superior Doble Canal Corredizo (Aluminio)", 'material' => 'Herraje Metal Satinado',
+                    'resistencia' => resistencia,
+                    'largo_bruto_mm' => w_vano_num, 'ancho_bruto_mm' => 72.0, 'espesor_mm' => 40.0,
+                    'cantidad' => 1, 'Tipo_Herraje' => 'riel_corrediza_superior'
+                  }
+                )
+
+                # 2. Riel Inferior Doble Guía (Aluminio Anodizado)
+                CabinetBuilder.crear_panel(
+                  grupo_mod, "M#{idx + 1} Riel Inferior Doble Guía Corredizo",
+                  x_vano_start, y_carcasa_start + 4.0.mm, z_int_base,
+                  w_vano_num.mm, 72.0.mm, 10.0.mm,
+                  {
+                    'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-RIEL-INF",
+                    'pieza_nombre' => "M#{idx + 1} Riel Inferior Doble Guía Corredizo (Aluminio)", 'material' => 'Herraje Metal Satinado',
+                    'resistencia' => resistencia,
+                    'largo_bruto_mm' => w_vano_num, 'ancho_bruto_mm' => 72.0, 'espesor_mm' => 10.0,
+                    'cantidad' => 1, 'Tipo_Herraje' => 'riel_corrediza_inferior'
+                  }
+                )
+
+                # 3. Dos Hojas Corredizas Traslapadas
+                2.times do |p_idx|
+                  x_p = (p_idx == 0) ? x_vano_start : (x_vano_start + (w_vano_num - ancho_hoja_num).mm)
+                  y_p = (p_idx == 0) ? (y_carcasa_start + 12.0.mm) : (y_carcasa_start + (12.0 + t_num + 8.0).mm)
+                  lado = (p_idx == 0) ? 'izquierdo' : 'derecho'
+                  nombre_hoja = (p_idx == 0) ? 'Hoja 1 (Interior)' : 'Hoja 2 (Exterior)'
+
+                  panel_puerta = CabinetBuilder.crear_panel(
+                    grupo_mod, "M#{idx + 1} Puerta Corrediza #{p_idx + 1}",
+                    x_p, y_p, z_hoja,
+                    ancho_hoja_num.mm, t, alto_hoja_num.mm,
+                    {
+                      'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-PTA-CORR-#{p_idx + 1}",
+                      'pieza_nombre' => "M#{idx + 1} Puerta Corrediza #{nombre_hoja}", 'material' => mat_frentes,
+                      'resistencia' => resistencia,
+                      'largo_bruto_mm' => alto_hoja_num, 'ancho_bruto_mm' => ancho_hoja_num, 'espesor_mm' => t_num,
+                      'largo_neto_mm' => alto_hoja_num - 4.0, 'ancho_neto_mm' => ancho_hoja_num - 4.0,
+                      'cantidad' => 1, 'veta' => 'longitudinal',
+                      'canto_L1' => 2.0, 'canto_L2' => 2.0, 'canto_A1' => 2.0, 'canto_A2' => 2.0,
+                      'ranura' => 'Guías correderas con rodamientos',
+                      'Tipo_Herraje' => 'puerta_corrediza',
+                      'Lado_Bisagra' => lado
+                    }
+                  )
+
+                  # Perfil Tirador de Aluminio en el canto exterior
+                  x_tir = (p_idx == 0) ? (x_p + 2.0.mm) : (x_p + (ancho_hoja_num - 16.0).mm)
+                  CabinetBuilder.crear_panel(
+                    grupo_mod, "M#{idx + 1} Perfil Tirador Corredizo #{p_idx + 1}",
+                    x_tir, y_p - 3.0.mm, z_hoja,
+                    14.0.mm, (t_num + 6.0).mm, alto_hoja_num.mm,
+                    {
+                      'modulo_id' => mod_id, 'pieza_id' => "#{mod_id}-TIR-CORR-#{p_idx + 1}",
+                      'pieza_nombre' => "M#{idx + 1} Perfil Tirador Corredizo Hoja #{p_idx + 1}", 'material' => 'Herraje Metal Satinado',
+                      'resistencia' => resistencia,
+                      'largo_bruto_mm' => alto_hoja_num, 'ancho_bruto_mm' => 14.0, 'espesor_mm' => t_num + 6.0,
+                      'cantidad' => 1, 'Tipo_Herraje' => 'puerta_corrediza',
+                      'Lado_Bisagra' => lado
+                    }
+                  )
+                end
+              else
+                luz_p_num = (m_data['puertas_luz'] || params['luz_frentes'] || 3.0).to_f
+                luz_p = luz_p_num.mm
+                cant_p = (posicion_p == 'doble') ? 2 : 1
 
               alto_p_num = (montaje_p == 'interior') ? (h_vano_util_num - (2 * luz_p_num)) : (h_carcasa_num - (2 * luz_p_num))
               ancho_p_num = if montaje_p == 'interior'
@@ -2188,6 +2292,7 @@ module JPQMelaminaPro
               end
             end
           end
+        end
 
           # ====================================================================
           # Posicionamiento inteligente no destructivo:

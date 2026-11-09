@@ -903,7 +903,9 @@ function seleccionarPosicionBisagraModal(pos) {
     'derecha': document.getElementById('btnPosDerecha'),
     'izquierda': document.getElementById('btnPosIzquierda'),
     'doble': document.getElementById('btnPosDoble'),
-    'superior': document.getElementById('btnPosSuperior')
+    'superior': document.getElementById('btnPosSuperior'),
+    'inferior': document.getElementById('btnPosInferior'),
+    'corrediza': document.getElementById('btnPosCorrediza')
   };
   Object.keys(btns).forEach(k => {
     const b = btns[k];
@@ -916,6 +918,19 @@ function seleccionarPosicionBisagraModal(pos) {
       b.style.background = 'transparent';
     }
   });
+
+  const boxInfo = document.getElementById('modalBoxInfoCazoletas');
+  if (boxInfo) {
+    if (pos === 'corrediza') {
+      boxInfo.innerHTML = '★ <strong>Sistema Corredizo de 2 Vías:</strong> Riel superior e inferior de aluminio anodizado con rodamientos silenciosos | <strong>Descuento automático de 80mm</strong> a la profundidad interior de repisas y cajones para libre recorrido de las hojas traslapadas.';
+    } else if (pos === 'superior') {
+      boxInfo.innerHTML = '★ <strong>Pistón a Gas Elevable:</strong> Apertura hacia arriba a 80° para muebles aéreos | Requiere 2 pistones neumáticos (80N a 120N) | Bisagras rectas 0mm.';
+    } else if (pos === 'inferior') {
+      boxInfo.innerHTML = '★ <strong>Pistón Gas Inverso / Abatible:</strong> Apertura hacia abajo a 80° | Retenedores o compases con freno.';
+    } else {
+      boxInfo.innerHTML = 'Perforación estándar: Ø35mm × 11.5mm prof. | Margen K = 4.5mm (centro a 22mm del borde) | Tapacanto grueso 2mm en los 4 bordes.';
+    }
+  }
 }
 window.seleccionarPosicionBisagraModal = seleccionarPosicionBisagraModal;
 
@@ -929,6 +944,13 @@ function confirmarConfigPuertaModal() {
   m.puertas_posicion_bisagra = _tempPosicionBisagra || 'derecha';
   m.puertas_apertura = _tempPosicionBisagra || 'derecha';
 
+  if (_tempPosicionBisagra === 'corrediza') {
+    // Garantizar descuento normativo de 80mm en profundidad para rieles de 2 vías
+    m.descuento_frontal = Math.max(80, parseFloat(m.descuento_frontal) || 80);
+    const inpDescF = document.getElementById('modDescuentoFrontal');
+    if (inpDescF) inpDescF.value = m.descuento_frontal;
+  }
+
   const selCant = document.getElementById('modalSelCantBisagras');
   if (selCant) m.puertas_cant_bisagras = selCant.value;
 
@@ -937,6 +959,12 @@ function confirmarConfigPuertaModal() {
 
   const chkPuertas = document.getElementById('modTienePuertas');
   if (chkPuertas) chkPuertas.checked = true;
+
+  const selPos = document.getElementById('modPuertasPosicionBisagra');
+  if (selPos) selPos.value = m.puertas_posicion_bisagra;
+
+  const selMont = document.getElementById('modPuertasMontaje');
+  if (selMont) selMont.value = m.puertas_montaje;
 
   const btnConfig = document.getElementById('btnConfigurarPuerta');
   if (btnConfig) btnConfig.style.display = 'inline-block';
@@ -947,6 +975,7 @@ function confirmarConfigPuertaModal() {
   cerrarModalConfigPuerta();
   actualizarCanvas();
   validarLimitesTecnicosModulo(m, idx);
+  sincronizarFormularioModulo();
 
   if (AppState.despieceActual && AppState.despieceActual.length > 0) {
     generarDespieceEstimadoLocal();
@@ -2805,19 +2834,31 @@ function actualizarFormularioModuloActivo() {
     } else {
       const posP = m.puertas_posicion_bisagra || m.puertas_apertura || ((m.ancho > 600) ? 'doble' : 'derecha');
       const montP = m.puertas_montaje || 'exterior';
-      badgePuertas.textContent = `${posP === 'doble' ? '2 Hojas' : '1 Hoja'} (${montP})`;
+      if (posP === 'corrediza') {
+        badgePuertas.textContent = '2 Hojas Corredizas (Riel Doble)';
+      } else {
+        badgePuertas.textContent = `${posP === 'doble' ? '2 Hojas' : '1 Hoja'} (${montP})`;
+      }
       badgePuertas.className = 'cota-badge';
     }
   }
 
   if (lblCazoleta && tienePuertas) {
-    const hC = m.alto - ((m.tiene_zocalo && m.alto_zocalo > 0) ? m.alto_zocalo : 0);
-    const bisInfo = calcularBisagrasPuerta(m, hC, m.ancho);
-    lblCazoleta.innerHTML = `
-      <strong>${bisInfo.tipoBisagra}</strong> | ${bisInfo.cantBis} bisagras por hoja.<br>
-      Perforación cazoleta Ø${bisInfo.diametroCazoleta}mm x ${bisInfo.profPerforacion}mm prof. | Margen K = ${bisInfo.margenK}mm (centro a ${bisInfo.distCentroBorde}mm) | Extremos a ${bisInfo.distExtremos}mm.
-      ${bisInfo.esPistonGas ? '<br><span style="color: var(--primary); font-weight: 600;">★ Incluye brazos neumáticos de pistón a gas.</span>' : ''}
-    `;
+    const posP = m.puertas_posicion_bisagra || m.puertas_apertura || ((m.ancho > 600) ? 'doble' : 'derecha');
+    if (posP === 'corrediza') {
+      lblCazoleta.innerHTML = `
+        <strong>Sistema Corredizo de 2 Vías (Riel Doble)</strong> | Riel superior e inferior de aluminio anodizado.<br>
+        <span style="color: var(--primary); font-weight: 600;">★ Descuento técnico de 80mm en profundidad interior de repisas y cajones para libre recorrido de las hojas.</span>
+      `;
+    } else {
+      const hC = m.alto - ((m.tiene_zocalo && m.alto_zocalo > 0) ? m.alto_zocalo : 0);
+      const bisInfo = calcularBisagrasPuerta(m, hC, m.ancho);
+      lblCazoleta.innerHTML = `
+        <strong>${bisInfo.tipoBisagra}</strong> | ${bisInfo.cantBis} bisagras por hoja.<br>
+        Perforación cazoleta Ø${bisInfo.diametroCazoleta}mm x ${bisInfo.profPerforacion}mm prof. | Margen K = ${bisInfo.margenK}mm (centro a ${bisInfo.distCentroBorde}mm) | Extremos a ${bisInfo.distExtremos}mm.
+        ${bisInfo.esPistonGas ? '<br><span style="color: var(--primary); font-weight: 600;">★ Incluye brazos neumáticos de pistón a gas.</span>' : ''}
+      `;
+    }
   }
 
   // Renderizar controles avanzados de parantes y repisas por espacio
@@ -4657,19 +4698,23 @@ function calcularDimensionesCarcasa(m, t) {
 
   // Determinar si hay puertas exteriores o cajones exteriores
   const tienePuerta = !!(m.tiene_puertas || m.tipo_interior === 'puertas');
+  const posPuerta = m.puertas_posicion_bisagra || m.puertas_apertura || 'derecha';
+  const esCorrediza = tienePuerta && (posPuerta === 'corrediza');
   const montajePuerta = m.puertas_montaje || 'exterior';
-  const tienePuertaExt = tienePuerta && (montajePuerta === 'exterior' || montajePuerta === 'medio');
+  const tienePuertaExt = !esCorrediza && tienePuerta && (montajePuerta === 'exterior' || montajePuerta === 'medio');
 
   const tieneCajonera = (m.tipo_interior === 'cajonera');
   const montajeCajon = m.cajones_montaje || 'exterior';
-  const tieneCajonExt = !tienePuerta && tieneCajonera && (montajeCajon === 'exterior');
+  const tieneCajonExt = !esCorrediza && !tienePuerta && tieneCajonera && (montajeCajon === 'exterior');
 
   const descuentaFrente = tienePuertaExt || tieneCajonExt;
   const descFrenteMm = descuentaFrente ? t : 0;
   const profCarcasa = Math.max(100, profMod - descFrenteMm);
   const yCarcasaStart = descFrenteMm;
 
-  let motivoDescuento = 'Sin descuento frontal (carcasa a profundidad nominal completa)';
+  let motivoDescuento = esCorrediza
+    ? 'Puertas corredizas embutidas en riel doble: la carcasa conserva la profundidad exterior y el riel ocupa el frontal'
+    : 'Sin descuento frontal (carcasa a profundidad nominal completa)';
   if (tienePuertaExt) {
     motivoDescuento = `Descontado ${t}mm de carcasa por puerta ${montajePuerta === 'medio' ? 'semi-sobrepuesta (codo 9)' : 'exterior sobrepuesta'}`;
   } else if (tieneCajonExt) {
@@ -4814,9 +4859,18 @@ function calcularProfundidadUtilInterior(m, t) {
   const dimCarcasa = calcularDimensionesCarcasa(m, t);
   const profBase = dimCarcasa.profCarcasa;
 
-  const descuentoFrontal = (m.descuento_frontal !== undefined && m.descuento_frontal !== '')
+  const tienePuerta = !!(m.tiene_puertas || m.tipo_interior === 'puertas');
+  const posPuerta = m.puertas_posicion_bisagra || m.puertas_apertura || 'derecha';
+  const esCorrediza = tienePuerta && (posPuerta === 'corrediza');
+
+  let descuentoFrontal = (m.descuento_frontal !== undefined && m.descuento_frontal !== '')
     ? Math.max(0, parseFloat(m.descuento_frontal))
-    : (m.retrans_repisas !== undefined ? Math.max(0, parseFloat(m.retrans_repisas)) : 20);
+    : (m.retrans_repisas !== undefined ? Math.max(0, parseFloat(m.retrans_repisas)) : (esCorrediza ? 80 : 20));
+
+  if (esCorrediza) {
+    // REGLA TÉCNICA: En sistemas corredizos se descuenta un mínimo de 80mm para el riel doble de aluminio
+    descuentoFrontal = Math.max(80, descuentoFrontal);
+  }
 
   // 1. Determinar tipo y presencia de fondo
   const tieneFondo = !!(m.tiene_fondo || m.tiene_fondo_mdf);
@@ -4838,7 +4892,11 @@ function calcularProfundidadUtilInterior(m, t) {
   if (dimCarcasa.descuentaFrente) {
     detallesDescuento.push(`-${dimCarcasa.descFrenteMm} mm (frente exterior resta fondo a carcasa)`);
   }
-  detallesDescuento.push(`-${descuentoFrontal} mm (retranqueo frontal)`);
+  if (esCorrediza) {
+    detallesDescuento.push(`-${descuentoFrontal} mm (riel y puertas corredizas de 2 vías)`);
+  } else {
+    detallesDescuento.push(`-${descuentoFrontal} mm (retranqueo frontal)`);
+  }
 
   if (tipoFondo === 'melamina') {
     // Fondo de melamina embutido entre laterales (sin listón posterior)
