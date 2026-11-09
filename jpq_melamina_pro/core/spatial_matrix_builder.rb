@@ -2031,6 +2031,7 @@ module JPQMelaminaPro
                        x_pos + x_offset_int + luz_caj
                      end
               y_fr_base = (montaje_caj == 'exterior') ? (y_carcasa_start - t) : (y_carcasa_start + luz_caj)
+              z_fr_base = (montaje_caj == 'exterior') ? (z_base + luz_caj) : (z_int_base + luz_caj)
               if alto_fr_num > 320.0
                 puts "[JPQMelaminaPro] AVISO TÉCNICO: Módulo #{idx + 1} tiene frentes de cajón de #{alto_fr_num.round}mm (>320mm). Se limita la caja interna a 240mm por normativa de peso y correderas."
               end
