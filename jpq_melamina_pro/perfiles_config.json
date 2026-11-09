@@ -1067,7 +1067,10 @@
           "ancho_ranura_mdf": 4,
           "prof_ranura_mdf": 8,
           "dist_ranura_mdf": 18,
-          "tiene_liston_post": true
+          "tiene_liston_post": true,
+          "tiene_zocalo": true,
+          "alto_zocalo": 80,
+          "retrans_zocalo": 35
         },
         {
           "nombre": "Panel Respaldo Superior Izquierdo",
@@ -1123,7 +1126,10 @@
           "ancho_ranura_mdf": 4,
           "prof_ranura_mdf": 8,
           "dist_ranura_mdf": 18,
-          "tiene_liston_post": true
+          "tiene_liston_post": true,
+          "tiene_zocalo": true,
+          "alto_zocalo": 80,
+          "retrans_zocalo": 35
         },
         {
           "nombre": "Panel Respaldo Superior Derecho",
@@ -1366,7 +1372,7 @@
       "prof_baja": 480,
       "altura_zocalo": 80,
       "retrans_zocalo": 35,
-      "cant_listones_zocalo": 1,
+      "cant_listones_zocalo": "auto",
       "material_resistencia": "Normal",
       "modulos_sugeridos": [
         {
@@ -3032,8 +3038,9 @@
           "nivel_apilado": 0,
           "alto": 750,
           "tiene_piso": true,
-          "tiene_zocalo": false,
-          "alto_zocalo": 0
+          "tiene_zocalo": true,
+          "alto_zocalo": 80,
+          "retrans_zocalo": 35
         },
         {
           "nombre": "Vano Battlestation Ultrawide",
@@ -3270,7 +3277,10 @@
           "ancho_ranura_mdf": 4,
           "prof_ranura_mdf": 8,
           "dist_ranura_mdf": 18,
-          "tiene_liston_post": true
+          "tiene_liston_post": true,
+          "tiene_zocalo": true,
+          "alto_zocalo": 80,
+          "retrans_zocalo": 35
         },
         {
           "nombre": "Panel Respaldo Cama A",
@@ -3308,7 +3318,10 @@
           "ancho_ranura_mdf": 4,
           "prof_ranura_mdf": 8,
           "dist_ranura_mdf": 18,
-          "tiene_liston_post": true
+          "tiene_liston_post": true,
+          "tiene_zocalo": true,
+          "alto_zocalo": 80,
+          "retrans_zocalo": 35
         },
         {
           "nombre": "Panel Respaldo Cama B",
@@ -3477,8 +3490,9 @@
           "dist_ranura_mdf": 18,
           "tiene_liston_post": true,
           "tiene_piso": true,
-          "tiene_zocalo": false,
-          "alto_zocalo": 0
+          "tiene_zocalo": true,
+          "alto_zocalo": 80,
+          "retrans_zocalo": 35
         },
         {
           "nombre": "Mesa Maquillaje y Vano Banqueta",
@@ -3551,8 +3565,9 @@
           "dist_ranura_mdf": 18,
           "tiene_liston_post": true,
           "tiene_piso": true,
-          "tiene_zocalo": false,
-          "alto_zocalo": 0
+          "tiene_zocalo": true,
+          "alto_zocalo": 80,
+          "retrans_zocalo": 35
         },
         {
           "nombre": "Mesa Tocador con Vano Piernas",
@@ -3628,8 +3643,9 @@
           "nivel_apilado": 0,
           "alto": 680,
           "tiene_piso": true,
-          "tiene_zocalo": false,
-          "alto_zocalo": 0
+          "tiene_zocalo": true,
+          "alto_zocalo": 70,
+          "retrans_zocalo": 25
         },
         {
           "nombre": "Vano Mesa Dibujo y Repisas",
@@ -4237,7 +4253,10 @@
           "ancho_ranura_mdf": 4,
           "prof_ranura_mdf": 8,
           "dist_ranura_mdf": 18,
-          "tiene_liston_post": true
+          "tiene_liston_post": true,
+          "tiene_zocalo": true,
+          "alto_zocalo": 80,
+          "retrans_zocalo": 35
         }
       ],
       "mdf_metodo": "ranura",
@@ -4350,8 +4369,9 @@
           "dist_ranura_mdf": 18,
           "tiene_liston_post": true,
           "tiene_piso": true,
-          "tiene_zocalo": false,
-          "alto_zocalo": 0
+          "tiene_zocalo": true,
+          "alto_zocalo": 80,
+          "retrans_zocalo": 35
         },
         {
           "nombre": "Vano Libre Piernas ISO",
@@ -4435,8 +4455,9 @@
           "prof_ranura_mdf": 8,
           "dist_ranura_mdf": 18,
           "tiene_liston_post": true,
-          "tiene_zocalo": false,
-          "alto_zocalo": 0
+          "tiene_zocalo": true,
+          "alto_zocalo": 80,
+          "retrans_zocalo": 35
         },
         {
           "nombre": "Librero / Archivador Aéreo",
@@ -4523,8 +4544,9 @@
           "prof_ranura_mdf": 8,
           "dist_ranura_mdf": 18,
           "tiene_liston_post": true,
-          "tiene_zocalo": false,
-          "alto_zocalo": 0
+          "tiene_zocalo": true,
+          "alto_zocalo": 80,
+          "retrans_zocalo": 35
         }
       ],
       "espesor_melamina": 18,

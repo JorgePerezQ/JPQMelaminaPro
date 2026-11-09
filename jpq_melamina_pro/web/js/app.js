@@ -1358,7 +1358,7 @@ function aplicarPresetMobiliario(tipo) {
   }
   actualizarTarjetaResumenPreset(preset);
 
-  // Asignar cotas a la interfaz
+  // Asignar cotas a la interfaz y al estado global de inmediato
   const elW = document.getElementById('dimAnchoTotal');
   const elH = document.getElementById('dimAltoTotal');
   const elD = document.getElementById('dimProfTotal');
@@ -1366,6 +1366,9 @@ function aplicarPresetMobiliario(tipo) {
   if (elH) elH.value = h;
   if (elD) elD.value = d;
 
+  AppState.anchoTotal = w;
+  AppState.altoTotal = h;
+  AppState.profTotal = d;
   AppState.tieneZocalo = tieneZ;
   AppState.altoZocalo = altoZ;
   AppState.retransZocalo = retransZ;
@@ -1736,6 +1739,39 @@ function armarEstructuraModularDesdePerfil(perfil) {
       mod.material_frentes = AppState.materialFrentes;
       mod.material_interior = AppState.materialEstructura;
 
+      // REGLA ERGONÓMICA DE CARPINTERÍA: Heredar configuración de zócalo individual de módulo.
+      // En muebles sin zócalo global (como escritorios y mesas), un pedestal de cajonera al piso
+      // NUNCA debe rozar el suelo: debe llevar un zócalo de base (70-80mm) para proteger frentes y apertura.
+      if (ms.tiene_zocalo !== undefined) {
+        mod.tiene_zocalo = !!ms.tiene_zocalo;
+      } else if (!tieneZ && nivelMod === 0 && ms.tipo_interior === 'cajonera') {
+        mod.tiene_zocalo = true;
+      }
+
+      if (ms.alto_zocalo !== undefined && ms.alto_zocalo !== null) {
+        mod.alto_zocalo = parseFloat(ms.alto_zocalo) || 0;
+      } else if (mod.tiene_zocalo && (!mod.alto_zocalo || mod.alto_zocalo <= 0)) {
+        mod.alto_zocalo = 80;
+      }
+
+      if (ms.retrans_zocalo !== undefined && ms.retrans_zocalo !== null) {
+        mod.retrans_zocalo = parseFloat(ms.retrans_zocalo) || 35;
+      } else if (mod.tiene_zocalo && (mod.retrans_zocalo === undefined || isNaN(mod.retrans_zocalo))) {
+        mod.retrans_zocalo = 35;
+      }
+
+      if (ms.cant_listones !== undefined || ms.cant_listones_internos !== undefined) {
+        mod.cant_listones = parseInt(ms.cant_listones || ms.cant_listones_internos) || 0;
+        mod.cant_listones_internos = mod.cant_listones;
+      }
+
+      if (ms.tiene_zocalo_sup !== undefined) {
+        mod.tiene_zocalo_sup = !!ms.tiene_zocalo_sup;
+      }
+      if (ms.alto_zocalo_sup !== undefined) {
+        mod.alto_zocalo_sup = parseFloat(ms.alto_zocalo_sup) || 70;
+      }
+
       modulos.push(mod);
     });
   } else {
@@ -1793,6 +1829,7 @@ function armarEstructuraModularDesdePerfil(perfil) {
   renderizarPestanasModulos();
   actualizarFormularioModuloActivo();
   actualizarBadgeEstado();
+  actualizarUIZocaloGeneral();
   actualizarCanvas();
 }
 
@@ -3997,7 +4034,7 @@ function actualizarUIZocaloGeneral() {
     }
 
     if (badgeNorma) {
-      if (resNorma.tipoAlerta === 'danger' || !resNorma.cumpleNorma) {
+      if (resNorma.tipoAlerta === 'danger') {
         badgeNorma.className = 'badge badge-danger';
         badgeNorma.style.background = '#EF4444';
         badgeNorma.style.color = '#FFFFFF';
@@ -4018,7 +4055,7 @@ function actualizarUIZocaloGeneral() {
     }
 
     if (lblNorma) {
-      if (resNorma.tipoAlerta === 'danger' || !resNorma.cumpleNorma) {
+      if (resNorma.tipoAlerta === 'danger') {
         lblNorma.innerHTML = `<span style="color: #EF4444; font-weight: 700; display: block; padding: 6px 10px; background: rgba(239, 68, 68, 0.12); border-radius: 4px; border-left: 3px solid #EF4444;">${resNorma.mensajeNorma}</span>`;
       } else if (resNorma.tipoAlerta === 'warning') {
         lblNorma.innerHTML = `<span style="color: #D97706; font-weight: 600; display: block; padding: 6px 10px; background: rgba(245, 158, 11, 0.12); border-radius: 4px; border-left: 3px solid #F59E0B;">${resNorma.mensajeNorma}</span>`;
